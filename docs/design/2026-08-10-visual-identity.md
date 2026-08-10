@@ -74,8 +74,9 @@ OpenChamber 계열이다. 질문형 제목이 태그라인 자리를 그대로 �
 viewBox 는 `0 0 100 100`, 여백을 꽉 채운다. 원안은 마크가 좁게 앉아
 40px 로 줄이면 실제 획이 15px 밖에 되지 않았다.
 
-색은 리터럴 hex 가 아니라 `currentColor` 와 CSS 변수를 쓴다 —
-GitHub 라이트·다크에서 같은 파일이 따라가야 한다.
+GitHub 라이트·다크에서 같은 파일이 따라가야 한다. 다만 **`currentColor` 로는 되지 않는다** —
+SVG 가 `<img src>` 로 불릴 때는 부모의 `color` 를 상속할 대상이 없다.
+파일 안에 `<style>` 을 두고 `@media (prefers-color-scheme: dark)` 로 색을 전환한다.
 
 ```
 V2 (logo.svg)
