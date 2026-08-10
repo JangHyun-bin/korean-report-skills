@@ -154,12 +154,20 @@ ILLUSTRATIVE = {
 
 
 def test_referenced_files_exist():
-    """문서가 백틱으로 가리키는 저장소 파일이 실재하는지."""
+    """
+    문서가 백틱으로 가리키는 저장소 파일이 실재하는지.
+
+    설계 문서(`docs/design/`)는 제외한다. 아직 만들지 않은 파일을 규정하는 것이
+    그 장르의 목적이므로, 여기서 실재를 요구하면 설계를 쓸 수 없다.
+    구현이 끝나면 그 파일들은 다른 문서에서도 언급되고 그때 검사에 걸린다.
+    """
     exts = (".md", ".py", ".js", ".html", ".css", ".sh", ".yml")
     roots = [ROOT, SKILLS, DOC, STYLE, ASSETS, CSS, ROOT / "scripts", ROOT / "plugins",
              DOC / "references", STYLE / "references"]
     missing = []
     for p in all_markdown():
+        if "design" in p.parts:
+            continue
         for tok in re.findall(r"`([^`\s]+)`", read(p)):
             if not tok.endswith(exts) or tok.startswith(("http", "-", "/", "~")):
                 continue
