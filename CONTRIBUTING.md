@@ -107,7 +107,7 @@ python scripts/qa.py dist/example_deck.html --pdf --shot dist/shots
 | | |
 |---|---|
 | 검사 대상 | `skills/**/*.md` · `docs/decisions/*.md` |
-| 대상 아님 | README · INSTALL · CONTRIBUTING · SECURITY · CHANGELOG · Pages |
+| 대상 아님 | README · INSTALL · CONTRIBUTING · SECURITY · CHANGELOG |
 
 **대상이 아닌 문서가 있는 이유** — 규약은 보고서·협의 자료의 장르 규칙이고,
 README 는 처음 온 사람이 자기 문제를 알아보게 하는 글이다. 장르가 다르면 규칙도

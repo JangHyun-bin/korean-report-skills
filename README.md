@@ -1,8 +1,8 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-187%20passing-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-187%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.10.0-0066cc)](../../releases)
-[![plugin](https://img.shields.io/badge/plugin-Claude%20Code-8957e5)](INSTALL.md)
+[![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
 
 # 왜 Claude가 만든 한국어 문서는 어딘가 이상할까

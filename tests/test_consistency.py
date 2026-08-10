@@ -249,9 +249,10 @@ def test_version_is_the_same_in_every_place():
                           read(ROOT / "pyproject.toml"), re.M).group(1)
     changelog = re.search(r"^## \[([0-9]+\.[0-9]+\.[0-9]+)\]",
                           read(ROOT / "CHANGELOG.md"), re.M).group(1)
-    assert pkg == pyproject == changelog, (
+    badge = re.search(r"release-v([0-9]+\.[0-9]+\.[0-9]+)-", read(ROOT / "README.md")).group(1)
+    assert pkg == pyproject == changelog == badge, (
         f"버전이 어긋난다 — package.json {pkg} · pyproject.toml {pyproject} · "
-        f"CHANGELOG 최신 항목 {changelog}"
+        f"CHANGELOG 최신 항목 {changelog} · README 뱃지 {badge}"
     )
 
 

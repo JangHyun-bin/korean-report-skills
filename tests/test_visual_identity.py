@@ -155,15 +155,20 @@ def test_readme_badge_test_count_matches_reality():
     뱃지의 숫자는 실제 값에 대한 주장이다. 아무도 강제하지 않으면 검사를
     추가하거나 지울 때마다 조용히 거짓말이 된다 — 치환표를 저장소 자신의
     산문에 적용하는 검사(test_own_prose.py)와 같은 원칙이다.
+
+    뱃지가 「passing」이 아니라 개수를 말하는 이유는 여기서 세는 것이
+    수집된 검사의 수이기 때문이다. chromium 이 없는 환경에서는 일부가
+    건너뛰어지므로 통과 수가 이보다 적을 수 있다 — 뱃지가 말할 수 없는 것을
+    말하지 않게 한다.
     """
     readme = read(ROOT / "README.md")
-    m = re.search(r"tests-(\d+)%20passing", readme)
+    m = re.search(r"tests-(\d+)%20tests", readme)
     assert m, "README 뱃지에서 tests 개수를 찾지 못했다"
     claimed = int(m.group(1))
 
     actual = _count_python_tests() + _count_node_tests()
     assert claimed == actual, (
-        f"README 뱃지는 tests-{claimed}%20passing 이라고 적혀 있지만 "
+        f"README 뱃지는 tests-{claimed}%20tests 라고 적혀 있지만 "
         f"실제 개수는 {actual}(python+node) 다. 뱃지 숫자를 고쳐라."
     )
 
