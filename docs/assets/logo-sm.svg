@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img"
+     aria-label="korean-report-skills">
+  <style>
+    .a { fill: #0066cc }
+    .i { fill: #1d1d1f }
+    @media (prefers-color-scheme: dark) {
+      .a { fill: #2997ff }
+      .i { fill: #ffffff }
+    }
+  </style>
+  <rect class="a" x="4"  y="20" width="22" height="22" rx="4.5"/>
+  <rect class="i" x="33" y="20" width="63" height="22" rx="4.5"/>
+  <rect class="i" x="4"  y="60" width="92" height="13" rx="6.5"/>
+</svg>

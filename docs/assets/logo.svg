@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img"
+     aria-label="korean-report-skills">
+  <style>
+    .a { fill: #0066cc }
+    .i { fill: #1d1d1f }
+    .d { fill: #1d1d1f; opacity: .42 }
+    @media (prefers-color-scheme: dark) {
+      .a { fill: #2997ff }
+      .i { fill: #ffffff }
+      .d { fill: #ffffff; opacity: .42 }
+    }
+  </style>
+  <rect class="a" x="4"  y="8"  width="17" height="17" rx="3.5"/>
+  <rect class="i" x="27" y="8"  width="61" height="17" rx="3.5"/>
+  <rect class="i" x="4"  y="38" width="92" height="14" rx="7"/>
+  <rect class="d" x="4"  y="66" width="92" height="7"  rx="3.5"/>
+  <rect class="d" x="4"  y="83" width="62" height="7"  rx="3.5"/>
+</svg>
