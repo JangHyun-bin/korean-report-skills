@@ -12,7 +12,7 @@ import hashlib
 import re
 
 import pytest
-from conftest import ROOT, read
+from conftest import ROOT, STYLE, read
 
 # 검사 대상 — 배포되는 것과 예시. dist/ · node_modules/ 는 산출물이라 제외한다.
 SCANNED_SUFFIXES = (".md", ".py", ".js", ".css", ".html", ".sh", ".toml", ".json", ".yml")
@@ -138,7 +138,7 @@ def test_no_previous_domain_residue(term):
 
 def test_drift_is_still_allowed():
     """`드리프트` 는 두 도메인 공통이라 §9 에 남아 있어야 한다. 과잉 삭제 방지."""
-    subs = read(ROOT / "skills" / "korean-report-style" / "references" / "substitutions.md")
+    subs = read(STYLE / "references" / "substitutions.md")
     assert "드리프트" in subs, "`드리프트` 가 §9 에서 사라졌다 — 반도체에서도 쓰는 용어다"
 
 
@@ -150,7 +150,7 @@ def test_skill_docs_carry_no_concrete_dates():
     """
     rx = re.compile(r"(?<![\d.])(?:20\d{2}-)?[01]\d-[0-3]\d(?![\d.])")
     found = []
-    for p in (ROOT / "skills").rglob("*.md"):
+    for p in (ROOT / "plugins").rglob("*.md"):
         in_fence = False
         for i, ln in enumerate(read(p).splitlines(), 1):
             if ln.lstrip().startswith("```"):
@@ -171,7 +171,7 @@ def test_substitutions_carry_no_precise_measurements():
     소수점 백분율은 실측처럼 읽힌다. 가상 사례에는 반올림한 수치만 쓴다.
     `71%` 는 허용하고 소수점이 붙은 값은 불가하다.
     """
-    subs = ROOT / "skills" / "korean-report-style" / "references" / "substitutions.md"
+    subs = STYLE / "references" / "substitutions.md"
     found = [f"{i}: {ln.strip()[:90]}"
              for i, ln in enumerate(read(subs).splitlines(), 1)
              if re.search(r"\d+\.\d+\s*%", ln)]
@@ -216,5 +216,5 @@ def test_readme_shows_rendered_output():
 
 def test_style_skill_declares_its_examples_are_fictional():
     for f in ("SKILL.md", "references/substitutions.md"):
-        body = read(ROOT / "skills" / "korean-report-style" / f)
+        body = read(STYLE / f)
         assert "가상 사례" in body, f"{f} 에 예시가 가상임을 밝히는 문장이 없다"

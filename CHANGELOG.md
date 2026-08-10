@@ -3,6 +3,43 @@
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따르며
 [유의적 버전](https://semver.org/lang/ko/)을 쓴다.
 
+## [1.9.0] — 2026-08-10
+
+설치 경로를 현대적인 방식으로 바꾸었다. `bash scripts/install.sh` 한 줄만 안내하고
+있었는데, Claude Code 는 플러그인 마켓플레이스가 표준이고 갱신도 자동이다.
+
+### 더해짐
+
+- **Claude Code 플러그인 마켓플레이스** — 저장소가 곧 마켓플레이스다.
+
+  ```
+  /plugin marketplace add JangHyun-bin/korean-report-skills
+  /plugin install korean-report@korean-report-skills
+  ```
+
+  `.claude-plugin/marketplace.json` 과 `plugins/korean-report/.claude-plugin/plugin.json`
+  을 두었다. 두 스킬은 함께 쓰이므로 플러그인 하나에 담았다.
+  마켓플레이스를 등록해 두면 갱신이 자동으로 따라온다.
+
+- **npx 설치** — 플러그인 체계가 없는 도구(Codex · Cursor)와, 파일로 두고 싶을 때.
+
+  ```
+  npx github:JangHyun-bin/korean-report-skills
+  npx github:JangHyun-bin/korean-report-skills --project
+  npx github:JangHyun-bin/korean-report-skills --remove
+  ```
+
+  게시 없이 GitHub 에서 바로 실행된다. `--remove` 로 되돌릴 수 있다.
+
+### 바뀜
+
+- **저장소 배치를 플러그인 규격에 맞추었다** — `skills/` 가
+  `plugins/korean-report/skills/` 로 이동하였다. 공식 문서가 규정하는 배치이며,
+  루트를 플러그인으로 쓰는 방식은 문서에 없어 채택하지 않았다.
+- `scripts/install.sh` 는 node 가 없는 환경을 위해 남긴다. 안내 순서에서는 뒤로 옮겼다.
+
+---
+
 ## [1.8.0] — 2026-08-10
 
 ### 더해짐

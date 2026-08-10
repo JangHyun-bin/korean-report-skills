@@ -38,14 +38,14 @@ jobs:
         run: |
           python examples/build_example.py
           for m in paper deck; do
-            node skills/korean-report-doc/assets/mathbuild.js \
+            node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
               "dist/example_${m}_raw.html" "dist/example_${m}.html" \
-              --assets skills/korean-report-doc/assets
+              --assets plugins/korean-report/skills/korean-report-doc/assets
           done
           python examples/build_before_after.py
-          node skills/korean-report-doc/assets/mathbuild.js \
+          node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
             dist/ba_after_raw.html dist/ba_after.html \
-            --assets skills/korean-report-doc/assets
+            --assets plugins/korean-report/skills/korean-report-doc/assets
 
       - name: PDF 함께 뽑기
         run: python scripts/qa.py dist/example_paper.html dist/example_deck.html --pdf

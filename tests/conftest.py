@@ -7,8 +7,9 @@ import sys
 sys.dont_write_bytecode = True
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DOC = ROOT / "skills" / "korean-report-doc"
-STYLE = ROOT / "skills" / "korean-report-style"
+SKILLS = ROOT / "plugins" / "korean-report" / "skills"
+DOC = SKILLS / "korean-report-doc"
+STYLE = SKILLS / "korean-report-style"
 ASSETS = DOC / "assets"
 CSS = ASSETS / "css"
 

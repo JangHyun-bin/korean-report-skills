@@ -3,35 +3,74 @@
 두 스킬 모두 **Agent Skills 표준(SKILL.md)** 을 따르므로
 Claude Code · Codex · Cursor 에 **파일 수정 없이** 그대로 들어간다.
 
-## 한 번에
+경로는 셋이며 아래 순서로 권한다.
 
-```bash
-bash scripts/install.sh
+| | 대상 | 갱신 |
+|---|---|---|
+| 플러그인 | Claude Code | 자동 |
+| npx | Codex · Cursor · Claude Code | 다시 실행 |
+| 셸 스크립트 | 위와 같음 (node 없는 환경) | 다시 실행 |
+
+## 플러그인 — Claude Code
+
+이 저장소가 곧 마켓플레이스다.
+
+```
+/plugin marketplace add JangHyun-bin/korean-report-skills
+/plugin install korean-report@korean-report-skills
 ```
 
-Claude Code(`~/.claude/skills/`) · Codex(`~/.codex/skills/`) · Cursor(`~/.cursor/skills/`)
-세 곳에 복사한다.
+설치 요약이 `Run /reload-plugins to activate.` 라고 하면 그 명령을 실행한다.
+`/plugin` 을 열면 **Installed** 탭에서 켜고 끄거나 지울 수 있다.
 
-## 골라서
-
-```bash
-bash scripts/install.sh claude
-bash scripts/install.sh codex cursor
-```
-
-## 이 저장소에만
+셸에서 바로 설치하려면:
 
 ```bash
-bash scripts/install.sh --project      # ./.claude/skills/ · ./.codex/skills/ · ./.cursor/skills/
+claude plugin install korean-report@korean-report-skills --scope user
 ```
 
-커밋하면 팀원이 클론만 해도 같은 스킬을 쓴다.
+**갱신** — 마켓플레이스를 등록해 두면 새 버전이 자동으로 따라온다.
+직접 당기려면 `/plugin marketplace update korean-report-skills`.
+
+**팀 전체에 적용** — 프로젝트의 `.claude/settings.json` 에 아래를 넣으면
+팀원이 저장소를 신뢰할 때 설치를 안내받는다.
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "korean-report-skills": {
+      "source": { "source": "github", "repo": "JangHyun-bin/korean-report-skills" }
+    }
+  }
+}
+```
+
+## npx — Codex · Cursor
+
+플러그인 체계가 없는 도구는 파일로 복사한다. 게시 없이 GitHub 에서 바로 실행된다.
+
+```bash
+npx github:JangHyun-bin/korean-report-skills            # claude · codex · cursor 전부
+npx github:JangHyun-bin/korean-report-skills cursor     # 골라서
+npx github:JangHyun-bin/korean-report-skills --project  # 이 저장소에만
+npx github:JangHyun-bin/korean-report-skills --remove   # 되돌리기
+```
+
+`--project` 로 넣고 커밋하면 팀원이 클론만 해도 같은 스킬을 쓴다.
+
+## 셸 스크립트 — node 가 없을 때
+
+```bash
+bash scripts/install.sh                 # 전부
+bash scripts/install.sh codex cursor    # 골라서
+bash scripts/install.sh --project       # 이 저장소에만
+```
 
 ## 수동
 
 ```bash
 mkdir -p ~/.claude/skills
-cp -R skills/korean-report-doc skills/korean-report-style ~/.claude/skills/
+cp -R plugins/korean-report/skills/korean-report-doc plugins/korean-report/skills/korean-report-style ~/.claude/skills/
 ```
 
 | 도구 | 개인 | 프로젝트 |
@@ -96,8 +135,8 @@ Claude Code 는 `/korean-report-doc` 으로 부른다.
 ## 끄기 · 지우기
 
 ```bash
-mv ~/.claude/skills/korean-report-doc ~/.claude/skills/_korean-report-doc   # 임시로 끄기
-rm -rf ~/.claude/skills/korean-report-doc                                    # 삭제
+mv ~/.claude/plugins/korean-report/skills/korean-report-doc ~/.claude/skills/_korean-report-doc   # 임시로 끄기
+rm -rf ~/.claude/plugins/korean-report/skills/korean-report-doc                                    # 삭제
 ```
 
 ---
@@ -122,8 +161,8 @@ curl -L -o Pretendard-Regular.woff2 \
 curl -L -o Pretendard-SemiBold.woff2 \
   https://github.com/orioncactus/pretendard/raw/main/packages/pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2
 
-node skills/korean-report-doc/assets/mathbuild.js raw.html out.html \
-     --assets skills/korean-report-doc/assets \
+node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js raw.html out.html \
+     --assets plugins/korean-report/skills/korean-report-doc/assets \
      --font Pretendard-Regular.woff2 --font Pretendard-SemiBold.woff2
 ```
 

@@ -8,7 +8,7 @@
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$ROOT/skills"
+SRC="$ROOT/plugins/korean-report/skills"
 SKILLS=(korean-report-doc korean-report-style)
 KNOWN=(claude codex cursor)
 

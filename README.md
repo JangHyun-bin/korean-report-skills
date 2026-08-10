@@ -96,12 +96,24 @@ paper(세로·보고서)와 deck(가로·협의자료) 두 모드뿐이고 섞�
 
 ## 설치
 
-```bash
-bash scripts/install.sh
+**Claude Code** — 플러그인으로 설치합니다. 갱신이 자동으로 따라옵니다.
+
+```
+/plugin marketplace add JangHyun-bin/korean-report-skills
+/plugin install korean-report@korean-report-skills
 ```
 
-Claude Code · Codex · Cursor 세 곳에 복사합니다. 자세한 내용과 claude.ai 웹 업로드는
-[INSTALL.md](INSTALL.md) 참조.
+**Codex · Cursor** — 플러그인 체계가 없으므로 파일로 복사합니다.
+
+```bash
+npx github:JangHyun-bin/korean-report-skills            # 전부
+npx github:JangHyun-bin/korean-report-skills cursor     # 골라서
+npx github:JangHyun-bin/korean-report-skills --project  # 이 저장소에만
+```
+
+게시 없이 GitHub 에서 바로 실행됩니다. `--remove` 로 되돌립니다.
+
+claude.ai 웹 업로드와 node 없는 환경은 [INSTALL.md](INSTALL.md) 참조.
 
 ## 첫 문서
 

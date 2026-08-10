@@ -44,9 +44,9 @@ ruff check .
 
 ```bash
 python examples/build_example.py
-node skills/korean-report-doc/assets/mathbuild.js \
+node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
      dist/example_deck_raw.html dist/example_deck.html \
-     --assets skills/korean-report-doc/assets
+     --assets plugins/korean-report/skills/korean-report-doc/assets
 python scripts/qa.py dist/example_deck.html --pdf --shot dist/shots
 ```
 

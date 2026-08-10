@@ -12,7 +12,7 @@
 import re
 
 import pytest
-from conftest import ASSETS, CSS, DOC, ROOT, STYLE, all_markdown, css_bundle, read
+from conftest import ASSETS, CSS, DOC, ROOT, SKILLS, STYLE, all_markdown, css_bundle, read
 
 TEMPLATES = {m: ASSETS / f"{m}_template.html" for m in ("paper", "deck")}
 PLACEHOLDERS = ("__TITLE__", "__BODY__", "__FONTCSS__", "__KATEXCSS__", "__BASECSS__", "__MODECSS__")
@@ -156,7 +156,7 @@ ILLUSTRATIVE = {
 def test_referenced_files_exist():
     """문서가 백틱으로 가리키는 저장소 파일이 실재하는지."""
     exts = (".md", ".py", ".js", ".html", ".css", ".sh", ".yml")
-    roots = [ROOT, DOC, STYLE, ASSETS, CSS, ROOT / "scripts", ROOT / "skills",
+    roots = [ROOT, SKILLS, DOC, STYLE, ASSETS, CSS, ROOT / "scripts", ROOT / "plugins",
              DOC / "references", STYLE / "references"]
     missing = []
     for p in all_markdown():
@@ -268,3 +268,42 @@ def test_skill_frontmatter_is_wellformed():
         assert re.search(r"^description:\s*\S+", fm, re.M), f"{skill.name} — description 누락"
         name = re.search(r"^name:\s*(\S+)", fm, re.M).group(1)
         assert name == skill.name, f"frontmatter name({name}) 과 폴더명({skill.name})이 다르다"
+
+
+def test_plugin_manifests_are_wellformed():
+    """
+    Claude Code 플러그인 규격. `/plugin marketplace add` 가 읽는 파일이므로
+    깨지면 설치 경로 하나가 통째로 죽는다. 사람이 알아채기 어렵다.
+    """
+    import json
+
+    market = json.loads(read(ROOT / ".claude-plugin" / "marketplace.json"))
+    assert market["name"] and market["owner"]["name"], "marketplace 에 name·owner 가 필요하다"
+    assert market["plugins"], "등재된 플러그인이 없다"
+
+    for entry in market["plugins"]:
+        src = ROOT / entry["source"]
+        assert src.is_dir(), f"플러그인 경로가 없다: {entry['source']}"
+
+        manifest = json.loads(read(src / ".claude-plugin" / "plugin.json"))
+        assert manifest["name"] == entry["name"], (
+            f"marketplace 의 {entry['name']} 과 plugin.json 의 {manifest['name']} 이 다르다"
+        )
+        assert manifest.get("version"), "version 이 없으면 사용자가 갱신을 받지 못한다"
+
+        skills = src / "skills"
+        assert skills.is_dir(), f"{entry['name']} 에 skills/ 가 없다"
+        found = sorted(d.name for d in skills.iterdir() if (d / "SKILL.md").exists())
+        assert found, f"{entry['name']} 의 skills/ 에 SKILL.md 가 없다"
+
+
+def test_plugin_version_matches_package_version():
+    """플러그인 version 이 낡으면 사용자가 갱신을 받지 못한다."""
+    import json
+
+    pkg = json.loads(read(ROOT / "package.json"))["version"]
+    manifest = json.loads(
+        read(ROOT / "plugins" / "korean-report" / ".claude-plugin" / "plugin.json"))["version"]
+    market = json.loads(read(ROOT / ".claude-plugin" / "marketplace.json"))
+    assert manifest == pkg, f"plugin.json {manifest} · package.json {pkg}"
+    assert market["metadata"]["version"] == pkg, "marketplace metadata.version 이 어긋난다"

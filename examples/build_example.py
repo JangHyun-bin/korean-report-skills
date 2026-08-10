@@ -15,7 +15,7 @@ import pathlib
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ASSETS = ROOT / "skills" / "korean-report-doc" / "assets"
+ASSETS = ROOT / "plugins" / "korean-report" / "skills" / "korean-report-doc" / "assets"
 sys.path.insert(0, str(ASSETS))
 
 from figures import (  # noqa: E402

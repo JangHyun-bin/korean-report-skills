@@ -21,17 +21,17 @@ for s in "${SKILLS[@]}"; do
     [[ -f "$target" ]] || { echo "  없음  $target — 먼저 pack 한다" >&2; exit 1; }
     tmp="$(mktemp -d)"
     unzip -q "$target" -d "$tmp"
-    if diff -r -x '__pycache__' -x '*.pyc' "$ROOT/skills/$s" "$tmp/$s" >/dev/null; then
+    if diff -r -x '__pycache__' -x '*.pyc' "$ROOT/plugins/korean-report/skills/$s" "$tmp/$s" >/dev/null; then
       echo "  일치  $s.skill"
     else
       echo "  불일치 $s.skill — skills/$s 와 내용이 다르다. 다시 pack 한다." >&2
-      diff -r -x '__pycache__' -x '*.pyc' "$ROOT/skills/$s" "$tmp/$s" || true
+      diff -r -x '__pycache__' -x '*.pyc' "$ROOT/plugins/korean-report/skills/$s" "$tmp/$s" || true
       rm -rf "$tmp"; exit 1
     fi
     rm -rf "$tmp"
   else
     rm -f "$target"
-    ( cd "$ROOT/skills" && zip -q -r -X "$target" "$s" -x '*/__pycache__/*' '*.pyc' )
+    ( cd "$ROOT/plugins/korean-report/skills" && zip -q -r -X "$target" "$s" -x '*/__pycache__/*' '*.pyc' )
     echo "  생성  $target  ($(unzip -l "$target" | tail -1 | awk '{print $2}') 파일)"
   fi
 done

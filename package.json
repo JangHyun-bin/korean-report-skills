@@ -1,6 +1,6 @@
 {
   "name": "korean-report-skills",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "한국어 기술 문서 제작·문체 규약 Agent Skills — 자립형 HTML 보고서와 한국어 서술 규약",
   "license": "Apache-2.0",
   "private": false,
@@ -9,6 +9,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "install:skills": "node bin/install.js",
     "new": "python scripts/new-document.py",
     "build:example": "python examples/build_example.py",
     "pack": "bash scripts/pack-skills.sh",
@@ -30,5 +31,18 @@
     "technical-writing",
     "html-report",
     "katex"
+  ],
+  "bin": {
+    "korean-report-skills": "bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "plugins/",
+    "scripts/",
+    ".claude-plugin/",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "INSTALL.md"
   ]
 }

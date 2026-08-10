@@ -42,18 +42,18 @@ jobs:
         run: |
           python examples/build_example.py
           for m in paper deck; do
-            node skills/korean-report-doc/assets/mathbuild.js \
+            node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
               "dist/example_${m}_raw.html" "dist/example_${m}.html" \
-              --assets skills/korean-report-doc/assets
+              --assets plugins/korean-report/skills/korean-report-doc/assets
           done
           python scripts/qa.py dist/example_paper.html dist/example_deck.html --pdf --shot dist/shots
 
       - name: README 전후 대비 자산 빌드
         run: |
           python examples/build_before_after.py
-          node skills/korean-report-doc/assets/mathbuild.js \
+          node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
             dist/ba_after_raw.html dist/ba_after.html \
-            --assets skills/korean-report-doc/assets
+            --assets plugins/korean-report/skills/korean-report-doc/assets
           python scripts/qa.py dist/ba_after.html
 
       - name: 스킬 패키징

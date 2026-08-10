@@ -1,0 +1,18 @@
+{
+  "name": "korean-report-skills",
+  "owner": {
+    "name": "JangHyun-bin",
+    "url": "https://github.com/JangHyun-bin"
+  },
+  "metadata": {
+    "description": "한국어 기술 문서의 조판과 문장을 규약으로 고정하는 스킬",
+    "version": "1.9.0"
+  },
+  "plugins": [
+    {
+      "name": "korean-report",
+      "source": "./plugins/korean-report",
+      "description": "한국어 기술 문서를 자립형 HTML 한 파일로 제작하고, 문장을 보고 문체로 다듬는다. 문서 제작(korean-report-doc)과 문장 규약(korean-report-style) 두 스킬이 함께 들어간다."
+    }
+  ]
+}

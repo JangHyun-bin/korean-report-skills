@@ -14,7 +14,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-const ASSETS = path.join(ROOT, 'skills', 'korean-report-doc', 'assets');
+const ASSETS = path.join(ROOT, 'plugins', 'korean-report', 'skills', 'korean-report-doc', 'assets');
 const BUILD = path.join(ASSETS, 'mathbuild.js');
 
 let tmpSeq = 0;

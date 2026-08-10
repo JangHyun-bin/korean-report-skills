@@ -24,7 +24,7 @@ for _s in (sys.stdout, sys.stderr):
         pass
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ASSETS = ROOT / "skills" / "korean-report-doc" / "assets"
+ASSETS = ROOT / "plugins" / "korean-report" / "skills" / "korean-report-doc" / "assets"
 
 PAPER_BODY = '''<header class="paper-head">
 <p class="eyebrow">기술보고 · {date}</p>
@@ -159,8 +159,10 @@ def main() -> int:
     if build.returncode:
         return build.returncode
 
-    qa = ASSETS.parent.parent.parent / "scripts" / "qa.py"
-    if qa.exists():
+    # 저장소 배치가 바뀌어도 견디도록 위로 올라가며 찾는다
+    qa = next((p / "scripts" / "qa.py" for p in ASSETS.parents
+               if (p / "scripts" / "qa.py").exists()), None)
+    if qa:
         return subprocess.run([sys.executable, str(qa), str(out)]).returncode
     print(f"{{out}} — QA 스크립트를 찾지 못해 건너뛴다")
     return 0

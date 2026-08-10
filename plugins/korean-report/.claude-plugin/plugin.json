@@ -1,0 +1,18 @@
+{
+  "name": "korean-report",
+  "description": "한국어 기술 문서를 자립형 HTML 한 파일로 제작하고, 문장을 보고 문체로 다듬는다",
+  "version": "1.9.0",
+  "author": {
+    "name": "JangHyun-bin"
+  },
+  "homepage": "https://janghyun-bin.github.io/korean-report-skills/",
+  "repository": "https://github.com/JangHyun-bin/korean-report-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "korean",
+    "technical-writing",
+    "report",
+    "html",
+    "typography"
+  ]
+}
