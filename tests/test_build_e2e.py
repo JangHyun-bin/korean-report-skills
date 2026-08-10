@@ -88,6 +88,36 @@ def test_rendered_document_passes_qa(built, mode):
 
 
 @pytest.mark.skipif(not have_chromium(), reason="chromium 없음")
+def test_qa_catches_a_tile_that_overflows_its_page(tmp_path):
+    """
+    design.md §7.1 — deck 은 1 섹션 = 1 페이지다. 넘친 내용은 `overflow:hidden` 에
+    조용히 잘린다. deck 에서 가장 흔한 실패인데 오래 검사가 없던 자리다.
+    검사가 실제로 잡는지 확인한다.
+    """
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node 가 없다")
+
+    tpl = (ASSETS / "deck_template.html").read_text(encoding="utf-8")
+    filler = "<p>한 페이지에 담기지 않을 만큼 긴 문단을 반복한다.</p>\n" * 25
+    body = f'<section class="tile light"><div class="wrap"><h2>과밀 타일</h2>{filler}</div></section>'
+    raw = tmp_path / "raw.html"
+    raw.write_text(tpl.replace("__BODY__", body).replace("__TITLE__", "T"), encoding="utf-8")
+
+    out = tmp_path / "out.html"
+    build = subprocess.run(
+        [node, str(ASSETS / "mathbuild.js"), str(raw), str(out), "--assets", str(ASSETS)],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert build.returncode == 0, build.stderr
+
+    qa = subprocess.run([sys.executable, str(ROOT / "scripts" / "qa.py"), str(out)],
+                        cwd=ROOT, capture_output=True, text=True,
+                        encoding="utf-8", errors="replace")
+    assert qa.returncode == 1, f"한 쪽을 넘는 타일을 통과시켰다:\n{qa.stdout}"
+    assert "한 쪽을 넘는다" in qa.stdout
+
+
+@pytest.mark.skipif(not have_chromium(), reason="chromium 없음")
 def test_deck_prints_one_page_per_tile(built, tmp_path):
     """design.md §7.1 — 1 섹션 = 1 페이지. 인쇄 규칙이 덮이면 여기서 깨진다."""
     import re

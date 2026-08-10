@@ -21,6 +21,28 @@ for _s in (sys.stdout, sys.stderr):
     except AttributeError:  # 리다이렉트된 스트림
         pass
 
+# design.md §7.1 — deck 은 1 섹션 = 1 페이지다. 넘치면 타일이 잘린다.
+# `.tile` 은 인쇄 시 overflow:hidden 이라 넘친 내용이 조용히 사라진다.
+# 기계가 잡을 수 있는데 유일하게 검사가 없던 자리다.
+PRINT_JS = """() => {
+  const MM = 96 / 25.4;              // 1mm = 3.78 CSS px
+  const PAGE = 210 * MM;             // A4 가로 방향의 높이
+  const over = [];
+  document.querySelectorAll('section.tile').forEach((t, i) => {
+    const need = t.scrollHeight;
+    if (need > PAGE + 2) {
+      const h2 = t.querySelector('h2');
+      over.push({
+        i,
+        label: (h2 ? h2.innerText : t.className).replace(/\\s+/g, ' ').trim().slice(0, 30),
+        need: Math.round(need),
+        page: Math.round(PAGE),
+      });
+    }
+  });
+  return over;
+}"""
+
 CHECK_JS = """() => {
   const bad = [];
   document.querySelectorAll('table').forEach((t, i) => {
@@ -52,14 +74,19 @@ CHECK_JS = """() => {
 }"""
 
 
-def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | None,
-        landscape: bool) -> int:
+def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | None) -> int:
     fails, notes = [], []
     with sync_playwright() as p:
         b = p.chromium.launch()
         pg = b.new_page(viewport={"width": 1280, "height": 900})
         pg.goto(target.resolve().as_uri())
         pg.wait_for_timeout(2500)
+
+        # 모드는 파일명이 아니라 문서가 스스로 밝힌 것을 믿는다
+        mode = pg.evaluate("() => document.documentElement.dataset.mode || ''")
+        if mode not in ("paper", "deck"):
+            fails.append(f"data-mode 가 없거나 알 수 없다 ({mode or '없음'})")
+        landscape = mode == "deck"
 
         text = pg.inner_text("body")
         for marker in ("⟦", "__BODY__", "__TITLE__", "__BASECSS__", "__MODECSS__"):
@@ -84,8 +111,20 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
         if r["figcaps"] < r["figs"]:
             fails.append(f"캡션 없는 도해가 있다 — svg {r['figs']} · figcap {r['figcaps']}")
 
-        notes.append(f"수식 {r['katex']} · 도해 {r['figs']} · 캡션 {r['figcaps']} · "
+        notes.append(f"모드 {mode} · 수식 {r['katex']} · 도해 {r['figs']} · 캡션 {r['figcaps']} · "
                      f"배지 {r['badges']} · 간트 {r['gantt']} · 메트릭 {r['metrics']} · 타일 {r['tiles']}")
+
+        # deck 은 인쇄 레이아웃에서 타일이 한 쪽을 넘지 않아야 한다
+        if landscape:
+            pg.set_viewport_size({"width": 1123, "height": 794})   # A4 가로 @96dpi
+            pg.emulate_media(media="print")
+            pg.wait_for_timeout(400)
+            for o in pg.evaluate(PRINT_JS):
+                fails.append(
+                    f"타일 {o['i']}「{o['label']}」이 한 쪽을 넘는다 — "
+                    f"{o['need']}px 필요, 쪽 높이 {o['page']}px. 섹션을 쪼갠다"
+                )
+            pg.emulate_media(media="screen")
 
         if shot:
             shot.mkdir(parents=True, exist_ok=True)
@@ -116,8 +155,7 @@ def main() -> int:
 
     rc = 0
     for t in args.targets:
-        landscape = "deck" in t.stem
-        rc |= run(t, t.with_suffix(".pdf") if args.pdf else None, args.shot, landscape)
+        rc |= run(t, t.with_suffix(".pdf") if args.pdf else None, args.shot)
     return rc
 
 

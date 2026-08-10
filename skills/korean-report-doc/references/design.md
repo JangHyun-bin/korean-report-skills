@@ -531,6 +531,10 @@ One section, one page, contents vertically centered so leftover space splits eve
 If a section overflows one page, **split the section** — do not shrink type below the
 scale. Two clean pages beat one crowded one.
 
+`overflow:hidden` means an overflowing tile is **silently truncated**, not visibly broken —
+which is why `scripts/qa.py` measures every tile against the page height under
+`print` media and fails the build. This is the single most common deck defect.
+
 ### 7.2 Paper
 
 Continuous flow with break control.

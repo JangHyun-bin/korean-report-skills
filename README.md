@@ -32,6 +32,10 @@ Claude Code · Codex · Cursor 에 파일 수정 없이 들어간다.
 | 원인 분석에서 드러난 결함 세 가지 | 구조적 개선 — 분류 체계 정비와 자동응답 복구 |
 | 야간 인력을 얼마나 늘릴지 정해 주십시오 | 3명 증원을 산정하였다. 근거는 부록 A. 조정 요청 |
 
+**[실제 문서를 브라우저에서 열어 보기](https://janghyun-bin.github.io/korean-report-skills/)** —
+paper·deck 두 모드와 전후 대비를 실물로 확인할 수 있다. 파일 하나로 완결되므로
+소스 보기를 하면 글꼴·수식·도해가 안에 들어 있는 것도 보인다.
+
 본문은 도해·상태 배지·캡션이 함께 조판된다.
 
 <img src="docs/assets/ba_after_body.png" alt="도해와 상태 배지가 조판된 본문" width="100%">
