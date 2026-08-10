@@ -6,9 +6,12 @@
 것이라도 잡아 둔다 — 규격, 색 하드코딩, 참조 실재.
 판단 근거는 docs/design/2026-08-10-visual-identity.md 에 있다.
 """
+import os
 import pathlib
 import re
 import struct
+import subprocess
+import sys
 
 import pytest
 from conftest import ROOT, read
@@ -83,7 +86,8 @@ def test_readme_header_carries_logo_and_banner():
 def test_readme_banner_switches_by_theme():
     """
     다크에서 라이트 배너가 뜨면 첫 화면이 튄다.
-    `<picture>` 의 source 가 다크를 먼저 잡아야 한다.
+    `<picture>` 의 source 가 다크를 먼저 잡아야 한다 — 그러려면 `<source>` 가
+    `<img>` 보다 마크업 순서상 앞에 와야 브라우저가 다크를 먼저 매칭한다.
     """
     readme = read(ROOT / "README.md")
     m = re.search(r"<picture>.*?</picture>", readme, re.S)
@@ -92,10 +96,73 @@ def test_readme_banner_switches_by_theme():
     assert "prefers-color-scheme: dark" in block, "다크 source 가 없다"
     assert "banner-dark.png" in block and "banner-light.png" in block
 
+    source_pos = block.find("<source")
+    img_pos = block.find("<img")
+    assert source_pos != -1 and img_pos != -1, "<source> 또는 <img> 태그가 없다"
+    assert source_pos < img_pos, (
+        "<source> 가 <img> 보다 뒤에 있다 — 다크 소스가 매칭되지 않고 항상 라이트가 뜬다"
+    )
+
 
 def test_readme_badges_are_present():
     """뱃지 행은 신뢰 신호다. 넷을 유지한다."""
     readme = read(ROOT / "README.md")
     for label in ("tests", "release", "plugin", "license"):
-        assert f"img.shields.io/badge/{label}" in readme or f"-{label}-" in readme, \
-            f"{label} 뱃지가 없다"
+        assert f"img.shields.io/badge/{label}" in readme, f"{label} 뱃지가 없다"
+
+
+def _count_python_tests() -> int:
+    """
+    pytest 를 별도 프로세스로 collect-only 실행해 전체 개수를 센다.
+
+    이 파일도 pytest 세션 안에서 돌고 있으므로 `request.session` 을 쓰면
+    호출 범위(파일 하나만 지정해 돌리는 경우 등)에 따라 개수가 달라진다.
+    별도 프로세스로 전체 스위트를 다시 수집해야 어떻게 호출하든 같은 값이
+    나온다. 실패를 삼키지 않는다 — 셀 수 없으면 이 검사도 실패해야 한다.
+    """
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", env=env,
+    )
+    assert result.returncode == 0, (
+        f"pytest 수집이 실패했다 (returncode={result.returncode}):\n"
+        f"{result.stdout}\n{result.stderr}"
+    )
+    m = re.search(r"(\d+) tests? collected", result.stdout)
+    assert m, f"pytest 수집 출력에서 개수를 찾지 못했다:\n{result.stdout}"
+    return int(m.group(1))
+
+
+def _count_node_tests() -> int:
+    """`node scripts/run-node-tests.js` 출력의 `# tests N` 줄에서 개수를 읽는다."""
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    result = subprocess.run(
+        ["node", "scripts/run-node-tests.js"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", env=env,
+    )
+    assert result.returncode == 0, (
+        f"node 검사가 실패했다 (returncode={result.returncode}):\n"
+        f"{result.stdout}\n{result.stderr}"
+    )
+    m = re.search(r"^# tests (\d+)$", result.stdout, re.M)
+    assert m, f"node 검사 출력에서 개수를 찾지 못했다:\n{result.stdout}"
+    return int(m.group(1))
+
+
+def test_readme_badge_test_count_matches_reality():
+    """
+    뱃지의 숫자는 실제 값에 대한 주장이다. 아무도 강제하지 않으면 검사를
+    추가하거나 지울 때마다 조용히 거짓말이 된다 — 치환표를 저장소 자신의
+    산문에 적용하는 검사(test_own_prose.py)와 같은 원칙이다.
+    """
+    readme = read(ROOT / "README.md")
+    m = re.search(r"tests-(\d+)%20passing", readme)
+    assert m, "README 뱃지에서 tests 개수를 찾지 못했다"
+    claimed = int(m.group(1))
+
+    actual = _count_python_tests() + _count_node_tests()
+    assert claimed == actual, (
+        f"README 뱃지는 tests-{claimed}%20passing 이라고 적혀 있지만 "
+        f"실제 개수는 {actual}(python+node) 다. 뱃지 숫자를 고쳐라."
+    )
