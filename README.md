@@ -1,6 +1,6 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-187%20tests-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-186%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.10.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
@@ -175,8 +175,7 @@ doc 이 절차를 규정하고 style 이 문장을 다듬습니다. doc 의 `SKI
 참조하므로 문서를 만들 때는 둘 다 적용되고, 짧은 글을 다듬을 때는 style 만 적용됩니다.
 
 예시는 모두 가상 사례입니다. 실재하는 기업·공정·수치가 아니며, 도메인은 예시일 뿐
-규칙 자체는 분야를 가리지 않습니다. 왜 이 도메인인지는
-[결정 기록](docs/decisions/2026-08-10-example-domain-swap.md) 참조.
+규칙 자체는 분야를 가리지 않습니다.
 
 ## 이 README 의 문체에 관하여
 

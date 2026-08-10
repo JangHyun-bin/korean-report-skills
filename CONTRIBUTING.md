@@ -94,10 +94,8 @@ python scripts/qa.py dist/example_deck.html --pdf --shot dist/shots
 `tests/test_no_real_data.py` 가 막는다 — 실재 조직·개인명, 이전 도메인 잔재,
 스킬 산문의 구체 날짜, 치환표의 소수점 백분율(소수점이 붙으면 실측으로 읽힌다).
 
-새 예시가 필요하면 같은 가상 시나리오 안에서 만든다. 도메인을 바꿔야 할 만큼
-큰 이유가 있다면 [결정 기록](docs/decisions/2026-08-10-example-domain-swap.md)의
-판별 기준부터 읽는다 — 특히 **의인화 사례가 문헌 표준이어야 한다**는 조건이
-후보를 대부분 걸러낸다.
+새 예시가 필요하면 같은 가상 시나리오 안에서 만든다. 도메인 자체를 바꾸려면
+치환표 전체가 따라 움직이므로 먼저 이슈로 논의한다.
 
 ### 문서는 자기 규약을 지킨다
 
@@ -106,7 +104,7 @@ python scripts/qa.py dist/example_deck.html --pdf --shot dist/shots
 
 | | |
 |---|---|
-| 검사 대상 | `skills/**/*.md` · `docs/decisions/*.md` |
+| 검사 대상 | `skills/**/*.md` · `docs/design/*.md` |
 | 대상 아님 | README · INSTALL · CONTRIBUTING · SECURITY · CHANGELOG |
 
 **대상이 아닌 문서가 있는 이유** — 규약은 보고서·협의 자료의 장르 규칙이고,

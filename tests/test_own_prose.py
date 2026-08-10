@@ -10,7 +10,7 @@
 **규칙 목록을 따로 만들지 않는다.** `substitutions.md` 의 「쓰지 않는다」 열을 읽어
 그대로 검사에 쓴다. 표를 고치면 검사도 함께 바뀐다.
 
-검사 대상은 **규약이 적용되는 장르**뿐이다 — 스킬 문서와 결정 기록.
+검사 대상은 **규약이 적용되는 장르**뿐이다 — 스킬 문서와 설계 문서.
 README · INSTALL · CONTRIBUTING 은 처음 온 사람에게 문제를 알아보게 하는
 글이므로 대상이 아니다. 그 사실은 README 에 명시되어 있다.
 """
@@ -22,7 +22,6 @@ from conftest import ROOT, STYLE, read
 # 규약이 적용되는 장르
 TARGETS = sorted(
     list((ROOT / "plugins").rglob("*.md"))
-    + list((ROOT / "docs" / "decisions").rglob("*.md"))
     + list((ROOT / "docs" / "design").rglob("*.md"))
 )
 
