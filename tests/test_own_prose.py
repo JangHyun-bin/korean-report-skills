@@ -21,7 +21,9 @@ from conftest import ROOT, STYLE, read
 
 # 규약이 적용되는 장르
 TARGETS = sorted(
-    list((ROOT / "plugins").rglob("*.md")) + list((ROOT / "docs" / "decisions").rglob("*.md"))
+    list((ROOT / "plugins").rglob("*.md"))
+    + list((ROOT / "docs" / "decisions").rglob("*.md"))
+    + list((ROOT / "docs" / "design").rglob("*.md"))
 )
 
 # 인용·예시 자리. 나쁜 형태를 보여주려면 그 형태를 적어야 한다.
