@@ -60,6 +60,7 @@ jobs:
           cp dist/example_paper.pdf   site/paper.pdf
           cp dist/example_deck.pdf    site/deck.pdf
           cp docs/pages-index.html    site/index.html
+          cp docs/assets/favicon.svg  site/favicon.svg
 
       - uses: actions/upload-pages-artifact@v3
         with:

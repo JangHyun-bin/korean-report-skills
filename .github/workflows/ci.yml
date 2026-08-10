@@ -56,6 +56,12 @@ jobs:
             --assets plugins/korean-report/skills/korean-report-doc/assets
           python scripts/qa.py dist/ba_after.html
 
+      - name: 배너 재생성과 대조
+        run: |
+          python scripts/build-banner.py
+          git diff --exit-code --stat docs/assets/banner-light.png docs/assets/banner-dark.png \
+            || { echo "배너가 문서와 어긋난다. python scripts/build-banner.py 를 실행하고 커밋한다."; exit 1; }
+
       - name: 스킬 패키징
         run: |
           bash scripts/pack-skills.sh

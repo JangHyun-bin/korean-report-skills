@@ -3,6 +3,28 @@
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따르며
 [유의적 버전](https://semver.org/lang/ko/)을 쓴다.
 
+## [1.10.0] — 2026-08-10
+
+첫 화면에 시각 앵커가 없었다 — 제목과 문단으로 바로 시작했다. 로고·배너·파비콘을
+갖추고, 배너가 실제 문서에서 잘라낸 자산이라 문서가 바뀌면 CI 가 낡음을 잡게 했다.
+
+### 더해짐
+
+- **로고 세 벌** (`docs/assets/logo.svg` · `logo-sm.svg` · `favicon.svg`) —
+  paper 모드 절 표제의 시각 서명을 크기별로 잘라낸 축소 3단. viewBox 를
+  `0 0 100 100` 으로 고정하고, GitHub 라이트·다크에서 같은 파일이 따라가도록
+  `prefers-color-scheme: dark` 로 색을 전환한다. `<img src>` 로 불릴 때는
+  `currentColor` 가 통하지 않아 파일 안에 직접 둔다.
+- **배너 생성기** (`scripts/build-banner.py`) — 예시 문서 세 조각(paper 표지·
+  deck 다크 타일·paper 본문)을 Playwright 로 캡처해 겹치고, 라이트·다크 두 벌을
+  합성한다. 재실행해도 바이트가 같다.
+- **README 헤더** — 워드마크·뱃지 행 아래 `<picture>` 로 테마별 배너를 얹었다.
+- **Pages 파비콘** — `docs/pages-index.html` 에 `favicon.svg` 를 연결하고,
+  Pages 워크플로가 `site/` 로 함께 복사한다.
+- **CI 가 배너 낡음을 잡는다** — 「README 전후 대비 자산 빌드」 단계 뒤에
+  `scripts/build-banner.py` 를 다시 돌리고 `git diff --exit-code` 로 커밋된
+  PNG 와 대조한다. 문서가 바뀌었는데 배너를 갱신하지 않으면 CI 가 실패한다.
+
 ## [1.9.0] — 2026-08-10
 
 설치 경로를 현대적인 방식으로 바꾸었다. `bash scripts/install.sh` 한 줄만 안내하고
