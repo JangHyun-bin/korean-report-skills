@@ -81,12 +81,23 @@ tests/           문서와 자산이 어긋나면 실패하는 검사
 dist/            빌드 산출물 (git 추적 안 함)
 ```
 
-## 개발
+## 첫 문서 만들기
 
 ```bash
 npm install                                   # katex
-pip install playwright pytest && playwright install chromium
+pip install playwright && playwright install chromium
 
+python scripts/new-document.py --title "문서 제목" --mode paper
+python 문서_제목.py                            # 생성 → 빌드 → QA 한 번에
+```
+
+만들어진 `.py` 는 그 자체로 전체 파이프라인을 돈다. `# 여기부터 고쳐 쓴다` 구간의
+도해·표·본문을 바꾸면 된다. 글꼴을 문서에 내장하려면 `--font Pretendard-Regular.woff2`
+를 붙인다([INSTALL.md](INSTALL.md#본문-폰트) 참조).
+
+## 개발
+
+```bash
 npm test                                      # node + python 검사
 python examples/build_example.py              # dist/example_*_raw.html
 node skills/korean-report-doc/assets/mathbuild.js \

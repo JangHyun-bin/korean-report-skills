@@ -88,6 +88,43 @@ def test_rendered_document_passes_qa(built, mode):
 
 
 @pytest.mark.skipif(not have_chromium(), reason="chromium 없음")
+@pytest.mark.parametrize("mode", MODES)
+def test_scaffold_produces_a_document_that_passes_qa(tmp_path, mode):
+    """
+    스캐폴드는 처음 쓰는 사람이 가장 먼저 실행하는 것이다.
+    그것이 자기 QA 를 통과하지 못하면 첫인상이 실패로 시작한다.
+    (실제로 deck 쪽 치환 자리 수가 어긋나 캡션이 밀린 적이 있다.)
+    """
+    if not shutil.which("node"):
+        pytest.skip("node 가 없다")
+
+    gen = tmp_path / f"{mode}.py"
+    made = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "new-document.py"),
+         "--title", f"검증 {mode}", "--mode", mode, "--out", str(gen)],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert made.returncode == 0, made.stderr
+    assert gen.exists()
+
+    run = subprocess.run([sys.executable, str(gen)], cwd=tmp_path,
+                         capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert run.returncode == 0, f"스캐폴드 산출물이 QA 를 통과하지 못한다:\n{run.stdout}\n{run.stderr}"
+    assert (tmp_path / f"{mode}.html").exists()
+
+
+def test_scaffold_refuses_to_overwrite(tmp_path):
+    """이미 있는 파일을 덮어쓰면 작업 중인 문서가 날아간다."""
+    gen = tmp_path / "x.py"
+    gen.write_text("# 기존 내용", encoding="utf-8")
+    r = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "new-document.py"),
+         "--title", "T", "--out", str(gen)],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert r.returncode == 1
+    assert gen.read_text(encoding="utf-8") == "# 기존 내용"
+
+
+@pytest.mark.skipif(not have_chromium(), reason="chromium 없음")
 def test_qa_catches_a_tile_that_overflows_its_page(tmp_path):
     """
     design.md §7.1 — deck 은 1 섹션 = 1 페이지다. 넘친 내용은 `overflow:hidden` 에

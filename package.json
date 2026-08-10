@@ -1,6 +1,6 @@
 {
   "name": "korean-report-skills",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "한국어 기술 문서 제작·문체 규약 Agent Skills — 자립형 HTML 보고서와 한국어 서술 규약",
   "license": "Apache-2.0",
   "private": false,
@@ -9,6 +9,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "new": "python scripts/new-document.py",
     "build:example": "python examples/build_example.py",
     "pack": "bash scripts/pack-skills.sh",
     "test:node": "node scripts/run-node-tests.js",

@@ -165,6 +165,9 @@ def test_referenced_files_exist():
                 continue
             if "*" in tok or "{" in tok or tok in ILLUSTRATIVE:
                 continue
+            # `.py` · `.md` 처럼 확장자만 적은 것은 경로가 아니라 파일 종류를 가리킨다
+            if tok.startswith("."):
+                continue
             if any((r / tok).exists() for r in roots):
                 continue
             missing.append(f"{p.relative_to(ROOT)} → {tok}")

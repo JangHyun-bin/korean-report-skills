@@ -3,6 +3,26 @@
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따르며
 [유의적 버전](https://semver.org/lang/ko/)을 쓴다.
 
+## [1.6.0] — 2026-08-10
+
+### 더해짐
+
+- **`scripts/new-document.py`** — 새 문서 생성기의 뼈대를 만든다.
+  만들어진 `.py` 는 **그 자체로 생성 → mathbuild → QA 를 한 번에 돈다.**
+  `SKILL.md` §2 를 처음부터 읽지 않아도 첫 문서가 나오게 하는 것이 목적이다.
+  이미 있는 파일은 덮어쓰지 않는다.
+
+  ```bash
+  python scripts/new-document.py --title "문서 제목" --mode paper
+  python 문서_제목.py
+  ```
+
+- 스캐폴드가 자기 QA 를 통과하는지 검사한다. 처음 쓰는 사람이 가장 먼저
+  실행하는 것이라 여기서 실패하면 첫인상이 실패로 시작한다.
+  실제로 deck 쪽 치환 자리 수가 어긋나 캡션이 밀린 것을 이 검사가 잡았다.
+
+---
+
 ## [1.5.0] — 2026-08-10
 
 ### 더해짐
