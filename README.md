@@ -1,3 +1,12 @@
+<img src="docs/assets/logo.svg" width="44" align="left" alt="">
+
+**korean-report-skills**
+
+[![tests](https://img.shields.io/badge/tests-185%20passing-3fb950)](../../actions)
+[![release](https://img.shields.io/badge/release-v1.9.0-0066cc)](../../releases)
+[![plugin](https://img.shields.io/badge/plugin-Claude%20Code-8957e5)](INSTALL.md)
+[![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
+
 # 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
 
 내용은 맞는데 **문서로 내밀기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
@@ -5,6 +14,13 @@
 
 Claude Code · Codex · Cursor 에 파일 수정 없이 들어갑니다 →
 [설치](#설치) · [실물 문서 보기](https://janghyun-bin.github.io/korean-report-skills/)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
+  <img src="docs/assets/banner-light.png" alt="paper 보고서와 deck 협의자료 — 스킬이 만들어낸 문서 세 장">
+</picture>
+
+paper(세로·보고서) · deck(가로·협의자료) — 전부 HTML 파일 하나로 완결됩니다
 
 ---
 

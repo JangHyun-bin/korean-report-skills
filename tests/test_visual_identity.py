@@ -70,3 +70,32 @@ def test_banner_exists_with_expected_size(name):
     assert path.exists(), f"{name} 이 없다 — python scripts/build-banner.py 로 생성한다"
     size = _png_size(path)
     assert size == (2240, 600), f"{name} 의 크기가 {size} 다"
+
+
+def test_readme_header_carries_logo_and_banner():
+    """첫 화면의 시각 앵커. 빠지면 스펙이 규정한 구조가 무너진다."""
+    readme = read(ROOT / "README.md")
+    assert "docs/assets/logo.svg" in readme, "README 에 로고가 없다"
+    for name in BANNERS:
+        assert f"docs/assets/{name}" in readme, f"README 에 {name} 참조가 없다"
+
+
+def test_readme_banner_switches_by_theme():
+    """
+    다크에서 라이트 배너가 뜨면 첫 화면이 튄다.
+    `<picture>` 의 source 가 다크를 먼저 잡아야 한다.
+    """
+    readme = read(ROOT / "README.md")
+    m = re.search(r"<picture>.*?</picture>", readme, re.S)
+    assert m, "README 에 <picture> 블록이 없다"
+    block = m.group(0)
+    assert "prefers-color-scheme: dark" in block, "다크 source 가 없다"
+    assert "banner-dark.png" in block and "banner-light.png" in block
+
+
+def test_readme_badges_are_present():
+    """뱃지 행은 신뢰 신호다. 넷을 유지한다."""
+    readme = read(ROOT / "README.md")
+    for label in ("tests", "release", "plugin", "license"):
+        assert f"img.shields.io/badge/{label}" in readme or f"-{label}-" in readme, \
+            f"{label} 뱃지가 없다"
