@@ -1,0 +1,196 @@
+/* base.css — paper·deck 공통 레이어
+ *
+ * 이 파일은 두 모드가 함께 쓰는 토큰과 컴포넌트만 담는다.
+ * 모드별 크롬(.doc / .tile)과 @media print 는 paper.css · deck.css 가 담당한다.
+ * 공통 규칙을 모드 파일에 복사하지 않는다 — 그 중복이 deck 인쇄 규칙이
+ * paper 규칙에 덮이는 사고를 만들었다.
+ */
+
+:root{
+ /* accent — 유일한 유채색 */
+ --primary:#0066cc;
+ --primary-dark:#2997ff;      /* 다크 타일 위 */
+
+ /* ink */
+ --ink:#1d1d1f; --ink80:#333; --ink48:#7a7a7a;
+
+ /* surfaces */
+ --canvas:#fff; --parchment:#f5f5f7; --pearl:#fafafc;
+ --tile1:#272729; --black:#000;
+
+ /* lines */
+ --hairline:#e0e0e0; --divider:#f0f0f0;
+
+ /* 도해 팔레트 — figures.py 와 동일하게 유지한다 */
+ --fig-line:#c7ccd2; --fig-soft:#dfe4e9; --fig-pale:#eef3f8; --fig-mid:#8695a6;
+
+ /* spacing */
+ --s-xs:8px; --s-sm:12px; --s-md:17px; --s-lg:24px;
+ --s-xl:32px; --s-xxl:48px; --s-sec:80px;
+
+ /* radius */
+ --r-sm:8px; --r-md:12px; --r-lg:18px; --r-pill:9999px;
+
+ --font:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+ --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--ink);background:var(--canvas);
+ font-size:16.5px;line-height:1.72;letter-spacing:-.32px;-webkit-font-smoothing:antialiased}
+
+/* ── typography ─────────────────────────────────────────── */
+h2{font-weight:600;letter-spacing:-.012em;line-height:1.25}
+h3{font-size:18.5px;font-weight:600;letter-spacing:-.008em;margin:36px 0 var(--s-sm)}
+h4{font-size:16px;font-weight:600;margin-bottom:6px}
+p{margin-bottom:16px}
+b{font-weight:600}
+a{color:var(--primary);text-decoration:none;border-bottom:1px solid rgba(0,102,204,.26)}
+a:hover{border-bottom-color:var(--primary)}
+code{font-family:var(--mono);font-size:.86em;background:var(--parchment);
+ padding:1px 5px;border-radius:5px;letter-spacing:0}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:0;color:var(--primary);margin-bottom:14px}
+.sn{font-size:14px;font-weight:600;color:var(--primary);flex:none;min-width:20px}
+.legend{display:flex;flex-wrap:wrap;gap:var(--s-xs) 20px;margin:20px 0 14px;
+ font-size:13.5px;color:var(--ink48)}
+.srcline{font-size:13.5px;color:var(--ink48);padding-top:14px;border-top:1px solid var(--divider)}
+
+/* ── status badges ──────────────────────────────────────── */
+.bdg{display:inline-block;font-size:11px;font-weight:600;letter-spacing:0;
+ padding:1px 7px;border-radius:var(--r-pill);vertical-align:1.5px;white-space:nowrap}
+.bdg.meas{background:var(--primary);color:#fff}
+.bdg.impl{color:var(--primary);border:1px solid rgba(0,102,204,.5)}
+.bdg.none{color:var(--ink48);border:1px dashed var(--ink48)}
+.bdg.no{color:var(--ink48);border:1px solid var(--ink48)}
+
+/* ── figures ────────────────────────────────────────────── */
+.fig{width:100%;height:auto;display:block;margin:26px 0 var(--s-xs)}
+.fig.narrow{max-width:560px;margin-left:auto;margin-right:auto}
+.figcap{font-size:13px;color:var(--ink48);text-align:center;margin:6px 0 26px;letter-spacing:-.2px}
+.plate{display:block;max-width:820px;margin:26px auto var(--s-xs);width:100%;height:auto;
+ border:1px solid var(--hairline);border-radius:10px}
+
+/* 도해 색 토큰 — figures.py 가 hex 대신 이 클래스를 방출한다.
+   덕분에 다크 타일에서 토큰만 바뀌면 도해가 따라온다. */
+svg.fig{fill:var(--ink)}
+svg.fig .fi-ink{fill:var(--ink)}
+svg.fig .fi-ink48{fill:var(--ink48)}
+svg.fig .fi-pri{fill:var(--primary)}
+svg.fig .fi-mid{fill:var(--fig-mid)}
+svg.fig .fi-line{fill:var(--fig-line)}
+svg.fig .fi-soft{fill:var(--fig-soft)}
+svg.fig .fi-pale{fill:var(--fig-pale)}
+svg.fig .fi-canvas{fill:var(--canvas)}
+svg.fig .fi-oncard{fill:var(--canvas)}   /* 잉크 헤더 바 위의 글자 */
+svg.fig .fi-none{fill:none}
+svg.fig .st-ink{stroke:var(--ink)}
+svg.fig .st-ink48{stroke:var(--ink48)}
+svg.fig .st-pri{stroke:var(--primary)}
+svg.fig .st-mid{stroke:var(--fig-mid)}
+svg.fig .st-line{stroke:var(--fig-line)}
+
+/* ── gantt (figures.py fig_gantt 가 emit 하는 구조) ──────── */
+/* 트랙 원점은 라벨 폭 + 라벨·트랙 gap 이다. 둘 중 하나만 더하면 마커가 막대와 어긋난다. */
+.gantt{--glabel-w:132px;--gtrack-x:calc(var(--glabel-w) + var(--s-sm));
+ position:relative;margin:26px 0 var(--s-xs);padding:22px 0 26px}
+.gantt .gmarks{position:absolute;left:var(--gtrack-x);right:0;top:22px;bottom:26px;pointer-events:none}
+.gantt .gmark{position:absolute;top:0;bottom:0;width:0;border-left:1.4px solid var(--ink)}
+.gantt .gmark.meet{border-left-style:solid}
+.gantt .gmark.gate{border-left-style:dashed;border-left-color:var(--ink48)}
+.gantt .gmark.pilot{border-left-style:dotted;border-left-color:var(--primary)}
+.gantt .gmark span{position:absolute;top:-19px;left:5px;font-size:10.5px;
+ font-weight:600;color:var(--ink);white-space:nowrap}
+.gantt .gmark.gate span{color:var(--ink48)}
+.gantt .gmark.pilot span{color:var(--primary)}
+.gantt .grow{display:flex;align-items:center;gap:var(--s-sm);margin-bottom:7px}
+.gantt .glabel{flex:0 0 var(--glabel-w);font-size:12.5px;color:var(--ink80);
+ text-align:right;letter-spacing:-.18px}
+.gantt .gtrack{position:relative;flex:1;height:19px;background:var(--divider);border-radius:4px}
+/* 막대 색은 kind 가 정한다. 인라인 style 은 위치만 나른다 — figures.py 와 짝이다. */
+.gantt .gbar{position:absolute;top:0;height:19px;border-radius:4px;min-width:2px}
+.gantt .gbar.done{background:var(--fig-soft)}
+.gantt .gbar.wbs{background:var(--fig-mid)}
+.gantt .gbar.key{background:var(--ink)}
+.gantt .gbar.plan{background:transparent;border:1.5px dashed var(--primary)}
+.gantt .gaxis{position:relative;height:18px;margin-left:var(--gtrack-x);
+ border-top:1px solid var(--hairline)}
+.gantt .gline{position:absolute;top:0;width:0;border-left:1px solid var(--hairline);height:5px}
+.gantt .gline span{position:absolute;top:6px;left:3px;font-size:10.5px;color:var(--ink48);white-space:nowrap}
+
+/* ── metric cards (design.md §4.4) ──────────────────────── */
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s-md);margin:var(--s-lg) 0}
+.metric{border:1px solid var(--hairline);border-radius:var(--r-lg);padding:var(--s-xl)}
+.metric .mlabel{font-size:14px;color:var(--ink48)}
+.metric .mval{font-size:clamp(30px,3.6vw,42px);font-weight:600;
+ letter-spacing:-.02em;line-height:1.05;margin:6px 0}
+.metric .mnote{font-size:14px;color:var(--ink48)}
+.metric.gap{background:var(--pearl);border-style:dashed}
+.metric.gap .mval{color:var(--ink48)}
+
+/* ── tables ─────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;margin:var(--s-lg) 0 var(--s-xs);
+ font-size:14px;letter-spacing:-.18px}
+th{text-align:left;font-size:12.5px;font-weight:600;color:var(--ink48);
+ padding:0 10px 9px;border-bottom:1px solid var(--ink);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid var(--hairline);vertical-align:top;line-height:1.55}
+td:first-child,th:first-child{padding-left:0}
+td:last-child,th:last-child{padding-right:0}
+tr.hl td{background:rgba(0,102,204,.045)}
+table.num td:not(:first-child),table.num th:not(:first-child){text-align:right;white-space:nowrap}
+table.num td .katex{font-size:.94em}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll.wide{margin:var(--s-lg) -24px var(--s-xs);padding:0 24px}
+.scroll.wide table{margin-top:0}
+.scroll.wide::-webkit-scrollbar{height:6px}
+.scroll.wide::-webkit-scrollbar-thumb{background:#d5d9de;border-radius:3px}
+
+/* ── callouts ───────────────────────────────────────────── */
+.note,.warn,.finding,.claim{border-radius:var(--r-md);padding:18px 22px;margin:var(--s-lg) 0}
+.note{background:var(--pearl);border:1px solid var(--divider)}
+.warn{background:#fff;border:1px solid var(--hairline);border-left:3px solid var(--ink)}
+.finding{background:#fff;border:1px solid rgba(0,102,204,.3);border-left:3px solid var(--primary)}
+.claim{background:var(--parchment);border:0;font-size:17px}
+.note p:last-child,.warn p:last-child,.finding p:last-child,.claim p:last-child{margin-bottom:0}
+.note p,.warn p,.finding p{font-size:15px;color:var(--ink80);line-height:1.65}
+.cav{font-size:13.5px!important;color:var(--ink48)!important;padding-top:10px;
+ border-top:1px solid var(--divider);margin-top:var(--s-sm)!important}
+blockquote{margin:14px 0;padding:var(--s-sm) 18px;background:var(--parchment);
+ border-radius:var(--r-sm);font-size:14.5px;color:var(--ink80);line-height:1.6}
+.quote-box{border:1px solid var(--hairline);border-radius:var(--r-md);padding:22px 26px;margin:20px 0}
+.quote-box p{font-size:17px;line-height:1.6;margin:0}
+.rsn{border:1px solid var(--hairline);border-radius:var(--r-md);padding:18px 20px;margin-bottom:var(--s-sm)}
+.rsn-no{font-size:11.5px;font-weight:600;color:var(--primary);margin-bottom:5px}
+.rsn p{font-size:14.5px;color:var(--ink80);line-height:1.6;margin:4px 0 0}
+
+/* ── lists ──────────────────────────────────────────────── */
+ul.plain,ol.concl{margin:18px 0 var(--s-xs);padding:0;list-style:none;counter-reset:c}
+ul.plain li,ol.concl li{font-size:15.5px;line-height:1.65;color:var(--ink80);
+ padding:11px 0 11px 30px;position:relative;border-top:1px solid var(--hairline)}
+ul.plain li:last-child,ol.concl li:last-child{border-bottom:1px solid var(--hairline)}
+ul.plain li::before{content:"";position:absolute;left:var(--s-xs);top:21px;width:5px;height:5px;
+ border-radius:50%;background:var(--primary)}
+ol.concl li{counter-increment:c}
+ol.concl li::before{content:counter(c);position:absolute;left:0;top:11px;
+ font-size:12.5px;font-weight:600;color:var(--primary)}
+
+/* ── code ───────────────────────────────────────────────── */
+pre{margin:20px 0;background:var(--tile1);color:#e6e6e8;border-radius:var(--r-md);
+ padding:20px var(--s-lg);overflow-x:auto;font-family:var(--mono);
+ font-size:12.5px;line-height:1.75;letter-spacing:0}
+pre .c{color:#8b8b90}
+
+/* ── katex ──────────────────────────────────────────────── */
+.katex-display{margin:22px 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.katex{font-size:1.02em}
+
+@media(max-width:640px){
+ body{font-size:15.5px}
+ table{font-size:12.5px} td{padding:9px 6px} th{padding:0 6px 7px}
+ .katex-display{font-size:.92em}
+ .metrics{grid-template-columns:1fr}
+ .gantt{--glabel-w:92px}
+}
+
+/* 인쇄 시 배경을 지우지 않게 한다. 두 모드 모두에 필요하다. */
+@media print{ *{-webkit-print-color-adjust:exact;print-color-adjust:exact} }

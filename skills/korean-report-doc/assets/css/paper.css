@@ -1,0 +1,55 @@
+/* paper.css — 세로·연속 흐름 모드
+ * base.css 위에만 얹는다. 공통 규칙을 여기에 다시 쓰지 않는다.
+ */
+
+:root{ --w:720px }
+
+body{padding:0 var(--s-lg) 120px}
+.doc{max-width:var(--w);margin:0 auto}
+
+/* masthead */
+.paper-head{max-width:var(--w);margin:0 auto;padding:88px 0 40px;border-bottom:1px solid var(--ink)}
+.paper-head h1{font-size:clamp(30px,4.4vw,42px);font-weight:600;line-height:1.16;letter-spacing:-.022em}
+.subtitle{font-size:19px;color:var(--ink48);margin-top:var(--s-sm);letter-spacing:-.01em}
+.byline{display:flex;gap:20px;margin-top:26px;font-size:14px;color:var(--ink48)}
+.byline span+span::before{content:"·";margin-right:20px}
+
+/* abstract */
+.abstract{max-width:var(--w);margin:0 auto;padding:36px 0 var(--s-xs);border-bottom:1px solid var(--hairline)}
+.abstract h2{font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ink48);
+ text-transform:uppercase;margin-bottom:14px;border:0;padding:0}
+.abstract p{font-size:16px;color:var(--ink80);margin-bottom:14px}
+
+/* sections — 괘선과 번호가 위계를 나른다 */
+section{max-width:var(--w);margin:0 auto;padding-top:64px}
+h2{font-size:25px;padding-bottom:var(--s-sm);border-bottom:1px solid var(--ink);
+ margin-bottom:22px;display:flex;align-items:baseline;gap:14px}
+
+footer.eod{max-width:var(--w);margin:var(--s-sec) auto 0;padding-top:20px;
+ border-top:1px solid var(--hairline);font-size:12px;letter-spacing:.08em;color:var(--ink48)}
+
+@media(max-width:640px){
+ body{padding:0 18px 80px}
+ .paper-head{padding-top:56px}
+}
+
+@media print{
+ @page{size:A4;margin:18mm 16mm}
+ body{font-size:9.8pt;line-height:1.6;padding:0}
+ .doc,section,.paper-head,.abstract,footer.eod{max-width:none}
+ .paper-head{padding-top:0}
+ section{padding-top:22px;break-inside:auto}
+ h2{font-size:14pt;break-after:avoid} h3{font-size:11.5pt;break-after:avoid}
+ h4{break-after:avoid}
+ p,li{orphans:3;widows:3}
+ table,pre,.note,.warn,.finding,.claim,.quote-box,.rsn,blockquote,
+ .katex-display,svg,.figcap,.metric,.gantt{break-inside:avoid}
+ svg{break-after:avoid}
+ table{font-size:8.2pt;margin:14px 0 6px} td{padding:6px 5px} th{font-size:7.6pt;padding:0 5px 5px}
+ .scroll,.scroll.wide{overflow:visible;margin:14px 0 6px;padding:0}
+ .scroll.wide table{font-size:7.4pt} .scroll.wide td{padding:5px 4px} .scroll.wide th{font-size:7pt;padding:0 4px 4px}
+ pre{font-size:8pt;background:var(--parchment)!important;color:var(--ink)!important;padding:var(--s-sm) 16px}
+ .bdg{font-size:6.8pt;padding:0 5px}
+ .figcap{font-size:8pt;margin-bottom:16px}
+ code{font-size:.85em}
+}

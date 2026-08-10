@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 보안 취약점
+    url: https://github.com/JangHyun-bin/korean-report-skills/security/advisories/new
+    about: 공개 이슈가 아니라 비공개 Advisory 로 신고합니다.

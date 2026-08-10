@@ -1,0 +1,30 @@
+[project]
+name = "korean-report-skills"
+version = "1.4.0"
+description = "한국어 기술 문서 제작·문체 규약 Agent Skills"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "playwright>=1.44"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+markers = ["e2e: 파이프라인 전체를 돌리는 검사 (node · chromium 필요)"]
+filterwarnings = ["error::SyntaxWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+exclude = ["node_modules", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+  "E731",   # 도해 좌표 변환은 lambda 가 읽기 쉽다
+  "E702",   # 좌표 계산을 한 줄에 묶는 것이 이 파일들의 관용이다
+  "E741",   # l = left offset — 간트 좌표에서 굳어진 이름이다
+  "E743",   # I() · D() 는 SKILL.md 가 규정한 수식 마커 헬퍼 이름이다
+  "UP009",  # 한글이 많은 소스라 인코딩 선언을 남긴다
+]

@@ -1,0 +1,42 @@
+name: 결함 신고
+description: 빌드 실패, 조판 깨짐, 검사 오탐 등
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        보안 취약점은 여기가 아니라 [Security Advisory](../../security/advisories/new)로 신고합니다.
+  - type: dropdown
+    id: area
+    attributes:
+      label: 어디서
+      options:
+        - korean-report-doc — 빌드 (mathbuild.js)
+        - korean-report-doc — 조판 (CSS · 템플릿)
+        - korean-report-doc — 도해 (figures.py)
+        - korean-report-style — 규약 내용
+        - 검사 · CI
+        - 설치 · 문서
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 재현 절차
+      description: 실행한 명령과 입력을 그대로 적어 주십시오.
+      placeholder: |
+        python examples/build_example.py
+        node skills/korean-report-doc/assets/mathbuild.js ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 결과와 실제 결과
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: 환경
+      placeholder: OS · node -v · python --version · 저장소 버전

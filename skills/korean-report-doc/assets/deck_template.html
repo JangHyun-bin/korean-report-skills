@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko" data-mode="deck"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<!-- 네 자리 모두 mathbuild.js 가 빌드 시점에 채운다. 런타임 네트워크 의존은 없다. -->
+<style>__FONTCSS__</style>
+<style>__KATEXCSS__</style>
+<style>__BASECSS__</style>
+<style>__MODECSS__</style>
+</head><body>
+<!-- 본문은 <section class="tile ..."> 의 나열이다.
+     타일은 full-bleed 이므로 래퍼로 감싸지 않는다. 표지는 다음 형태를 쓴다.
+     (이 주석에 치환 토큰을 적지 않는다 — 파이썬 str.replace 는 전부 치환한다)
+
+     <section class="tile black cover"><div class="wrap">
+       <h1 class="hero">문서 제목</h1>
+       <div class="rule"></div>
+       <div class="meta">2026-08-10<br>조직명</div>
+     </div></section>
+
+     배경 순서 — black(표지) → light → parch → dark → light → parch → … → black(EOD)
+     인접한 두 타일은 배경을 공유하지 않는다. dark 는 가장 중요한 2~3개 절에만 쓴다. -->
+__BODY__
+<section class="tile black"><div class="wrap"><p class="eod">EOD</p></div></section>
+</body></html>

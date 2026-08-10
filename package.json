@@ -1,0 +1,33 @@
+{
+  "name": "korean-report-skills",
+  "version": "1.4.0",
+  "description": "한국어 기술 문서 제작·문체 규약 Agent Skills — 자립형 HTML 보고서와 한국어 서술 규약",
+  "license": "Apache-2.0",
+  "private": false,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:example": "python examples/build_example.py",
+    "pack": "bash scripts/pack-skills.sh",
+    "test:node": "node scripts/run-node-tests.js",
+    "test:py": "python -m pytest tests/ -q",
+    "test": "npm run test:node && npm run test:py"
+  },
+  "dependencies": {
+    "katex": "^0.16.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JangHyun-bin/korean-report-skills.git"
+  },
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "korean",
+    "technical-writing",
+    "html-report",
+    "katex"
+  ]
+}

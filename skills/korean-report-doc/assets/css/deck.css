@@ -1,0 +1,75 @@
+/* deck.css — 가로·1섹션 1페이지 모드
+ * base.css 위에만 얹는다. 공통 규칙을 여기에 다시 쓰지 않는다.
+ *
+ * 타일은 full-bleed 다. body 에 좌우 패딩을 주지 않는다 —
+ * 패딩은 .tile 이 가지고, 폭 제한은 .wrap 이 한다.
+ */
+
+:root{ --w:1120px }
+
+body{padding:0}
+
+/* ── tiles ──────────────────────────────────────────────── */
+.tile{padding:var(--s-sec) var(--s-lg)}
+.tile.light{background:var(--canvas)}
+.tile.parch{background:var(--parchment)}
+.tile.dark{background:var(--tile1);color:#fff}
+.tile.black{background:var(--black);color:#fff}
+.wrap{max-width:var(--w);margin:0 auto}
+
+/* 다크 타일 위에서는 액센트가 바뀐다 — 밝은 면의 파랑은 #272729 에서 대비가 모자라다 */
+.dark,.black{--primary:var(--primary-dark);--ink:#fff;--ink80:#d6d6da;--ink48:#8b8b90;
+ --hairline:#3a3a3e;--divider:#2f2f33;--parchment:rgba(255,255,255,.10);--pearl:rgba(255,255,255,.06);
+ /* 도해 토큰도 함께 뒤집는다 — 빠뜨리면 #1d1d1f 글자가 #272729 위에서 사라진다 */
+ --fig-line:#4a4a50;--fig-soft:#3d3d43;--fig-pale:rgba(41,151,255,.16);--fig-mid:#8b95a3}
+.tile.dark{--canvas:var(--tile1)}
+.tile.black{--canvas:var(--black)}
+.dark code,.black code{background:rgba(255,255,255,.10)}
+.dark .warn,.black .warn,.dark .finding,.black .finding{background:transparent}
+.dark .note,.black .note{background:rgba(255,255,255,.06)}
+
+/* ── cover (design.md §3.1) ─────────────────────────────── */
+.tile.cover .hero,h1.hero{font-size:clamp(34px,4.6vw,50px);font-weight:600;
+ line-height:1.08;letter-spacing:-.028em}
+.tile .rule{width:64px;height:1px;background:#5a5a60;margin:var(--s-xl) 0}
+.tile .meta{font-size:15px;line-height:1.65;color:var(--ink48)}
+
+/* 종결 표식 (design.md §8) — 표제가 아니라 표식이다 */
+.tile .eod{font-size:14px;font-weight:600;letter-spacing:.08em;color:#8b8b90}
+
+/* ── sections — 타일이 위계를 나른다. 괘선을 쓰지 않는다 ── */
+section{margin:0 auto}
+h2{font-size:34px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px}
+.tile p{max-width:var(--w)}
+
+@media(max-width:640px){
+ .tile{padding:var(--s-xxl) 18px}
+ h2{font-size:26px}
+}
+
+@media print{
+ @page{size:A4 landscape;margin:0}
+ .nav{display:none}
+ html,body{font-size:11pt;padding:0}
+ .tile{height:210mm;padding:14mm 16mm;display:flex;align-items:center;
+  page-break-after:always;break-after:page;break-inside:avoid;overflow:hidden}
+ .tile:last-child{break-after:auto}
+ .wrap{width:100%;max-width:none}
+ h1.hero{font-size:34pt} h2{font-size:22pt} h3{font-size:13pt}
+ p,li{orphans:3;widows:3}
+ table{font-size:9pt} td{padding:7px 6px} th{font-size:8pt}
+ table,pre,.note,.warn,.finding,.claim,.quote-box,.rsn,blockquote,
+ .katex-display,svg,.figcap,.metric,.gantt{break-inside:avoid}
+ svg{break-after:avoid}
+ .scroll,.scroll.wide{overflow:visible;margin:14px 0 6px;padding:0}
+ pre{font-size:8.5pt;background:var(--parchment)!important;color:var(--ink)!important}
+
+ /* 큰 다크 면을 인쇄하지 않는다 (design.md §7.3) */
+ .tile.dark,.tile.black{background:#fff!important;color:#000!important}
+ .tile.dark,.tile.black{--primary:#0066cc;--ink:#1d1d1f;--ink80:#333;--ink48:#7a7a7a;
+  --hairline:#e0e0e0;--divider:#f0f0f0;--parchment:#f5f5f7;--pearl:#fafafc}
+ .dark .eyebrow,.black .eyebrow{color:var(--primary)!important}
+ .dark table th,.black table th{color:var(--ink48)!important;border-bottom-color:var(--ink)!important}
+ .dark .bdg.meas,.black .bdg.meas{background:var(--primary)!important;color:#fff!important}
+ .tile .rule{background:var(--hairline)}
+}

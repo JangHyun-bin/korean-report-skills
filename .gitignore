@@ -1,0 +1,27 @@
+# 빌드 산출물
+dist/
+*.skill
+
+# 의존성 — package-lock.json 은 CI 재현성을 위해 추적한다
+node_modules/
+.venv/
+venv/
+
+# 파이썬
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# 폰트 — 저장소에 담지 않는다 (INSTALL.md 절차로 받는다)
+*.woff2
+*.woff
+*.ttf
+*.otf
+
+# 편집기·OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

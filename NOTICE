@@ -1,0 +1,27 @@
+korean-report-skills
+Copyright 2026 장현빈
+
+This product includes software developed by 장현빈.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+---
+
+이 저장소가 빌드 시점에 사용하는 제3자 자산 (저장소에 포함되지 않으며 각자의 조건을 따른다):
+
+  KaTeX — MIT License
+    https://github.com/KaTeX/KaTeX
+    `npm install katex` 로 받으며, 렌더 결과와 woff2 폰트가 산출물에 내장된다.
+
+  Pretendard — SIL Open Font License 1.1
+    https://github.com/orioncactus/pretendard
+    `--font` 로 지정할 때만 산출물에 내장된다.
+    OFL 은 폰트 임베드를 허용하나, 배포 시 라이선스 고지를 함께 둘 것.
+
+  Playwright — Apache License 2.0
+    https://github.com/microsoft/playwright
+    QA·PDF 출력에만 쓰이며 산출물에 포함되지 않는다.

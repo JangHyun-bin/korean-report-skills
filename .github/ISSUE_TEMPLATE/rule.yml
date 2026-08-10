@@ -1,0 +1,40 @@
+name: 규약 제안
+description: 치환 항목 추가·수정, 새 규칙 제안
+labels: [rule]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        치환표는 **예시이지 목록이 아닙니다.** 항목을 늘리기 전에
+        기존 판정법(§1.3 주어 치환 · §1.8 목적어 치환)으로 잡히는지 확인해 주십시오.
+        판정법으로 잡힌다면 표에 추가하지 않아도 됩니다.
+  - type: dropdown
+    id: section
+    attributes:
+      label: 해당 절
+      options:
+        ["§1.1 제목", "§1.2 구어체 환언", "§1.3 의인화·물리 은유", "§1.4 어미",
+         "§1.5 번역투", "§1.6 자기 설명", "§1.7 과장·위협", "§1.8 어휘 선택",
+         "§2 프레이밍", "§3 정확성", "§4 편집 후 정합성", "새 절이 필요함"]
+    validations:
+      required: true
+  - type: textarea
+    id: pair
+    attributes:
+      label: 쓰지 않는다 → 쓴다
+      placeholder: |
+        | 템플릿이 죽어 있다 | 템플릿이 비활성 상태다 |
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 왜 필요한가
+      description: 기존 판정법으로 잡히지 않는 이유, 또는 실제로 오해가 생긴 사례.
+    validations:
+      required: true
+  - type: input
+    id: domain
+    attributes:
+      label: 어느 분야에서 나온 표현인가
+      description: 특정 분야 전용이면 그렇게 적어 주십시오. 도메인 무관이면 "무관".
