@@ -81,9 +81,8 @@ def capture_parts() -> dict:
     return {k: (PARTS / f"{k}.png").resolve().as_uri() for k in ("top", "dark", "body")}
 
 
-def build(theme: str) -> pathlib.Path:
+def build(theme: str, parts: dict) -> pathlib.Path:
     """한 테마의 배너를 합성해 PNG 로 기록하고 그 경로를 돌려준다."""
-    parts = capture_parts()
     html = LAYOUT.format(w=W, h=H, **THEME[theme], **parts)
     page = DIST / f"banner-{theme}.html"
     page.write_text(html, encoding="utf-8")
@@ -100,8 +99,9 @@ def build(theme: str) -> pathlib.Path:
 
 
 def main() -> None:
+    parts = capture_parts()
     for theme in ("light", "dark"):
-        print(build(theme))
+        print(build(theme, parts))
 
 
 if __name__ == "__main__":
