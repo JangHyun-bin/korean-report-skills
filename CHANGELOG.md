@@ -19,11 +19,16 @@
   deck 다크 타일·paper 본문)을 Playwright 로 캡처해 겹치고, 라이트·다크 두 벌을
   합성한다. 재실행해도 바이트가 같다.
 - **README 헤더** — 워드마크·뱃지 행 아래 `<picture>` 로 테마별 배너를 얹었다.
-- **Pages 파비콘** — `docs/pages-index.html` 에 `favicon.svg` 를 연결하고,
-  Pages 워크플로가 `site/` 로 함께 복사한다.
 - **CI 가 배너 낡음을 잡는다** — 「README 전후 대비 자산 빌드」 단계 뒤에
   `scripts/build-banner.py` 를 다시 돌리고 `git diff --exit-code` 로 커밋된
   PNG 와 대조한다. 문서가 바뀌었는데 배너를 갱신하지 않으면 CI 가 실패한다.
+
+### 빠짐
+
+- **GitHub Pages** — 사이트와 배포 워크플로, 색인 HTML, 저장소 안의 모든 링크를
+  걷어냈다. 예시 문서를 실물로 공개하던 자리인데, 배너가 결과물을 이미 보여주고
+  README 에 전후 대비도 있어 같은 말을 두 번 하고 있었다.
+  결과물을 직접 보려면 `python examples/build_example.py` 로 만든다.
 
 ## [1.9.0] — 2026-08-10
 

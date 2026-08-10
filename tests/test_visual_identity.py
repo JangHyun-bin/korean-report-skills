@@ -168,30 +168,6 @@ def test_readme_badge_test_count_matches_reality():
     )
 
 
-def test_pages_index_links_favicon():
-    """Pages 는 빌드 파이프라인을 타지 않는 단독 HTML 이라 파비콘도 직접 연결해야 한다."""
-    html = read(ROOT / "docs" / "pages-index.html")
-    assert '<link rel="icon" href="favicon.svg" type="image/svg+xml">' in html, (
-        "pages-index.html 에 파비콘 링크가 없다"
-    )
-
-
-def test_pages_workflow_copies_favicon():
-    """
-    Pages 워크플로가 favicon.svg 를 site/ 로 복사하지 않으면 페이지의 링크는
-    있어도 배포된 사이트에는 파일이 없어 탭 아이콘이 깨진다. index.html 을
-    만드는 같은 「사이트 구성」 단계 안에서, 그 복사 다음에 함께 복사해야 한다.
-    """
-    workflow = read(ROOT / ".github" / "workflows" / "pages.yml")
-    assert "cp docs/assets/favicon.svg" in workflow and "site/favicon.svg" in workflow, (
-        "pages.yml 이 favicon.svg 를 site/ 로 복사하지 않는다"
-    )
-    index_pos = workflow.find("cp docs/pages-index.html")
-    favicon_pos = workflow.find("cp docs/assets/favicon.svg")
-    assert index_pos != -1 and favicon_pos != -1
-    assert index_pos < favicon_pos, "파비콘 복사가 index.html 복사보다 앞에 있어 브리프의 배치와 어긋난다"
-
-
 def test_ci_regenerates_banner_and_fails_on_drift():
     """
     배너는 실제 예시 문서에서 잘라낸 자산이라 문서가 바뀌면 낡는다. CI 가 매번

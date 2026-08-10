@@ -2,7 +2,7 @@
 
 **korean-report-skills**
 
-[![tests](https://img.shields.io/badge/tests-189%20passing-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-187%20passing-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.10.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
@@ -13,7 +13,7 @@
 각각을 규약으로 고정한 스킬셋입니다.
 
 Claude Code · Codex · Cursor 에 파일 수정 없이 들어갑니다 →
-[설치](#설치) · [실물 문서 보기](https://janghyun-bin.github.io/korean-report-skills/)
+[설치](#설치)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
@@ -105,9 +105,6 @@ paper(세로·보고서)와 deck(가로·협의자료) 두 모드뿐이고 섞�
 결과물은 **HTML 한 개**입니다. 글꼴·수식·도해가 파일 안에 들어 있어
 네트워크 없이 열리고, 인쇄해도 같게 보이고, 메일로 보내도 안 깨집니다.
 
-[실물](https://janghyun-bin.github.io/korean-report-skills/)을 열어 소스 보기를 하면
-바깥에서 가져오는 것이 하나도 없다는 것을 확인할 수 있습니다.
-
 ---
 
 ## 설치
@@ -183,10 +180,6 @@ doc 이 절차를 규정하고 style 이 문장을 다듬습니다. doc 의 `SKI
 **의도한 것입니다.** 규약의 대상은 보고서·협의 자료이고, README 는 처음 온 사람이
 자기 문제를 알아보게 하는 글입니다. 장르가 다르면 규칙도 다릅니다 —
 스킬 자신이 §7 에서 「기계적으로 적용하면 안 되는 경우」를 규정합니다.
-
-스킬이 실제로 만들어내는 문서가 어떤 문체인지는
-[실물](https://janghyun-bin.github.io/korean-report-skills/paper.html)에서 확인하십시오.
-그쪽이 규약이 적용된 결과입니다.
 
 ## 기여
 
