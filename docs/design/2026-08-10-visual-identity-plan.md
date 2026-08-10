@@ -472,20 +472,22 @@ Expected: FAIL — `README 에 로고가 없다`
 
 - [ ] **Step 3: README 머리 교체**
 
-`README.md` 의 1~8행(제목부터 `---` 앞까지)을 아래로 교체한다. 그 아래
+`README.md` 의 1~8행(제목부터 `---` 앞까지)을 아래로 교체한다.
+**질문형 제목이 h1 자리를 유지한다** — 스펙이 규정한 구조이며, 워드마크는 일반 행이다.
+그 아래
 `## "디자인이 별로예요"` 부터는 손대지 않는다.
 
 ```markdown
 <img src="docs/assets/logo.svg" width="44" align="left" alt="">
 
-# korean-report-skills
+**korean-report-skills**
 
 [![tests](https://img.shields.io/badge/tests-170%20passing-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.9.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
 
-## 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
+# 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
 
 내용은 맞는데 **문서로 내밀기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
 각각을 규약으로 고정한 스킬셋입니다.
