@@ -23,6 +23,15 @@
   `scripts/build-banner.py` 를 다시 돌리고 `git diff --exit-code` 로 커밋된
   PNG 와 대조한다. 문서가 바뀌었는데 배너를 갱신하지 않으면 CI 가 실패한다.
 
+### 고침
+
+- **「Codex 는 플러그인 체계가 없다」는 설명이 틀렸다.** Codex 에는 마켓플레이스가
+  있고, 플러그인·마켓플레이스 선언 파일을 찾을 때 자기 경로에 이어
+  `.claude-plugin/` 도 본다. 이 저장소는 파일을 하나도 더하지 않은 채 이미
+  Codex 마켓플레이스로 동작한다 — `codex plugin marketplace add` 와
+  `codex plugin add` 로 실제 설치되는 것을 확인하였다. README 와 INSTALL 을 고쳤다.
+  다만 `.claude-plugin/` 인식이 영구 보장인지는 문서에 명문화되어 있지 않다.
+
 ### 빠짐
 
 - **GitHub Pages** — 사이트와 배포 워크플로, 색인 HTML, 저장소 안의 모든 링크를

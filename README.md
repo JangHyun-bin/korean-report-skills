@@ -1,6 +1,4 @@
-<img src="docs/assets/logo.svg" width="44" align="left" alt="">
-
-**korean-report-skills**
+<img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
 [![tests](https://img.shields.io/badge/tests-187%20passing-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.10.0-0066cc)](../../releases)
@@ -109,14 +107,21 @@ paper(세로·보고서)와 deck(가로·협의자료) 두 모드뿐이고 섞�
 
 ## 설치
 
-**Claude Code** — 플러그인으로 설치합니다. 갱신이 자동으로 따라옵니다.
+**Claude Code** — 이 저장소가 곧 마켓플레이스입니다. 갱신이 자동으로 따라옵니다.
 
 ```
 /plugin marketplace add JangHyun-bin/korean-report-skills
 /plugin install korean-report@korean-report-skills
 ```
 
-**Codex · Cursor** — 플러그인 체계가 없으므로 파일로 복사합니다.
+**Codex** — 같은 마켓플레이스를 그대로 씁니다.
+
+```bash
+codex plugin marketplace add JangHyun-bin/korean-report-skills
+codex plugin add korean-report@korean-report-skills
+```
+
+**Cursor** — 플러그인 체계가 없어 파일로 복사합니다.
 
 ```bash
 npx github:JangHyun-bin/korean-report-skills            # 전부

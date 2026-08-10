@@ -7,18 +7,31 @@ Claude Code · Codex · Cursor 에 **파일 수정 없이** 그대로 들어간�
 
 | | 대상 | 갱신 |
 |---|---|---|
-| 플러그인 | Claude Code | 자동 |
-| npx | Codex · Cursor · Claude Code | 다시 실행 |
+| 플러그인 | Claude Code · Codex | 자동 |
+| npx | Cursor · 위 둘 | 다시 실행 |
 | 셸 스크립트 | 위와 같음 (node 없는 환경) | 다시 실행 |
 
-## 플러그인 — Claude Code
+## 플러그인 — Claude Code · Codex
 
-이 저장소가 곧 마켓플레이스다.
+이 저장소가 곧 마켓플레이스다. 두 도구가 같은 선언 파일을 읽으므로
+저장소 주소 하나로 양쪽 다 설치된다.
+
+Claude Code:
 
 ```
 /plugin marketplace add JangHyun-bin/korean-report-skills
 /plugin install korean-report@korean-report-skills
 ```
+
+Codex:
+
+```bash
+codex plugin marketplace add JangHyun-bin/korean-report-skills
+codex plugin add korean-report@korean-report-skills
+```
+
+`codex plugin list` 로 확인하고 `codex plugin remove korean-report@korean-report-skills` 로
+지운다. 대화 중에는 `/plugins` 로 연다.
 
 설치 요약이 `Run /reload-plugins to activate.` 라고 하면 그 명령을 실행한다.
 `/plugin` 을 열면 **Installed** 탭에서 켜고 끄거나 지울 수 있다.
@@ -45,9 +58,9 @@ claude plugin install korean-report@korean-report-skills --scope user
 }
 ```
 
-## npx — Codex · Cursor
+## npx — Cursor, 그리고 플러그인을 쓰지 않을 때
 
-플러그인 체계가 없는 도구는 파일로 복사한다. 게시 없이 GitHub 에서 바로 실행된다.
+파일로 직접 복사한다. 게시 없이 GitHub 에서 바로 실행된다.
 
 ```bash
 npx github:JangHyun-bin/korean-report-skills            # claude · codex · cursor 전부
