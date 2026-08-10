@@ -38,3 +38,20 @@ def test_logo_uses_only_one_accent(name):
     hexes = {h.lower() for h in re.findall(r"#[0-9a-fA-F]{3,6}", svg)}
     allowed = {"#0066cc", "#2997ff", "#1d1d1f", "#ffffff", "#fff"}
     assert hexes <= allowed, f"{name} 에 규격 밖의 색이 있다: {hexes - allowed}"
+
+
+BANNERS = ["banner-light.png", "banner-dark.png"]
+
+
+@pytest.mark.parametrize("name", BANNERS)
+def test_banner_exists_with_expected_size(name):
+    """
+    배너 규격이 흔들리면 README 에서 높이가 튄다.
+    2240×600 은 1120×300 을 2배 밀도로 찍은 것이다.
+    """
+    from PIL import Image
+
+    path = ROOT / "docs" / "assets" / name
+    assert path.exists(), f"{name} 이 없다 — python scripts/build-banner.py 로 생성한다"
+    with Image.open(path) as im:
+        assert im.size == (2240, 600), f"{name} 의 크기가 {im.size} 다"
