@@ -1,21 +1,26 @@
-# 한국어 문서 스킬셋
+# 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
 
-한국어 기술 문서를 **자립형 HTML 한 파일**로 만드는 제작 스킬과, 그 문서의
-**문장 규약**을 담당하는 문체 스킬. Agent Skills 표준(`SKILL.md`)을 따르므로
-Claude Code · Codex · Cursor 에 파일 수정 없이 들어간다.
+내용은 맞는데 **문서로 내밀기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
+각각을 규약으로 고정한 스킬셋입니다.
 
-설치는 [INSTALL.md](INSTALL.md) 참조. 요약하면 `bash scripts/install.sh` 한 줄.
+Claude Code · Codex · Cursor 에 파일 수정 없이 들어갑니다 →
+[설치](#설치) · [실물 문서 보기](https://janghyun-bin.github.io/korean-report-skills/)
 
 ---
 
-## 무엇이 달라지나
+## "디자인이 별로예요"
 
-같은 내용을 두 번 썼다. 사실은 하나도 바꾸지 않았다 — 수치도, 원인도, 요청도 같다.
+마크다운을 워드에 붙이면 볼품없고, HTML로 뽑으면 **매번 다르게 생깁니다.**
+제목 크기도, 표 모양도, 여백도 그때그때 달라집니다.
+
+**→ 디자인 시스템을 고정했습니다.** 액센트 색 하나, 그림자 없음, 표에 세로 괘선 없음.
+paper(세로·보고서)와 deck(가로·협의자료) 두 모드뿐이고 섞을 수 없습니다.
+같은 요청에 같은 결과가 나옵니다.
 
 <table>
 <tr>
-<th width="50%">전 — 평소 쓰는 방식</th>
-<th width="50%">후 — 두 스킬 적용</th>
+<th width="50%">전 — 그냥 만들었을 때</th>
+<th width="50%">후 — 스킬 적용</th>
 </tr>
 <tr>
 <td><img src="docs/assets/ba_before.png" alt="스킬 없이 작성한 문서"></td>
@@ -23,92 +28,146 @@ Claude Code · Codex · Cursor 에 파일 수정 없이 들어간다.
 </tr>
 </table>
 
-| 전 | 후 |
+## "문장이 번역체 같아요"
+
+`됐다`와 `하였습니다`가 한 문서에 섞이고, `~하는 것`·`~에 걸려 있다` 같은
+번역투가 남습니다. 읽는 사람에게 **초안처럼** 보입니다.
+
+**→ 치환 목록 115건과 어미 규약.** 평서체와 합니다체를 섞지 않고,
+필요하면 문서와 커버레터를 분리합니다.
+
+| 그냥 쓰면 | 규약 적용 |
 |---|---|
-| 문의 대응이 왜 느려졌나 | 문의 대응 지연의 구조와 개선 방향 |
 | 반토막 넘게 늘었습니다 | 4.2시간에서 9.1시간으로 증가하였다 |
-| 템플릿이 죽어 있어서 | 템플릿이 비활성 상태였으므로 |
-| 엉뚱한 팀으로 넘어가고 | 담당 팀이 아닌 곳으로 이관되고 |
-| 원인 분석에서 드러난 결함 세 가지 | 구조적 개선 — 분류 체계 정비와 자동응답 복구 |
-| 야간 인력을 얼마나 늘릴지 정해 주십시오 | 3명 증원을 산정하였다. 근거는 부록 A. 조정 요청 |
+| 모든 사슬이 승인 하나에 걸려 있다 | 승인 이후 착수할 수 있다 |
+| 각 절은 근거를 함께 갖는다 | 각 절에 근거를 명시하였다 |
 
-**[실제 문서를 브라우저에서 열어 보기](https://janghyun-bin.github.io/korean-report-skills/)** —
-paper·deck 두 모드와 전후 대비를 실물로 확인할 수 있다. 파일 하나로 완결되므로
-소스 보기를 하면 글꼴·수식·도해가 안에 들어 있는 것도 보인다.
+## "단어를 뭉뚱그려 써요"
 
-본문은 도해·상태 배지·캡션이 함께 조판된다.
+`넘긴다`가 **전달인지 이관인지 위임인지** 알 수 없습니다. 업무분장·계약 문서에서
+이 한 단어에 책임 범위가 걸립니다.
+
+**→ 광의 고유어를 협의 한자어로 가르는 표 24행, 그리고 판정법.**
+목적어를 바꿔 끼워 서로 다른 종류가 모두 자연스러우면 그 동사는 의미역이 넓습니다.
+
+| 광의 | 협의 | 갈라지는 의미 |
+|---|---|---|
+| 넘긴다 | 전달한다 · 이관한다 · 위임한다 | 데이터인지 업무인지 권한인지 |
+| 맞춘다 | 정합한다 · 정렬한다 · 보정한다 | 논리인지 위치인지 값인지 |
+| 잡는다 | 검출한다 · 산정한다 · 고정한다 | 이상인지 수치인지 값인지 |
+
+## "숫자를 전부 확정된 것처럼 써요"
+
+추정치와 실측치가 같은 무게로 나열됩니다. 읽는 사람은 어디까지 검증된 값인지
+알 수 없고, 그대로 인용했다가 나중에 정정해야 합니다.
+
+**→ 상태를 주장이 있는 자리에 붙입니다.** 범례에만 두지 않습니다.
 
 <img src="docs/assets/ba_after_body.png" alt="도해와 상태 배지가 조판된 본문" width="100%">
 
-전체 대조와 규칙별 근거는 [examples/before_after.md](examples/before_after.md) 참조.
-이 예시의 주제(고객 문의 대응)가 저장소의 다른 예시(반도체 계측)와 다른 것은 의도한 것이다 —
-**규칙이 분야에 묶이지 않는다는 것을 보이기 위해서다.**
+`실측` 채움 · `구현됨` 외곽선 · `미측정` 파선 — 색이 아니라 **테두리 형태**로
+구분하므로 흑백 인쇄에서도 살아남습니다.
+
+## "안 된 것만 나열해서 사고 보고서처럼 읽혀요"
+
+`~가 안 되고 있었다`가 이어지면 같은 사실이라도 문서 전체가 문책 자료가 됩니다.
+
+**→ 주어를 '결함'에서 '개선'으로 옮깁니다.** 사실을 지우지 않으면서 성격이 바뀝니다.
+
+| 그냥 쓰면 | 규약 적용 |
+|---|---|
+| 원인 분석에서 드러난 결함 세 가지 | 구조적 개선 — 분류 체계 정비와 자동응답 복구 |
+| 템플릿이 죽어 있어서 | 템플릿이 비활성 상태였으므로 |
+| 야간 인력을 얼마나 늘릴지 정해 주십시오 | 3명 증원을 산정하였다. 근거는 부록 A. 조정 요청 |
+
+전후 원고 전문과 규칙별 근거는 [examples/before_after.md](examples/before_after.md)에 있습니다.
 
 ---
 
-## korean-report-doc — 문서 제작
+## 덤 — 파일 하나로 끝납니다
 
-- `SKILL.md` — 모드 선택(paper/deck), 빌드 파이프라인, QA 절차, 편집 요청 처리
-- `references/design.md` — 색 · 타이포 · 컴포넌트 · 인쇄 규약
-- `references/figures.md` — 도해 7종 사용법
-- `assets/paper_template.html` · `deck_template.html` — 치환 토큰만 담은 얇은 껍데기
-- `assets/css/{base,paper,deck}.css` — 공통 레이어 + 모드 레이어
-- `assets/figures.py` — 도해 · 표 생성 헬퍼
-- `assets/mathbuild.js` — CSS · 폰트 · KaTeX 를 빌드 시점에 내장
+결과물은 **HTML 한 개**입니다. 글꼴·수식·도해가 파일 안에 들어 있어
+네트워크 없이 열리고, 인쇄해도 같게 보이고, 메일로 보내도 안 깨집니다.
 
-## korean-report-style — 문장 규약
+[실물](https://janghyun-bin.github.io/korean-report-skills/)을 열어 소스 보기를 하면
+바깥에서 가져오는 것이 하나도 없다는 것을 확인할 수 있습니다.
 
-- `SKILL.md` — 문체 · 프레이밍 · 정확성 · 편집 후 정합성
-- `references/substitutions.md` — 치환 목록 115건
+---
 
-예시는 모두 가상 사례 「A사 — 인라인 계측 체계 확립과 수율 개선」에서 가져왔다.
-실재하는 기업·공정·수치가 아니며, 도메인은 예시일 뿐이고 규칙 자체는 분야를 가리지 않는다.
-왜 이 도메인인지는 [결정 기록](docs/decisions/2026-08-10-example-domain-swap.md) 참조.
+## 설치
 
-## 관계
-
-doc 이 절차를 잡고 style 이 문장을 다듬는다.
-doc 의 `SKILL.md` 가 style 을 참조하므로 둘이 함께 걸린다.
-짧은 글을 다듬을 때는 style 만 걸린다.
-
-## 저장소 구조
-
-```
-skills/          두 스킬. 이 폴더가 그대로 ~/.claude/skills/ 로 복사된다
-scripts/         install.sh · qa.py · pack-skills.sh
-examples/        build_example.py — SKILL.md §2 파이프라인의 참조 구현
-tests/           문서와 자산이 어긋나면 실패하는 검사
-dist/            빌드 산출물 (git 추적 안 함)
+```bash
+bash scripts/install.sh
 ```
 
-## 첫 문서 만들기
+Claude Code · Codex · Cursor 세 곳에 복사합니다. 자세한 내용과 claude.ai 웹 업로드는
+[INSTALL.md](INSTALL.md) 참조.
+
+## 첫 문서
 
 ```bash
 npm install                                   # katex
 pip install playwright && playwright install chromium
 
 python scripts/new-document.py --title "문서 제목" --mode paper
-python 문서_제목.py                            # 생성 → 빌드 → QA 한 번에
+python 문서_제목.py                            # 생성 → 빌드 → QA 를 한 번에
 ```
 
-만들어진 `.py` 는 그 자체로 전체 파이프라인을 돈다. `# 여기부터 고쳐 쓴다` 구간의
-도해·표·본문을 바꾸면 된다. 글꼴을 문서에 내장하려면 `--font Pretendard-Regular.woff2`
-를 붙인다([INSTALL.md](INSTALL.md#본문-폰트) 참조).
+만들어진 `.py` 안의 `# 여기부터 고쳐 쓴다` 구간을 수정하면 됩니다.
+글꼴을 문서에 내장하려면 `--font Pretendard-Regular.woff2` 를 추가합니다.
 
-## 개발
+또는 그냥 이렇게 말해도 걸립니다.
 
-```bash
-npm test                                      # node + python 검사
-python examples/build_example.py              # dist/example_*_raw.html
-node skills/korean-report-doc/assets/mathbuild.js \
-     dist/example_paper_raw.html dist/example_paper.html \
-     --assets skills/korean-report-doc/assets
-python scripts/qa.py dist/example_paper.html --pdf --shot dist/shots
+```
+지난주 벤치 결과로 기술보고서 만들어줘
+이 문단 말투 좀 다듬어줘
 ```
 
-`tests/` 는 이 저장소에서 실제로 났던 사고의 회귀를 막는다 — 중복된 CSS 블록,
-문서만 존재하고 구현되지 않은 클래스, 좌표계 역전, 음수 폭, 구버전 수식 마커,
-없는 파일을 가리키는 문서. 자세한 내용은 [CONTRIBUTING.md](CONTRIBUTING.md) 참조.
+## 무엇이 들어 있나
+
+**korean-report-doc — 제작**
+
+| | |
+|---|---|
+| `SKILL.md` | 모드 선택, 빌드 파이프라인, QA 절차, 편집 요청 처리 |
+| `references/design.md` | 색 · 타이포 · 컴포넌트 · 인쇄 규약 |
+| `references/figures.md` | 도해 7종 |
+| `assets/` | 템플릿 2 · CSS 3층 · `figures.py` · `mathbuild.js` |
+
+**korean-report-style — 문장**
+
+| | |
+|---|---|
+| `SKILL.md` | 문체 · 프레이밍 · 정확성 · 편집 후 정합성 |
+| `references/substitutions.md` | 치환 목록 115건 |
+
+doc 이 절차를 규정하고 style 이 문장을 다듬습니다. doc 의 `SKILL.md` 가 style 을
+참조하므로 문서를 만들 때는 둘 다 적용되고, 짧은 글을 다듬을 때는 style 만 적용됩니다.
+
+예시는 모두 가상 사례입니다. 실재하는 기업·공정·수치가 아니며, 도메인은 예시일 뿐
+규칙 자체는 분야를 가리지 않습니다. 왜 이 도메인인지는
+[결정 기록](docs/decisions/2026-08-10-example-domain-swap.md) 참조.
+
+## 이 README 의 문체에 관하여
+
+위 절 제목은 의문형·구어체입니다. 스킬의 §1.1 은 「제목은 명사구」이므로 정면으로 어긋납니다.
+
+**의도한 것입니다.** 규약의 대상은 보고서·협의 자료이고, README 는 처음 온 사람이
+자기 문제를 알아보게 하는 글입니다. 장르가 다르면 규칙도 다릅니다 —
+스킬 자신이 §7 에서 「기계적으로 적용하면 안 되는 경우」를 규정합니다.
+
+스킬이 실제로 만들어내는 문서가 어떤 문체인지는
+[실물](https://janghyun-bin.github.io/korean-report-skills/paper.html)에서 확인하십시오.
+그쪽이 규약이 적용된 결과입니다.
+
+## 기여
+
+`tests/` 가 이 저장소에서 실제로 발생한 사고의 재발을 방지합니다 — 중복된 CSS 블록,
+문서에만 존재하고 구현되지 않은 클래스, 좌표계 역전, 음수 폭, 구버전 수식 마커,
+실재하지 않는 파일을 가리키는 문서. 자세한 내용은 [CONTRIBUTING.md](CONTRIBUTING.md) 참조.
+
+보안 취약점은 공개 이슈가 아니라 [Security Advisory](../../security/advisories/new) 로
+신고합니다([SECURITY.md](SECURITY.md)).
 
 ## 라이선스
 
