@@ -319,6 +319,40 @@ def test_plugin_version_matches_package_version():
     assert market["metadata"]["version"] == pkg, "marketplace metadata.version 이 어긋난다"
 
 
+def test_mark_pins_its_text_color():
+    """
+    `<mark>` 가 글자색을 상속하면 다크 타일에서 노랑 위 흰 글자가 된다.
+    조판해서 확인한 사고다 — 색을 물려받은 안은 다크에서 읽히지 않았고,
+    박아 둔 안만 살아남았다. hex 를 박아 도해가 사라지던 것과 같은 계통이다.
+    """
+    base = read(CSS / "base.css")
+    for token in ("--mark:", "--mark-ink:"):
+        assert token in base, f"base.css 에 {token} 토큰이 없다"
+
+    rule = re.search(r"(?<![\w-])mark\{([^}]*)\}", base)
+    assert rule, "base.css 에 mark 규칙이 없다"
+    assert "var(--mark-ink)" in rule.group(1), (
+        "mark 가 글자색을 고정하지 않는다 — 다크 타일이 --ink 를 흰색으로 뒤집으면 읽히지 않는다"
+    )
+
+    # 다크 타일이 토큰을 뒤집으면 고정한 의미가 없어진다. 인쇄 블록은 되돌리는 자리라 제외한다.
+    deck_screen = read(CSS / "deck.css").split("@media print")[0]
+    assert "--mark-ink:" not in deck_screen, \
+        "deck.css 가 --mark-ink 를 다시 정의한다 — 고정이어야 한다"
+
+
+def test_italic_is_limited_to_declared_latin():
+    """
+    Pretendard 에 italic 자족이 없다. 한글에 걸면 합성 oblique 이라 획이 어긋난다.
+    라틴이라고 밝힌 자리에만 걸리는지 확인한다.
+    """
+    base = read(CSS / "base.css")
+    assert re.search(r"(?<![\w-])i,\s*em\{[^}]*font-style:\s*normal", base), \
+        "i · em 의 기본이 normal 이 아니다 — 한글이 기울어진다"
+    assert re.search(r'i\[lang="en"\],\s*em\[lang="en"\]\{[^}]*font-style:\s*italic', base), \
+        'lang="en" 을 밝힌 자리에 italic 이 걸리지 않는다'
+
+
 def test_no_accidental_setext_headings():
     """
     `---` 바로 위에 글이 붙으면 가로줄이 아니라 **setext 제목**이 된다.

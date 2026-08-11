@@ -53,6 +53,10 @@ Monochrome scale plus exactly one accent. Do not introduce a second hue.
   /* lines */
   --hairline: #e0e0e0;       /* table rules, card borders       */
   --divider:  #f0f0f0;       /* internal separators             */
+
+  /* highlight — a reading layer, not a second accent (§4.7) */
+  --mark:     #fbeaa0;
+  --mark-ink: #1d1d1f;       /* fixed; dark tiles must not invert it */
 }
 ```
 
@@ -62,8 +66,13 @@ Monochrome scale plus exactly one accent. Do not introduce a second hue.
   row, or a single emphasized figure. Not all of them on the same screen.
 - On dark tiles the accent switches to `--primary-dark`. The light-surface blue fails
   contrast on `#272729`.
-- Red, amber, and green are **not** part of the system. Severity is expressed by
+- Red, amber, and green are **not** severity signals here. Severity is expressed by
   border weight and position (§4.3), not by hue.
+- **The highlight yellow is not a second accent and may not be used as one.** The accent
+  answers *this is the point*; the highlight answers *read this part*. One is the
+  author's pointer, the other is a reading layer laid over finished prose. The moment a
+  highlight lands on a section number, an eyebrow, or a link, that distinction has
+  collapsed and the document has two accents — which is the thing this section forbids.
 
 ### 1.2 Typography
 
@@ -359,6 +368,48 @@ Inline `code` uses parchment on light surfaces, `rgba(255,255,255,.10)` on dark.
 
 In print, `pre` inverts to `--parchment` on `--ink`. Do not print large black fills.
 
+### 4.7 Emphasis
+
+Body emphasis has two instruments and they are not interchangeable.
+
+| | Carries | Rule |
+|---|---|---|
+| `<b>` | the author's emphasis | weight 600; anywhere the sentence needs it |
+| `<mark>` | a reading layer — *read this part* | **at most one per section** |
+
+```css
+mark{ background:var(--mark); color:var(--mark-ink);
+      padding:1px .16em; border-radius:3px }
+```
+
+**The text colour is pinned, not inherited.** Dark tiles flip `--ink` to white; a
+`<mark>` that inherits it becomes white type on yellow and stops being readable. This
+was confirmed by typesetting both faces — the variant that let the colour inherit failed
+on the dark tile while the pinned one survived. Horizontal padding is set in `em` so the
+punctuation after a highlight does not drift.
+
+A second highlight in the same section destroys the first, exactly as a second accent
+would. If several spans in one section all deserve marking, none of them do — the
+section is making more than one point and should be split.
+
+In grayscale print the yellow flattens to the same value as `--parchment`, so a highlight
+and a code chip become indistinguishable. That is acceptable: the highlight guides a
+reader through the screen copy and never carries a claim on its own. Anything the printed
+document must not lose belongs in a badge (§4.1) or a callout (§4.3).
+
+**Italic.** Pretendard ships no italic face. Applied to Hangul, the browser synthesises an
+oblique and the strokes break. Italic is therefore restricted to spans declared as Latin:
+
+```css
+i,em{ font-style:normal }
+i[lang="en"],em[lang="en"]{ font-style:italic }
+```
+
+Write `<i lang="en">alpha</i>` for a variable or a scientific name. An undeclared `<i>`
+renders upright and nothing happens — a silent no-op is better than slanted Hangul, and
+it teaches the rule the first time someone reaches for it. Italic names a *variable*;
+`code` names a *literal string*. Both have a place and they are not substitutes.
+
 ---
 
 ## 5. Figures & diagrams
@@ -652,6 +703,8 @@ Run before delivering. Screenshot the rendered output; do not trust the source.
 - [ ] Every figure caption numbered; schematics marked as such
 - [ ] Any raster figure is base64-embedded, framed, and paired with native quantification
 - [ ] Every status claim carries a badge at the claim, not only in the legend
+- [ ] At most one `<mark>` per section, and none on a heading, number, or link
+- [ ] Italic appears only inside a span declared `lang="en"`
 - [ ] Callout and sub-heading titles are noun phrases, not sentences
 - [ ] No colloquial paraphrase or anthropomorphism in body prose
 - [ ] Verb endings use the unclipped literary form (`되었다`, `하였고`)
@@ -665,6 +718,9 @@ Run before delivering. Screenshot the rendered output; do not trust the source.
 | Do not | Because |
 |---|---|
 | Add a second accent color | Destroys the pointer function of the first |
+| Highlight several spans in one section | The marker stops marking; same failure as a second accent |
+| Let `<mark>` inherit its text color | Dark tiles flip `--ink` to white, leaving white type on yellow |
+| Italicise Hangul | No italic face exists; the synthesised oblique breaks the strokes |
 | Use red/amber/green for severity | Fails grayscale print; the border system already encodes it |
 | Use emoji as status markers | Platform-inconsistent, weightless in print |
 | Put a display equation in a table cell | Breaks row rhythm and column alignment |

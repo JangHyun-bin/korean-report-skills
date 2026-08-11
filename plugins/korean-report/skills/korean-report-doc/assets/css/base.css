@@ -21,6 +21,10 @@
  /* lines */
  --hairline:#e0e0e0; --divider:#f0f0f0;
 
+ /* 강조 — accent 가 아니라 독자 층위다. design.md §4.7 */
+ --mark:#fbeaa0;
+ --mark-ink:#1d1d1f;   /* 고정이다. 다크 타일이 뒤집는 --ink 를 상속하면 안 된다 */
+
  /* 도해 팔레트 — figures.py 와 동일하게 유지한다 */
  --fig-line:#c7ccd2; --fig-soft:#dfe4e9; --fig-pale:#eef3f8; --fig-mid:#8695a6;
 
@@ -50,6 +54,19 @@ a{color:var(--primary);text-decoration:none;border-bottom:1px solid rgba(0,102,2
 a:hover{border-bottom-color:var(--primary)}
 code{font-family:var(--mono);font-size:.86em;background:var(--parchment);
  padding:1px 5px;border-radius:5px;letter-spacing:0}
+
+/* ── 강조 (design.md §4.7) ──────────────────────────────── */
+/* 글자색을 --mark-ink 로 박는다. 상속에 맡기면 다크 타일이 --ink 를 흰색으로
+   뒤집어 노랑 위 흰 글자가 된다 — 조판해서 확인한 사고다.
+   좌우 여백을 em 으로 두어야 강조 뒤의 구두점이 벌어지지 않는다. */
+mark{background:var(--mark);color:var(--mark-ink);
+ padding:1px .16em;border-radius:3px}
+
+/* Pretendard 에 italic 자족이 없다. 한글에 걸면 브라우저가 합성한 oblique 이
+   나오고 획이 어긋난다. 라틴이라고 밝힌 자리에만 건다 — 변수·학명이 그 자리다.
+   밝히지 않으면 아무 일도 일어나지 않는다. 기울어진 한글보다 낫다. */
+i,em{font-style:normal}
+i[lang="en"],em[lang="en"]{font-style:italic}
 .eyebrow{font-size:13px;font-weight:600;letter-spacing:0;color:var(--primary);margin-bottom:14px}
 .sn{font-size:14px;font-weight:600;color:var(--primary);flex:none;min-width:20px}
 .legend{display:flex;flex-wrap:wrap;gap:var(--s-xs) 20px;margin:20px 0 14px;

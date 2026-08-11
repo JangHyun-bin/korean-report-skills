@@ -168,7 +168,8 @@ def build(mode: str) -> pathlib.Path:
 결함이 웨이퍼 위에 무작위로 분포하면 포아송 모형이 성립한다.</p>
 %s
 <p>실제로는 결함이 특정 구역에 뭉치므로(시그니처) 클러스터링 계수 %s 를 도입한
-음이항 모형이 관측에 더 부합한다. %s 가 작을수록 뭉침이 심하다.</p>
+음이항 모형(<i lang="en">negative binomial</i>)이 관측에 더 부합한다.
+%s 가 작을수록 뭉침이 심하다.</p>
 %s
 %s%s
 %s%s
@@ -177,6 +178,7 @@ def build(mode: str) -> pathlib.Path:
 </section>
 
 <section id="s4"><h2><span class="sn">4</span>상태와 범위</h2>
+<p>이번 회차에서 확인이 필요한 것은 <mark>양산 로트의 오버레이 실측</mark> 하나다.</p>
 %s%s
 %s%s
 <div class="note"><p>본 문서의 수치는 양산 조건 기준 벤치에서 산출되었다.
@@ -222,6 +224,7 @@ def build(mode: str) -> pathlib.Path:
 <section class="tile dark"><div class="wrap">
 <p class="eyebrow">핵심</p>
 <h2><span class="sn">2</span>개선 전후 대비</h2>
+<p>세 항목 모두 개선되었으며 <mark>웨이퍼당 계측 시간</mark>의 감소폭이 가장 크다.</p>
 %s%s
 </div></section>
 
