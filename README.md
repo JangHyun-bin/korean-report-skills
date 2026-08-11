@@ -8,9 +8,9 @@
 # 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
 
 내용은 맞는데 **문서로 전달하기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
-각각을 규약으로 고정한 스킬셋입니다.
+각각을 규약으로 구성한 스킬셋입니다.
 
-Claude Code · Codex · Cursor 에 파일 수정 없이 들어갑니다 →
+Claude Code · Codex · Cursor 에 적용 가능합니다. →
 [설치](#설치)
 
 <picture>
@@ -18,8 +18,7 @@ Claude Code · Codex · Cursor 에 파일 수정 없이 들어갑니다 →
   <img src="docs/assets/banner-light.png" alt="paper 보고서와 deck 협의자료 — 스킬이 만들어낸 문서 세 장">
 </picture>
 
-paper(세로·보고서) · deck(가로·협의자료) — 전부 HTML 파일 하나로 완결됩니다
-
+paper(세로·보고서) · deck(가로·협의자료) — HTML 파일 하나로 구성됩니다.
 ---
 
 ## "디자인이 별로예요"
