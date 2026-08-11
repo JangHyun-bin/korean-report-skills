@@ -147,9 +147,14 @@ Claude Code 는 `/korean-report-doc` 으로 부른다.
 
 ## 끄기 · 지우기
 
+플러그인으로 넣었다면 `/plugin` 을 열어 **Installed** 탭에서 끄거나 지운다.
+설치본을 손으로 옮기지 않는다 — `~/.claude/skills/` 도 적재 경로라 옮겨도 계속 걸린다.
+
+파일로 넣었다면 넣은 경로를 되돌린다.
+
 ```bash
-mv ~/.claude/plugins/korean-report/skills/korean-report-doc ~/.claude/skills/_korean-report-doc   # 임시로 끄기
-rm -rf ~/.claude/plugins/korean-report/skills/korean-report-doc                                    # 삭제
+npx github:JangHyun-bin/korean-report-skills --remove   # npx 로 넣은 것
+rm -rf ~/.claude/skills/korean-report-doc ~/.claude/skills/korean-report-style   # 수동으로 넣은 것
 ```
 
 ---

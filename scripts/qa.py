@@ -106,8 +106,7 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
             fails.append(f"body 폰트 스택에 Pretendard 가 없다 — {r['bodyFont']}")
         if r["svgClipped"]:
             fails.append(f"viewBox 밖으로 나간 도해 — {r['svgClipped']}")
-        if r["figs"] != r["figcaps"] - r["tiles"] * 0:  # 캡션은 표에도 붙으므로 하한만 본다
-            pass
+        # 캡션은 표에도 붙으므로 하한만 본다
         if r["figcaps"] < r["figs"]:
             fails.append(f"캡션 없는 도해가 있다 — svg {r['figs']} · figcap {r['figcaps']}")
 

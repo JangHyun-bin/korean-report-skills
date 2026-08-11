@@ -26,7 +26,7 @@ body:
       description: 실행한 명령과 입력을 그대로 적어 주십시오.
       placeholder: |
         python examples/build_example.py
-        node skills/korean-report-doc/assets/mathbuild.js ...
+        node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js ...
     validations:
       required: true
   - type: textarea

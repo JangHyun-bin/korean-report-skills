@@ -42,7 +42,10 @@ import pathlib
 import re
 import sys
 
-for _s in (sys.stdout, sys.stderr):
+# stdin 도 함께 돌린다. 윈도 기본 stdin 은 cp949 라, `cat 원고.md | lint.py -` 가
+# utf-8 입력을 깨뜨려 규칙에 하나도 걸리지 않고 「위반 없음」으로 통과한다.
+# 못 잡는 것보다 틀리게 통과시키는 쪽이 나쁘다.
+for _s in (sys.stdin, sys.stdout, sys.stderr):
     try:
         _s.reconfigure(encoding="utf-8", errors="replace")
     except AttributeError:                       # 파이프로 묶인 객체

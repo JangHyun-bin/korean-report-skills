@@ -39,8 +39,8 @@ GitHub의 [Security Advisory](https://github.com/JangHyun-bin/korean-report-skil
 설치 전 직접 확인하려면:
 
 ```bash
-grep -rn "http" skills/            # 외부 참조 여부
-grep -rn "exec\|eval\|subprocess" skills/   # 실행 경로 여부
+grep -rn "http" plugins/korean-report/skills/            # 외부 참조 여부
+grep -rn "exec\|eval\|subprocess" plugins/korean-report/skills/   # 실행 경로 여부
 ```
 
 ## 지원 범위
