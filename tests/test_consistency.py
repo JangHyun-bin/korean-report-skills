@@ -150,6 +150,9 @@ def test_builder_guards_against_legacy_markers():
 ILLUSTRATIVE = {
     "korean-report-doc/korean-report-doc/SKILL.md",  # INSTALL.md 의 "이렇게 하면 인식 안 됨" 예시
     "DOCUMENT.md",                                   # CHANGELOG 가 기록한, 애초에 없던 참조 대상
+    # 1.10.0 이 기록한 당시 이름. 전후 대비 세 장까지 맡으며 build-shots.py 로 바뀌었다.
+    # 이력은 무엇이 있었는지를 적는 자리이므로 소급해 고치지 않는다.
+    "scripts/build-banner.py",
 }
 
 

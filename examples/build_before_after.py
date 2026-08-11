@@ -105,7 +105,7 @@ AFTER_BODY = f"""<header class="paper-head">
 </section>
 
 <section id="s1"><h2><span class="sn">1</span>대응 시간 지표</h2>
-<p>평균 응답 시간은 4.2시간에서 9.1시간으로 증가하였다. 야간 접수분은 12시간을 초과한다.
+<p>평균 응답 시간은 <mark>4.2시간에서 9.1시간으로</mark> 증가하였다. 야간 접수분은 12시간을 초과한다.
 미처리 티켓이 누적되어 큐에 적체가 발생하고 있다.</p>
 {COMPARE}{figcap(1, "분기별 응답 시간 대비")}
 {METRIC_TBL}{tblcap(1, "지표별 상태 표기")}

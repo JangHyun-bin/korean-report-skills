@@ -76,27 +76,31 @@ jobs:
             --assets plugins/korean-report/skills/korean-report-doc/assets
           python scripts/qa.py dist/ba_after.html
 
-      # 배너는 이 러너(우분투)에서 찍은 것이 기준이다. 글꼴 렌더가 OS 마다 달라
-      # 윈도·맥에서 재생성하면 바이트가 어긋난다 — 다시 찍어 커밋해도 또 어긋난다.
+      # README 이미지는 이 러너(우분투)에서 찍은 것이 기준이다. 글꼴 렌더가 OS 마다
+      # 달라 윈도·맥에서 재생성하면 바이트가 어긋난다 — 다시 찍어 커밋해도 또 어긋난다.
       # 그래서 어긋나면 여기서 찍은 PNG 를 산출물로 올린다. 그것을 내려받아 커밋한다.
-      - name: 배너 재생성과 대조
-        id: banner
+      - name: README 자산 재생성과 대조
+        id: shots
         if: runner.os == 'Linux'
         run: |
-          python scripts/build-banner.py
-          if ! git diff --exit-code --stat docs/assets/banner-light.png docs/assets/banner-dark.png; then
-            echo "배너가 예시 문서와 어긋난다."
-            echo "이 실행의 banner-regenerated 산출물을 내려받아 docs/assets/ 에 덮어쓰고 커밋한다."
+          python scripts/build-shots.py
+          if ! git diff --exit-code --stat \
+               docs/assets/banner-light.png docs/assets/banner-dark.png \
+               docs/assets/ba_before.png docs/assets/ba_after.png docs/assets/ba_after_body.png; then
+            echo "README 이미지가 예시 문서와 어긋난다."
+            echo "이 실행의 shots-regenerated 산출물을 내려받아 docs/assets/ 에 덮어쓰고 커밋한다."
             echo "로컬(윈도·맥) 재생성은 글꼴 렌더가 달라 다시 어긋나므로 쓰지 않는다."
             exit 1
           fi
 
-      - name: 어긋난 배너를 산출물로 올린다
-        if: failure() && steps.banner.outcome == 'failure'
+      - name: 어긋난 README 이미지를 산출물로 올린다
+        if: failure() && steps.shots.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: banner-regenerated
-          path: docs/assets/banner-*.png
+          name: shots-regenerated
+          path: |
+            docs/assets/banner-*.png
+            docs/assets/ba_*.png
 
       - name: 스킬 패키징
         if: runner.os == 'Linux'
