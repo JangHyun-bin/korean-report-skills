@@ -13,8 +13,10 @@ DOC = SKILLS / "korean-report-doc"
 STYLE = SKILLS / "korean-report-style"
 ASSETS = DOC / "assets"
 CSS = ASSETS / "css"
+STYLE_ASSETS = STYLE / "assets"
 
 sys.path.insert(0, str(ASSETS))
+sys.path.insert(0, str(STYLE_ASSETS))
 
 
 def read(p: pathlib.Path) -> str:

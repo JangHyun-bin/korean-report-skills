@@ -12,7 +12,7 @@
 import re
 
 import pytest
-from conftest import ASSETS, CSS, DOC, ROOT, SKILLS, STYLE, all_markdown, css_bundle, read
+from conftest import ASSETS, CSS, DOC, ROOT, SKILLS, STYLE, STYLE_ASSETS, all_markdown, css_bundle, read
 
 TEMPLATES = {m: ASSETS / f"{m}_template.html" for m in ("paper", "deck")}
 PLACEHOLDERS = ("__TITLE__", "__BODY__", "__FONTCSS__", "__KATEXCSS__", "__BASECSS__", "__MODECSS__")
@@ -163,7 +163,8 @@ def test_referenced_files_exist():
     """
     exts = (".md", ".py", ".js", ".html", ".css", ".sh", ".yml")
     roots = [ROOT, SKILLS, DOC, STYLE, ASSETS, CSS, ROOT / "scripts", ROOT / "plugins",
-             DOC / "references", STYLE / "references"]
+             DOC / "references", STYLE / "references", STYLE_ASSETS,
+             ROOT / "tests", ROOT / "examples"]
     missing = []
     for p in all_markdown():
         if "design" in p.parts:

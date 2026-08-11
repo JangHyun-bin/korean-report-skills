@@ -8,7 +8,7 @@ description: Produce publication-grade Korean technical documents as self-contai
 워드프로세서로는 나오지 않는 품질의 문서를, 자립형 HTML 한 파일로 제작한다.
 
 **결과물의 조건 세 가지.**
-디자인 시스템이 고정되어 매번 같은 품질이 나온다.
+디자인 시스템이 고정되어 매번 같은 품질이 산출된다.
 수치와 도해가 데이터에서 나오고 손으로 타이핑되지 않는다.
 네트워크 없이 열어도, 인쇄해도 동일하게 보인다.
 

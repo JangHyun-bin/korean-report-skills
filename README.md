@@ -1,7 +1,7 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-186%20tests-3fb950)](../../actions)
-[![release](https://img.shields.io/badge/release-v1.10.0-0066cc)](../../releases)
+[![tests](https://img.shields.io/badge/tests-219%20tests-3fb950)](../../actions)
+[![release](https://img.shields.io/badge/release-v1.11.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
 
@@ -54,6 +54,22 @@ paper(세로·보고서)와 deck(가로·협의자료) 두 모드뿐이고 섞�
 | 반토막 넘게 늘었습니다 | 4.2시간에서 9.1시간으로 증가하였다 |
 | 모든 사슬이 승인 하나에 걸려 있다 | 승인 이후 착수할 수 있다 |
 | 각 절은 근거를 함께 갖는다 | 각 절에 근거를 명시하였다 |
+
+**지켜졌는지 확인할 수 있습니다.** 규약이 표로만 있으면 지켜졌는지 아무도 모릅니다.
+같이 실려 가는 검사기가 문서를 훑어 걸린 곳을 줄·열로 알려줍니다.
+
+```console
+$ python korean-report-style/assets/lint.py 보고서.md
+보고서.md:5:24  [검토] 반토막이 된다 → 절반 수준으로 낮아진다    (§3 구어체 환언)
+보고서.md:5:38  [고침] 했다 → 하였다                          (§1 어미)
+보고서.md:10:1  [제목] 무엇이 달라지나 → 명사구로 고친다        (§1.1 제목은 명사구)
+```
+
+`--fix` 는 어미만 자동으로 고칩니다. `넘긴다 → 전달/이관/위임`처럼 갈래가 나뉘는
+자리는 사람이 고릅니다. 코드 블록·인용문·표는 건너뜁니다 —
+나쁜 예를 보여주려면 그 형태를 적어야 하니까요.
+
+조판된 HTML에도 돌아갑니다. 스킬 자신도 이 검사기로 검사받습니다.
 
 ## "단어를 뭉뚱그려 써요"
 
@@ -169,6 +185,7 @@ python 문서_제목.py                            # 생성 → 빌드 → QA �
 |---|---|
 | `SKILL.md` | 문체 · 프레이밍 · 정확성 · 편집 후 정합성 |
 | `references/substitutions.md` | 치환 목록 115건 |
+| `assets/lint.py` | 문체 검사기. 치환표를 읽어 위반을 줄·열로 낸다 |
 
 doc 이 절차를 규정하고 style 이 문장을 다듬습니다. doc 의 `SKILL.md` 가 style 을
 참조하므로 문서를 만들 때는 둘 다 적용되고, 짧은 글을 다듬을 때는 style 만 적용됩니다.
