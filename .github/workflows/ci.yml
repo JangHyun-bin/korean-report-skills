@@ -11,8 +11,18 @@ permissions:
   contents: read
 
 jobs:
+  # 검사는 두 OS 에서, 산출물은 우분투 한 곳에서만 만든다.
+  #
+  # 윈도를 붙인 이유 — 우분투 하나로만 돌던 동안 cp949 · 경로 구분자 · CRLF 가
+  # 통째로 사각이었다. 검사기가 stdin 을 cp949 로 읽어 한글을 깨뜨리고도
+  # 「위반 없음」으로 통과하던 결함이 로컬(윈도)에서만 드러난 적이 있다.
+  # 개발 환경이 CI 보다 엄격하면 CI 가 하는 일이 없다.
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false      # 한쪽이 깨져도 다른 쪽 결과를 함께 본다
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -27,7 +37,11 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install pytest playwright ruff
+      # --with-deps 는 리눅스 전용이다. 윈도에 주면 실패한다.
       - run: playwright install --with-deps chromium
+        if: runner.os == 'Linux'
+      - run: playwright install chromium
+        if: runner.os != 'Linux'
 
       - name: 린트
         run: ruff check .
@@ -38,7 +52,12 @@ jobs:
       - name: 정합성·기하·파이프라인 검사 (python)
         run: pytest -q
 
+      # 아래부터는 검사가 아니라 산출물 제작이므로 한 곳에서만 돈다.
+      # 배너는 글꼴 렌더가 OS 마다 달라 우분투가 기준이고, pack-skills.sh 는
+      # zip · unzip 에 의존한다. 파이프라인 자체는 두 OS 의 pytest 가
+      # tests/test_build_e2e.py 로 이미 통과시킨다 — PDF 출력까지 포함한다.
       - name: 예시 문서 빌드
+        if: runner.os == 'Linux'
         run: |
           python examples/build_example.py
           for m in paper deck; do
@@ -49,6 +68,7 @@ jobs:
           python scripts/qa.py dist/example_paper.html dist/example_deck.html --pdf --shot dist/shots
 
       - name: README 전후 대비 자산 빌드
+        if: runner.os == 'Linux'
         run: |
           python examples/build_before_after.py
           node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
@@ -61,6 +81,7 @@ jobs:
       # 그래서 어긋나면 여기서 찍은 PNG 를 산출물로 올린다. 그것을 내려받아 커밋한다.
       - name: 배너 재생성과 대조
         id: banner
+        if: runner.os == 'Linux'
         run: |
           python scripts/build-banner.py
           if ! git diff --exit-code --stat docs/assets/banner-light.png docs/assets/banner-dark.png; then
@@ -78,11 +99,13 @@ jobs:
           path: docs/assets/banner-*.png
 
       - name: 스킬 패키징
+        if: runner.os == 'Linux'
         run: |
           bash scripts/pack-skills.sh
           bash scripts/pack-skills.sh --verify
 
       - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
           name: example-documents
           path: |
@@ -92,6 +115,7 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
           name: skills
           path: dist/*.skill
