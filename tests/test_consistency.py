@@ -317,3 +317,36 @@ def test_plugin_version_matches_package_version():
     market = json.loads(read(ROOT / ".claude-plugin" / "marketplace.json"))
     assert manifest == pkg, f"plugin.json {manifest} · package.json {pkg}"
     assert market["metadata"]["version"] == pkg, "marketplace metadata.version 이 어긋난다"
+
+
+def test_no_accidental_setext_headings():
+    """
+    `---` 바로 위에 글이 붙으면 가로줄이 아니라 **setext 제목**이 된다.
+    캡션 아래 구분선을 넣으려다 빈 줄을 지우면 그 캡션이 h2 로 부풀어 오른다.
+    README 에서 실제로 났다 — GitHub 이 `<h2>` 로 렌더하는 것을 확인하였다.
+
+    이 저장소는 제목을 전부 `#` 로 쓰므로 setext 는 언제나 사고다.
+    """
+    bad = []
+    for p in all_markdown():
+        lines = read(p).splitlines()
+        # 스킬 문서는 YAML 프론트매터로 시작한다. 그 닫는 `---` 는 제목이 아니다.
+        start = 0
+        if lines and lines[0].strip() == "---":
+            close = next((n for n, x in enumerate(lines[1:], 1) if x.strip() == "---"), 0)
+            start = close + 1
+        fence = False
+        for i, ln in enumerate(lines):
+            if i < start:
+                continue
+            if ln.strip().startswith("```"):
+                fence = not fence
+                continue
+            if fence or i == 0:
+                continue
+            if re.fullmatch(r"\s*(?:-{3,}|={3,})\s*", ln) and lines[i - 1].strip():
+                bad.append(f"{p.relative_to(ROOT)}:{i + 1}  ← 윗줄이 제목이 된다")
+    assert not bad, (
+        "구분선 위에 빈 줄이 없다:\n  " + "\n  ".join(bad)
+        + "\n\n빈 줄을 넣거나, 제목이 의도라면 # 로 쓴다."
+    )
