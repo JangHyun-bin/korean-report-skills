@@ -1,6 +1,6 @@
 ---
 name: korean-report-style
-description: Korean-language conventions for technical reports, progress updates, meeting agendas, and consortium deliverables — prose register, framing of shortfalls and risks, terminology accuracy, and structural integrity after edits. Use this whenever writing or revising any Korean document intended for colleagues, partners, clients, or evaluators — 진행현황, 중간보고, 기술보고, 연구노트, 협의 아젠다, 회의록, 제안서 — and also when the user asks to soften, reframe, tighten, or "말투를 바꿔달라" on Korean text. Apply it even for internal-only documents; the register rules are not about audience politeness but about the document reading as a report rather than as speech.
+description: Korean-language conventions for technical reports, progress updates, meeting agendas, software handoffs, architecture documents, runbooks, API references, model evaluations, and consortium deliverables — prose register, framing of shortfalls and risks, terminology accuracy, and structural integrity after edits. Use this whenever writing or revising any Korean document intended for colleagues, partners, clients, or evaluators — 진행현황, 중간보고, 기술보고, 연구노트, 코드베이스 인수인계, 운영 문서, 협의 아젠다, 회의록, 제안서 — and also when the user asks to soften, reframe, tighten, or "말투를 바꿔달라" on Korean text. Apply it even for internal-only documents; the register rules are not about audience politeness but about the document reading as a report rather than as speech.
 ---
 
 # 한국어 보고 문서 문체
@@ -32,6 +32,10 @@ description: Korean-language conventions for technical reports, progress updates
 | 현재 시스템은 편차 문제를 덮고 있다 | 증상 억제의 구조와 그 대가 |
 
 한정이 필요하면 줄표를 쓴다 — `오버레이 — 핵심이자 약점`, `상한 2.5 nm와 고객 규격의 여유`.
+
+`~하는 방법`·`~하는 과정`·`~하는 이유`·`~할 때`·`~할 것`·`~하기`처럼
+관형절이나 동작 명사화로 끝나는 제목도 간결한 명사구로 교정한다. 이미 명사구인
+`처리 방법`·`저장 과정`·`운영 시`·`확인 사항`은 유지한다.
 
 **예외**: 도해(SVG) 안의 제목은 그림이 말하는 주장이므로 문장이어도 된다.
 
@@ -82,8 +86,14 @@ description: Korean-language conventions for technical reports, progress updates
 이름이며, 번역하면 정밀도가 떨어진다. 판정법을 적용하기 전에 그 말이
 **개념의 이름인지 서술인지**를 먼저 가른다.
 
+코드베이스 인수인계에서는 `graph가 살아 있다`·`prompt와 condition이 싸운다`처럼
+영문 식별자와 한국어 은유가 결합하는 경우가 많다. bare verb를 전역 규칙으로 만들지 않고
+주어와 술어가 결합된 표현만 선택적으로 검토한다. 상세 기준과 사례는
+`references/software-handoff.md`를 참조한다.
+
 그래서 다음 한 줄이 두 규칙의 경계를 보여준다 — **이름은 남기고 서술만 수정한다.**
 
+<!-- style-teaching -->
 | 킬러 디펙트가 다이를 죽인다 | 킬러 디펙트가 다이 불량을 유발한다 |
 |---|---|
 
@@ -91,13 +101,14 @@ description: Korean-language conventions for technical reports, progress updates
 
 | 쓰지 않는다 | 쓴다 |
 |---|---|
-| 됐다 · 됐고 · 됐으며 | 되었다 · 되었고 · 되었으며 |
+| 됐다 · 됐고 · 됐으며 · 변경됐는가 | 되었다 · 되었고 · 되었으며 · 변경되었는가 |
+| 통합돼 있다 · 호출돼야 한다 | 통합되어 있다 · 호출되어야 한다 |
 | 했다 · 했고 · 했으나 | 하였다 · 하였고 · 하였으나 |
 
 도해 라벨과 표 셀에도 동일하게 적용한다.
 
-전역 치환으로 처리하되 **인용문과 코드 블록은 제외한다.** 남의 말을 옮긴 자리까지
-문어체로 바꾸면 인용이 아니게 된다.
+검증된 활용형만 치환하고, `돼`·`됐`을 단독으로 전역 치환하지 않는다. 인용문·코드 블록·
+inline code·교육용 표는 제외한다. 남의 말을 옮긴 자리까지 문어체로 바꾸면 인용이 아니게 된다.
 
 **한 문서에서 평서체와 합니다체를 섞지 않는다.** 둘은 독자와의 거리가 다르므로
 혼용하면 문서가 초안처럼 읽힌다. 문서 본문은 평서체로 쓰고, 송부 메일·요청문은 합니다체로 분리한다.
@@ -354,15 +365,23 @@ description: Korean-language conventions for technical reports, progress updates
    python <스킬경로>/assets/lint.py 초안.md          # 걸린 곳을 줄·열로 낸다
    python <스킬경로>/assets/lint.py 초안.md --fix    # 어미만 자동으로 고친다
    python <스킬경로>/assets/lint.py 산출물.html      # 조판 뒤에도 한 번 더
+   python <스킬경로>/assets/lint.py 초안.md --heuristic       # software 표현 검토
+   python <스킬경로>/assets/lint.py 초안.md --format github   # CI annotation
+   python <스킬경로>/assets/lint.py 초안.md --format sarif    # SARIF 2.1.0
    ```
 
-   출력이 세 갈래로 구분된다.
+   출력이 네 갈래로 구분된다.
 
    | 갈래 | 무엇 | 어떻게 |
    |---|---|---|
    | 고침 | §1 어미 | `--fix` 로 자동 치환된다 |
    | 검토 | §2~§8 | 문맥을 보고 사람이 정한다. 제안을 그대로 넣지 않는다 |
-   | 제목 | §1.1 명사구 | 명사구로 바꾼다 |
+   | 제목 | §1.1 명사구 | 명사구 사용 |
+   | 의심 | software collocation | `--heuristic`에서만 보고하며 자동 교정하지 않는다 |
+
+   `--json`은 기존 형식을 유지하면서 `summary.total`·`by_tier`·`by_file`·`by_rule`을
+   함께 낸다. 일반 Markdown 표도 검사한다. 규칙을 설명하는 표는 알려진 교육용 헤더를
+   쓰거나 바로 앞에 `<!-- style-teaching -->`을 둔다.
 
    **걸린 것을 지우려고 검사기를 피하지 않는다.** 인용이 꼭 필요한 자리는
    백틱·「」로 감싸거나 줄 끝에 `<!-- style-exempt -->` 를 단다.
@@ -389,6 +408,8 @@ description: Korean-language conventions for technical reports, progress updates
 - [ ] **본문 산문** — 규칙을 서술하는 문장 자신이 규칙을 위반하는 경우가 있다
 
 치환 목록 전체는 `references/substitutions.md` 참조.
+각 규칙의 `검사 범위`는 `prose`·`heading`·`table`·`html`·`all` 중 하나 이상이며,
+`검출 방식`은 `literal` 또는 `regex`다. 두 열만 있는 기존 표는 `all`·`literal`로 읽는다.
 
 ---
 
