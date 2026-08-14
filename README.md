@@ -123,7 +123,7 @@ $ python korean-report-style/assets/lint.py 보고서.md
 
 ## 설치
 
-**Claude Code** — 이 저장소가 곧 마켓플레이스입니다. 갱신이 자동으로 따라옵니다.
+**Claude Code** — 1순위 지원 스택입니다. 자동 갱신을 지원합니다.
 
 ```
 /plugin marketplace add JangHyun-bin/korean-report-skills
