@@ -8,7 +8,7 @@ Claude Code · Codex · Cursor · OpenCode 에 **파일 수정 없이** 그대�
 | | 대상 | 갱신 |
 |---|---|---|
 | 플러그인 | Claude Code · Codex · OpenCode | 자동 |
-| npx | Cursor · 위 둘 | 다시 실행 |
+| npx | Cursor · Claude Code · Codex (파일 복사) | 다시 실행 |
 | 셸 스크립트 | 위와 같음 (node 없는 환경) | 다시 실행 |
 
 ## 플러그인 — Claude Code · Codex
