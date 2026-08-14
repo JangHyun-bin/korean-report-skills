@@ -135,7 +135,7 @@ def _count_python_tests() -> int:
 
 
 def _count_node_tests() -> int:
-    """`node scripts/run-node-tests.js` 출력의 `# tests N` 줄에서 개수를 읽는다."""
+    """Node 버전별 TAP 요약의 `# tests N` 또는 `ℹ tests N`을 읽는다."""
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
     result = subprocess.run(
         ["node", "scripts/run-node-tests.js"],
@@ -145,7 +145,7 @@ def _count_node_tests() -> int:
         f"node 검사가 실패했다 (returncode={result.returncode}):\n"
         f"{result.stdout}\n{result.stderr}"
     )
-    m = re.search(r"^# tests (\d+)$", result.stdout, re.M)
+    m = re.search(r"^(?:#|ℹ) tests (\d+)$", result.stdout, re.M)
     assert m, f"node 검사 출력에서 개수를 찾지 못했다:\n{result.stdout}"
     return int(m.group(1))
 
