@@ -1,13 +1,13 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-223%20tests-3fb950)](../../actions)
-[![release](https://img.shields.io/badge/release-v1.12.0-0066cc)](../../releases)
+[![tests](https://img.shields.io/badge/tests-268%20tests-3fb950)](../../actions)
+[![release](https://img.shields.io/badge/release-v1.13.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
 
 # 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
 
-내용은 맞는데 **문서로 전달하기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
+내용은 맞는데 **문장 표현과 문서 디자인으로 인해 문서로 전달하기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
 각각을 규약으로 구성한 스킬셋입니다.
 
 Claude Code · Codex · Cursor · OpenCode 에 적용 가능합니다. →
@@ -47,7 +47,7 @@ paper(세로·보고서)와 deck(가로·협의자료) 두 모드뿐이고 섞�
 `됐다`와 `하였습니다`가 한 문서에 섞이고, `~하는 것`·`~에 걸려 있다` 같은
 번역투가 남습니다. 읽는 사람에게 **초안처럼** 보입니다.
 
-**→ 치환 목록 115건과 어미 규약.** 평서체와 합니다체를 섞지 않고,
+**→ 치환 목록 118건과 어미 규약.** 평서체와 합니다체를 섞지 않고,
 필요하면 문서와 커버레터를 분리합니다.
 
 | 그냥 쓰면 | 규약 적용 |
@@ -66,9 +66,10 @@ $ python korean-report-style/assets/lint.py 보고서.md
 보고서.md:10:1  [제목] 무엇이 달라지나 → 명사구로 고친다        (§1.1 제목은 명사구)
 ```
 
-`--fix` 는 어미만 자동으로 고칩니다. `넘긴다 → 전달/이관/위임`처럼 갈래가 나뉘는
-자리는 사람이 고릅니다. 코드 블록·인용문·표는 건너뜁니다 —
-나쁜 예를 보여주려면 그 형태를 적어야 하니까요.
+`--fix` 는 검증된 어미 활용형만 자동으로 고칩니다. `넘긴다 → 전달/이관/위임`처럼
+갈래가 나뉘는 자리는 사람이 고릅니다. 코드 블록·인용문·교육용 표는 건너뛰며,
+일반 표 셀은 본문과 함께 검사합니다. `--heuristic`은 software handoff의 문맥 의존 표현을
+별도 `의심` 갈래로 보고하고, `--format github|sarif`는 CI 결과를 생성합니다.
 
 조판된 HTML에도 돌아갑니다. 스킬 자신도 이 검사기로 검사받습니다.
 
@@ -123,21 +124,21 @@ $ python korean-report-style/assets/lint.py 보고서.md
 
 ## 설치
 
-**Claude Code** — 이 저장소가 곧 마켓플레이스입니다. 갱신이 자동으로 따라옵니다.
+**Claude Code** — 1순위 지원 스택입니다. 자동 갱신을 지원합니다.
 
 ```
 /plugin marketplace add JangHyun-bin/korean-report-skills
 /plugin install korean-report@korean-report-skills
 ```
 
-**Codex** — 같은 마켓플레이스를 그대로 씁니다.
+**Codex** — 같은 마켓플레이스를 그대로 사용합니다.
 
 ```bash
 codex plugin marketplace add JangHyun-bin/korean-report-skills
 codex plugin add korean-report@korean-report-skills
 ```
 
-**Cursor** — 플러그인 체계가 없어 파일로 복사합니다.
+**Cursor** — 파일로 복사합니다.
 
 ```bash
 npx github:JangHyun-bin/korean-report-skills            # 전부
@@ -196,7 +197,8 @@ python 문서_제목.py                            # 생성 → 빌드 → QA �
 | | |
 |---|---|
 | `SKILL.md` | 문체 · 프레이밍 · 정확성 · 편집 후 정합성 |
-| `references/substitutions.md` | 치환 목록 115건 |
+| `references/substitutions.md` | 치환 목록 118건 |
+| `references/software-handoff.md` | 코드베이스 인수인계의 선택적 collocation 규칙 |
 | `assets/lint.py` | 문체 검사기. 치환표를 읽어 위반을 줄·열로 낸다 |
 
 doc 이 절차를 규정하고 style 이 문장을 다듬습니다. doc 의 `SKILL.md` 가 style 을
