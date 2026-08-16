@@ -1,6 +1,6 @@
 [project]
 name = "korean-report-skills"
-version = "1.13.0"
+version = "1.14.0"
 description = "한국어 기술 문서 제작·문체 규약 Agent Skills"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }

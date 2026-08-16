@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "한국어 기술 문서의 조판과 문장을 규약으로 고정하는 스킬",
-    "version": "1.13.0"
+    "version": "1.14.0"
   },
   "plugins": [
     {
