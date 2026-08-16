@@ -3,7 +3,7 @@
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따르며
 [유의적 버전](https://semver.org/lang/ko/)을 쓴다.
 
-## [Unreleased]
+## [1.14.0] — 2026-08-17
 
 ### 더해짐
 
