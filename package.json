@@ -5,6 +5,11 @@
   "license": "Apache-2.0",
   "private": false,
   "type": "commonjs",
+  "main": "./.opencode/plugins/korean-report.mjs",
+  "exports": {
+    ".": "./.opencode/plugins/korean-report.mjs",
+    "./plugin": "./.opencode/plugins/korean-report.mjs"
+  },
   "engines": {
     "node": ">=20"
   },
@@ -26,6 +31,8 @@
   },
   "keywords": [
     "agent-skills",
+    "opencode-plugin",
+    "opencode",
     "claude-code",
     "korean",
     "technical-writing",
@@ -40,6 +47,7 @@
     "plugins/",
     "scripts/",
     ".claude-plugin/",
+    ".opencode/",
     "LICENSE",
     "NOTICE",
     "README.md",

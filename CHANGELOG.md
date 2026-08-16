@@ -3,6 +3,15 @@
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따르며
 [유의적 버전](https://semver.org/lang/ko/)을 쓴다.
 
+## [Unreleased]
+
+### 더해짐
+
+- **OpenCode plugin 지원.** `opencode.json` 의 `plugin` 배열에
+  `"korean-report-skills"` 를 더하면 두 스킬이 로드된다. `.opencode/plugins/`
+  의 `config` 훅이 스킬 디렉토리를 `skills.paths` 에 등록한다. npm 패키지로
+  게시되며, 설치 시 파일 복사나 별도 설정이 필요 없다.
+
 ## [1.13.0] — 2026-08-15
 
 문체 규칙이 적용 위치를 구분하지 않아 본문 요구사항까지 제목 규칙으로 검출하였고,

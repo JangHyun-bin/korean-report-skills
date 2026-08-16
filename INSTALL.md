@@ -1,14 +1,14 @@
 # 설치
 
 두 스킬 모두 **Agent Skills 표준(SKILL.md)** 을 따르므로
-Claude Code · Codex · Cursor 에 **파일 수정 없이** 그대로 들어간다.
+Claude Code · Codex · Cursor · OpenCode 에 **파일 수정 없이** 그대로 들어간다.
 
 경로는 셋이며 아래 순서로 권한다.
 
 | | 대상 | 갱신 |
 |---|---|---|
-| 플러그인 | Claude Code · Codex | 자동 |
-| npx | Cursor · 위 둘 | 다시 실행 |
+| 플러그인 | Claude Code · Codex · OpenCode | 자동 |
+| npx | Cursor · Claude Code · Codex (파일 복사) | 다시 실행 |
 | 셸 스크립트 | 위와 같음 (node 없는 환경) | 다시 실행 |
 
 ## 플러그인 — Claude Code · Codex
@@ -58,6 +58,24 @@ claude plugin install korean-report@korean-report-skills --scope user
 }
 ```
 
+## 플러그인 — OpenCode
+
+opencode plugin 으로 설치한다. npm 에 게시된 패키지(`korean-report-skills`)를
+`opencode.json` 의 `plugin` 배열에 더한다.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["korean-report-skills"]
+}
+```
+
+opencode 를 다시 시작하면 `config` 훅이 스킬 디렉토리를 `skills.paths` 에
+등록하므로 두 스킬이 로드된다. `plugin` 배열에서 지우면 제거된다.
+
+`korean-report-skills` 이름이 충돌하거나 다른 소스에서 설치하려면 npm 스펙
+형태(`korean-report-skills@버전`)를 그대로 쓸 수 있다.
+
 ## npx — Cursor, 그리고 플러그인을 쓰지 않을 때
 
 파일로 직접 복사한다. 게시 없이 GitHub 에서 바로 실행된다.
@@ -91,6 +109,7 @@ cp -R plugins/korean-report/skills/korean-report-doc plugins/korean-report/skill
 | Claude Code | `~/.claude/skills/` | `./.claude/skills/` |
 | Codex | `~/.codex/skills/` | `./.codex/skills/` |
 | Cursor | `~/.cursor/skills/` | `./.cursor/skills/` |
+| OpenCode | `~/.config/opencode/skills/` | `./.opencode/skills/` |
 
 Claude Desktop 은 Claude Code 와 같은 `~/.claude/skills/` 를 읽는다. 한 번 넣으면 둘 다 쓴다.
 
@@ -123,6 +142,7 @@ Pro · Max · Team · Enterprise 에서 코드 실행이 켜져 있어야 한다
 ls ~/.claude/skills/    # Claude Code
 ls ~/.codex/skills/     # Codex
 ls ~/.cursor/skills/    # Cursor
+ls ~/.config/opencode/skills/    # OpenCode (플러그인이 아닌 파일 복사로 넣었을 때)
 ```
 
 각 폴더 안에 `SKILL.md` 가 바로 있어야 한다.

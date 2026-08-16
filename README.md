@@ -2,7 +2,7 @@
 
 [![tests](https://img.shields.io/badge/tests-268%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.13.0-0066cc)](../../releases)
-[![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex-8957e5)](INSTALL.md)
+[![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
 
 # 왜 Claude가 만든 한국어 문서는 어딘가 이상할까
@@ -10,7 +10,7 @@
 내용은 맞는데 **문장 표현과 문서 디자인으로 인해 문서로 전달하기가 망설여지는** 경험. 그 이유를 다섯 가지로 나누고
 각각을 규약으로 구성한 스킬셋입니다.
 
-Claude Code · Codex · Cursor 에 적용 가능합니다. →
+Claude Code · Codex · Cursor · OpenCode 에 적용 가능합니다. →
 [설치](#설치)
 
 <picture>
@@ -147,6 +147,17 @@ npx github:JangHyun-bin/korean-report-skills --project  # 이 저장소에만
 ```
 
 게시 없이 GitHub 에서 바로 실행됩니다. `--remove` 로 되돌립니다.
+
+**OpenCode** — opencode plugin 으로 설치합니다. `opencode.json` 에 한 줄을 더합니다.
+
+```json
+{
+  "plugin": ["korean-report-skills"]
+}
+```
+
+opencode 를 다시 시작하면 두 스킬이 로드됩니다. npm 에 게시된 패키지
+(`korean-report-skills`)를 사용하며, 설치 전에 `npm i -g` 나 별도 설정이 필요 없습니다.
 
 claude.ai 웹 업로드와 node 없는 환경은 [INSTALL.md](INSTALL.md) 참조.
 
