@@ -131,14 +131,14 @@ $ python korean-report-style/assets/lint.py 보고서.md
 /plugin install korean-report@korean-report-skills
 ```
 
-**Codex** — 같은 마켓플레이스를 그대로 씁니다.
+**Codex** — 같은 마켓플레이스를 그대로 사용합니다.
 
 ```bash
 codex plugin marketplace add JangHyun-bin/korean-report-skills
 codex plugin add korean-report@korean-report-skills
 ```
 
-**Cursor** — 플러그인 체계가 없어 파일로 복사합니다.
+**Cursor** — 파일로 복사합니다.
 
 ```bash
 npx github:JangHyun-bin/korean-report-skills            # 전부
