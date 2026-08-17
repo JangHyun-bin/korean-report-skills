@@ -9,7 +9,7 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmCli = process.env.npm_execpath;
 
 function fail(message) {
   console.error(`패키지 smoke 실패 — ${message}`);
@@ -25,12 +25,22 @@ function packedHas(files, rel) {
   return files.has(wanted) || [...files].some((file) => file.startsWith(`${wanted}/`));
 }
 
-const packed = spawnSync(npm, ['pack', '--dry-run', '--json'], {
+// Windows의 Node는 .cmd를 shell 없이 직접 실행하지 못한다. npm script에서는
+// npm_execpath가 실제 CLI JavaScript를 가리키므로 현재 Node로 실행한다.
+const npmCommand = npmCli ? process.execPath : (process.platform === 'win32' ? 'npm.cmd' : 'npm');
+const npmArgs = npmCli
+  ? [npmCli, 'pack', '--dry-run', '--json']
+  : ['pack', '--dry-run', '--json'];
+const packed = spawnSync(npmCommand, npmArgs, {
   cwd: ROOT,
   encoding: 'utf8',
   env: { ...process.env, npm_config_loglevel: 'error' },
+  shell: process.platform === 'win32' && !npmCli,
 });
-if (packed.status !== 0) fail(`npm pack 실패\n${packed.stderr || packed.stdout}`);
+if (packed.status !== 0) {
+  const detail = (packed.error && packed.error.message) || packed.stderr || packed.stdout || `exit ${packed.status}`;
+  fail(`npm pack 실패\n${detail}`);
+}
 
 let manifest;
 try {
