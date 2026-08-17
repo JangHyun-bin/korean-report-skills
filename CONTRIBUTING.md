@@ -150,7 +150,7 @@ h2 14pt 가 붙었다. CSS 를 base/paper/deck 세 레이어로 분리해
 첨부한다. tag는 `package.json`의 version과 정확히 같아야 한다.
 
 ```bash
-git tag v1.14.1 && git push origin v1.14.1
+git tag v1.14.2 && git push origin v1.14.2
 ```
 
 `package.json` · `package-lock.json` · `pyproject.toml` · plugin manifest 두 곳 · README
