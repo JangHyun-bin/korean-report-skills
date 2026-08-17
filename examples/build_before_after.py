@@ -6,7 +6,7 @@ build_before_after.py — README 용 전후 대비 자산을 만든다.
 
 두 가지를 낸다.
   dist/ba_before.html  브라우저 기본 스타일 (스킬 없이 HTML 로 저장한 상태)
-  dist/ba_after.html   korean-report-doc 로 조판한 자립형 문서
+  dist/ba_after.html   korean-report-doc의 typesetting을 적용한 자립형 문서
 
 내용은 examples/before_after.md 의 「전」·「후」 원고와 같다.
 가상 사례 「B사 — 고객 문의 대응 체계 개선」이며 실재하는 기업·수치가 아니다.
@@ -67,7 +67,7 @@ BEFORE = """<!DOCTYPE html>
 </body></html>
 """
 
-# ── 후 — 규약 + 조판 ────────────────────────────────────────
+# ── 후 — 규약 + typesetting ─────────────────────────────────
 COMPARE = fig_compare(
     rows=[("평균 응답", 9.1, 4.2, "9.1h", "4.2h"),
           ("야간 응답", 12.4, 6.8, "12.4h", "6.8h")],
@@ -101,7 +101,8 @@ AFTER_BODY = f"""<header class="paper-head">
 세 항목의 개선안과 산정 근거를 제시한다.</p>
 <div class="legend">{BADGE_MEAS} 실제로 측정된 값 · {BADGE_IMPL} 수단은 있으나 미사용 ·
 {BADGE_NONE} 아직 측정하지 않음</div>
-<p class="srcline">본 문서는 문체·조판 규약을 보이기 위한 가상 사례다. 실재하는 기업·수치가 아니다.</p>
+<p class="srcline">본 문서는 문체 규칙과 typesetting 결과를 보이기 위한 가상 사례다.
+실재하는 기업·수치가 아니다.</p>
 </section>
 
 <section id="s1"><h2><span class="sn">1</span>대응 시간 지표</h2>

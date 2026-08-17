@@ -57,7 +57,7 @@ code{font-family:var(--mono);font-size:.86em;background:var(--parchment);
 
 /* ── 강조 (design.md §4.7) ──────────────────────────────── */
 /* 글자색을 --mark-ink 로 박는다. 상속에 맡기면 다크 타일이 --ink 를 흰색으로
-   뒤집어 노랑 위 흰 글자가 된다 — 조판해서 확인한 사고다.
+   뒤집어 노랑 위 흰 글자가 된다 — typesetting 결과에서 확인한 사고다.
    좌우 여백을 em 으로 두어야 강조 뒤의 구두점이 벌어지지 않는다. */
 mark{background:var(--mark);color:var(--mark-ink);
  padding:1px .16em;border-radius:3px}

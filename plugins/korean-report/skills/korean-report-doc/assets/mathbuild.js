@@ -160,7 +160,7 @@ if (fonts.length) {
   }
   console.log(`본문 폰트 — 내장 ${n} (${(bytes / 1024).toFixed(0)} KB)`);
 } else {
-  warn.push('Pretendard 미내장 — 시스템 폰트로 폴백한다. 오프라인·타 기기에서 조판이 달라진다. ' +
+  warn.push('Pretendard 미내장 — 시스템 폰트로 폴백한다. 오프라인·타 기기에서 typesetting 결과가 달라진다. ' +
             '--font 로 woff2 를 지정한다.');
 }
 html = put(html, '__FONTCSS__', fontCss);

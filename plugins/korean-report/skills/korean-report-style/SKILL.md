@@ -364,7 +364,7 @@ inline code·교육용 표는 제외한다. 남의 말을 옮긴 자리까지 �
    ```bash
    python <스킬경로>/assets/lint.py 초안.md          # 걸린 곳을 줄·열로 낸다
    python <스킬경로>/assets/lint.py 초안.md --fix    # 어미만 자동으로 고친다
-   python <스킬경로>/assets/lint.py 산출물.html      # 조판 뒤에도 한 번 더
+   python <스킬경로>/assets/lint.py 산출물.html      # HTML typesetting 후에도 한 번 더
    python <스킬경로>/assets/lint.py 초안.md --heuristic       # software 표현 검토
    python <스킬경로>/assets/lint.py 초안.md --format github   # CI annotation
    python <스킬경로>/assets/lint.py 초안.md --format sarif    # SARIF 2.1.0

@@ -340,7 +340,7 @@ def test_plugin_version_matches_package_version():
 def test_mark_pins_its_text_color():
     """
     `<mark>` 가 글자색을 상속하면 다크 타일에서 노랑 위 흰 글자가 된다.
-    조판해서 확인한 사고다 — 색을 물려받은 안은 다크에서 읽히지 않았고,
+    typesetting 결과에서 확인한 사고다 — 색을 물려받은 안은 다크에서 읽히지 않았고,
     박아 둔 안만 살아남았다. hex 를 박아 도해가 사라지던 것과 같은 계통이다.
     """
     base = read(CSS / "base.css")
