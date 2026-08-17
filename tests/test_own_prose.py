@@ -11,9 +11,9 @@
 (`korean-report-style/assets/lint.py`) 를 그대로 불러 쓴다. 사용자가 받는 것과
 저장소가 자신에게 적용하는 것이 같아야 한다 — 둘로 갈라지면 배포본 쪽이 먼저 낡는다.
 
-검사 대상은 **규약이 적용되는 장르**뿐이다 — 스킬 문서와 설계 문서.
-README · INSTALL · CONTRIBUTING 은 처음 온 사람에게 문제를 알아보게 하는
-글이므로 대상이 아니다.
+검사 대상은 규약을 설명하거나 제품 동작을 약속하는 문서다. 스킬 문서와 설계 문서뿐 아니라
+README와 INSTALL도 같은 검사기를 통과해야 한다. 공개 안내 문서를 제외하면 제품이 사용자에게
+요구하는 문체와 저장소가 실제로 사용하는 문체가 다시 분리된다.
 """
 import lint
 import pytest
@@ -23,6 +23,7 @@ from conftest import ROOT, read
 TARGETS = sorted(
     list((ROOT / "plugins").rglob("*.md"))
     + list((ROOT / "docs" / "design").rglob("*.md"))
+    + [ROOT / "README.md", ROOT / "INSTALL.md"]
 )
 
 RULES = lint.load_rules()

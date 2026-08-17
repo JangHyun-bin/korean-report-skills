@@ -46,11 +46,45 @@ function build(body, { mode = 'paper', title = 'T', args = [], raw = null } = {}
   };
 }
 
+/** 저장소 밖으로 복사한 스킬이 작업 디렉터리의 KaTeX로 빌드되는지 본다. */
+function standaloneBuild(body) {
+  const d = tmpdir();
+  const copiedAssets = path.join(d, 'korean-report-doc', 'assets');
+  const project = path.join(d, 'work');
+  fs.cpSync(ASSETS, copiedAssets, { recursive: true });
+
+  const katexSource = path.dirname(require.resolve('katex/package.json'));
+  const katexDest = path.join(project, 'node_modules', 'katex');
+  fs.mkdirSync(path.dirname(katexDest), { recursive: true });
+  fs.cpSync(katexSource, katexDest, { recursive: true });
+
+  const inFile = path.join(project, 'raw.html');
+  const outFile = path.join(project, 'out.html');
+  const html = fs.readFileSync(path.join(copiedAssets, 'paper_template.html'), 'utf8')
+    .replace('__BODY__', body).replace('__TITLE__', 'standalone');
+  fs.writeFileSync(inFile, html, 'utf8');
+  const env = { ...process.env };
+  delete env.NODE_PATH;
+  const r = spawnSync(
+    process.execPath,
+    [path.join(copiedAssets, 'mathbuild.js'), inFile, outFile, '--assets', copiedAssets],
+    { cwd: project, encoding: 'utf8', env },
+  );
+  return {
+    ...r,
+    out: fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8') : null,
+  };
+}
+
 test('정상 입력이면 exit 0 이고 수식이 렌더된다', () => {
   const r = build('<section><p>잔차 ⟦I⟧\\varepsilon⟦/I⟧ 는 ⟦D⟧x^2 + y^2⟦/D⟧ 다.</p></section>');
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.out, /class="katex/);
   assert.ok(!r.out.includes('⟦'), '수식 마커가 남았다');
+
+  const copied = standaloneBuild('<section><p>복사본 ⟦I⟧x^2⟦/I⟧</p></section>');
+  assert.strictEqual(copied.status, 0, copied.stderr);
+  assert.match(copied.out, /class="katex/);
 });
 
 test('CSS 네 자리가 모두 채워진다', () => {

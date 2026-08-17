@@ -1,16 +1,16 @@
 ---
 name: korean-report-doc
-description: Produce publication-grade Korean technical documents as self-contained HTML (and PDF) — progress reports, technical reports, research notes, meeting decks, benchmark write-ups. Use this whenever the user asks for a 보고서 · 진행현황 · 기술보고 · 연구노트 · 협의 자료 · 중간보고 · 제안서 as a document artifact rather than a chat answer, or says the Word/PowerPoint output looks bad, or asks for a "제대로 된 문서" / "HTML로 만들어줘" / "PDF로 뽑아줘". Ships a fixed design system, reusable paper and deck templates, native SVG figure builders, build-time KaTeX and font embedding, and a render-and-inspect QA loop. Pair with the korean-report-style skill for prose conventions.
+description: Create Korean technical and business document artifacts as self-contained HTML and optional PDF — progress reports, technical reports, research notes, meeting decks, benchmark write-ups, intermediate reports, and proposals. Use only when the user requests a document artifact rather than an explanation or chat answer, including requests for a 보고서 · 진행현황 · 기술보고 · 연구노트 · 협의 자료 · 중간보고 · 제안서 · HTML · PDF. Provides paper and deck templates, SVG figure builders, build-time KaTeX, optional body-font embedding, and browser render QA. Pair with korean-report-style for prose, framing, accuracy, and edit consistency.
 ---
 
 # 한국어 기술 문서 제작
 
-워드프로세서로는 나오지 않는 품질의 문서를, 자립형 HTML 한 파일로 제작한다.
+한국어 기술·사업 문서를 자립형 HTML로 제작하고 필요하면 PDF로 출력한다.
 
-**결과물의 조건 세 가지.**
-디자인 시스템이 고정되어 매번 같은 품질이 산출된다.
-수치와 도해가 데이터에서 나오고 손으로 타이핑되지 않는다.
-네트워크 없이 열어도, 인쇄해도 동일하게 보인다.
+- 두 출력 모드는 공통 디자인 token과 모드별 CSS를 사용한다.
+- 수치·표·도해는 제공된 데이터에서 프로그램으로 생성한다.
+- HTML은 실행 시점에 외부 자원을 요청하지 않는다.
+- 본문 글꼴은 `--font`로 지정한 경우에만 내장된다.
 
 문장 규약은 `korean-report-style` 스킬이 담당한다. 이 스킬의 범위는 **제작**에 한정한다.
 
@@ -38,6 +38,13 @@ description: Produce publication-grade Korean technical documents as self-contai
 문서 산출물을 요청받았을 때만 작성한다. 설명·요약·분석은 대화로 답한다.
 `보고서 만들어줘` · `PDF로 뽑아줘` · `문서로 정리해줘` 가 신호다.
 
+### 1.3 실행 환경
+
+- HTML 빌드에는 Node 20 이상과 KaTeX가 필요하다. `mathbuild.js`는 작업 디렉터리와
+  스킬 설치 경로에서 KaTeX를 순서대로 찾는다.
+- 렌더 QA, 스크린샷, PDF 출력에는 Python 3.11 이상, Playwright, Chromium이 필요하다.
+- 본문 글꼴을 내장하려면 사용 권한이 있는 WOFF2 파일을 준비한다.
+
 ---
 
 ## 2. 빌드 파이프라인
@@ -49,7 +56,7 @@ description: Produce publication-grade Korean technical documents as self-contai
                        후처리(Node + KaTeX) — mathbuild.js
                        · ⟦I⟧ / ⟦D⟧ 렌더
                        · base.css + 모드 CSS 삽입
-                       · Pretendard · KaTeX woff2 base64 내장
+                       · 지정한 본문 글꼴 · KaTeX woff2 base64 내장
                                      │
                                      ▼
                           단일 .html ──▶ headless print ──▶ .pdf
@@ -101,7 +108,8 @@ open("raw.html", "w", encoding="utf-8").write(out)
 **치환 토큰을 주석이나 본문에 적지 않는다.** 파이썬 `str.replace` 는 모든 등장을
 바꾸므로, 주석에 `__BODY__` 를 적어 두면 본문이 두 번 들어간다. 이것도 실제로 겪었다.
 
-동작하는 전체 예시는 저장소의 `examples/build_example.py` 에 있다.
+전체 생성 흐름은 `assets/paper_template.html` 또는 `assets/deck_template.html`에
+`assets/figures.py`의 도해를 배치한 뒤 `assets/mathbuild.js`로 후처리한다.
 
 ### 2.2 후처리
 
@@ -123,7 +131,7 @@ node mathbuild.js raw.html out.html \
 ### 2.3 PDF
 
 ```bash
-python scripts/qa.py out.html --pdf --shot shots/
+python <스킬경로>/assets/qa.py out.html --pdf --shot shots/
 ```
 
 직접 부르려면:
@@ -172,7 +180,7 @@ hex 를 박으면 `#1d1d1f` 글자가 `#272729` 타일 위에서 사라진다.
 **소스를 믿지 않는다.** 반드시 브라우저로 렌더해 검사한다.
 
 ```bash
-python scripts/qa.py out.html --shot shots/
+python <스킬경로>/assets/qa.py out.html --shot shots/
 ```
 
 수식 마커·치환 토큰 잔존, 가로 넘침, 컨테이너를 넘는 표, CSS 삽입 실패,
@@ -234,4 +242,4 @@ viewBox 밖으로 나간 도해, 캡션 없는 도해를 검사하고 실패하�
 - `references/figures.md` — 도해 7종의 사용법과 좌표 규약
 - `assets/paper_template.html` · `assets/deck_template.html`
 - `assets/css/base.css` · `assets/css/paper.css` · `assets/css/deck.css`
-- `assets/figures.py` · `assets/mathbuild.js`
+- `assets/figures.py` · `assets/mathbuild.js` · `assets/qa.py`

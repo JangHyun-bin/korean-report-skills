@@ -1,7 +1,7 @@
 {
   "name": "korean-report",
-  "description": "한국어 기술 문서를 자립형 HTML 한 파일로 제작하고, 문장을 보고 문체로 다듬는다",
-  "version": "1.14.0",
+  "description": "한국어 기술·사업 문서의 자립형 HTML 제작과 편집 품질 검토",
+  "version": "1.14.1",
   "author": {
     "name": "JangHyun-bin"
   },
@@ -13,6 +13,9 @@
     "technical-writing",
     "report",
     "html",
+    "pdf",
+    "codex",
+    "opencode",
     "typography"
   ]
 }

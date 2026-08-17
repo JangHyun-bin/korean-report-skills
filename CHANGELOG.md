@@ -3,6 +3,44 @@
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따르며
 [유의적 버전](https://semver.org/lang/ko/)을 쓴다.
 
+## [Unreleased]
+
+## [1.14.1] — 2026-08-17
+
+### 더해짐
+
+- `korean-report-doc` 배포물에 `assets/qa.py`를 포함한다. 플러그인 설치본과 `.skill`
+  압축 파일에서도 저장소 루트 없이 렌더 QA, PDF, 스크린샷 출력을 실행할 수 있다.
+- 복사된 스킬이 작업 디렉터리의 KaTeX와 내장 QA를 사용하는지 회귀 검사한다.
+- README와 INSTALL을 저장소 자체 문체 검사 대상에 포함한다.
+- `npm pack --dry-run` 결과의 공개 진입점·script 대상·주요 문서 자산을 검사하고,
+  OpenCode plugin을 실제 import하여 `skills.paths`와 두 스킬의 배포 여부를 확인한다.
+- Git tag와 `package.json` version을 릴리스 전에 대조한다.
+- GitHub Actions의 npm trusted publishing을 사용하여 npm 게시가 성공한 뒤에만
+  GitHub Release를 생성한다. 재실행 시 기존 tarball과 현재 tag의 integrity도 대조한다.
+
+### 고침
+
+- `mathbuild.js`가 자신의 설치 경로에서만 KaTeX를 찾던 문제를 수정하였다. 작업
+  디렉터리와 스킬 설치 경로를 순서대로 검사한다.
+- 배포된 `SKILL.md`가 저장소 루트의 예제나 다른 스킬 내부 파일을 로컬 참조하지 않도록
+  수정하고, 스킬 폴더 단위의 참조 정합성을 검사한다.
+- `korean-report-doc`의 산출물 조건에서 무조건적인 본문 글꼴 내장과 동일 조판 보장을
+  제거하고, 런타임 요구사항과 `--font` 적용 조건을 명시하였다.
+- README를 두 스킬의 역할, 지원 범위, 설치 경로, 산출물 계약, 품질 검사 순서로
+  재구성하였다. 질문형 사례와 검증되지 않은 출력 보장은 제거하였다.
+- 설치 직후의 자연어 사용 경로와 소스 저장소의 생성기 실행 경로를 분리하였다.
+  본문 글꼴은 `--font` 지정 시에만 내장된다는 조건과 플랫폼별 갱신 방식을 명시하였다.
+- npm tarball에 examples·tests·설계 문서·README 이미지·저장소 운영 문서를 포함하여
+  공개 npm script와 README의 로컬 참조가 누락된 파일을 가리키지 않게 하였다. 테스트
+  실행 중 생성되는 `__pycache__`와 `.pyc`는 배포에서 제외한다.
+- npm script의 Python 호출은 Unix에서 `python3`, Windows에서 `py -3`을 우선 탐색하여
+  `python` 별칭이 없는 환경에서도 같은 명령을 실행한다.
+- Markdown 회귀 검사는 `.git`이 없는 npm 설치본에서 배포 파일을 직접 순회한다.
+  게시된 tarball 안에서도 `npm test` 전체가 실행된다.
+- npx 도움말에 남아 있던 「Codex는 plugin 체계가 없다」는 설명을 현재 설치 경로에
+  맞게 교정하였다.
+
 ## [1.14.0] — 2026-08-17
 
 ### 더해짐

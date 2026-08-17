@@ -29,16 +29,24 @@ def css_bundle() -> str:
 
 def all_markdown() -> list[pathlib.Path]:
     """
-    저장소가 관리하는 마크다운만 돌려준다.
+    저장소 또는 npm 배포물에 포함된 Markdown만 돌려준다.
 
     파일 계통을 직접 훑고 제외 목록을 손으로 유지하면 반드시 어긋난다 —
     작업용 디렉터리 하나가 늘 때마다 검사가 엉뚱한 파일을 걸고 넘어졌다.
-    무엇이 저장소의 것인지는 git 이 이미 알고 있으므로 git 에게 묻는다.
+    Git checkout에서는 Git이 관리하는 목록을 우선 사용한다.
     추적 중인 파일에 더해 아직 add 하지 않은 파일도 포함하되,
-    .gitignore 가 제외한 것은 빼낸다.
+    .gitignore가 제외한 것은 빼낸다. `.git`이 없는 npm tarball에서는
+    배포 경로를 직접 순회하고 생성 디렉터리를 제외한다.
     """
-    out = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.md"],
-        cwd=ROOT, capture_output=True, check=True, text=True, encoding="utf-8",
-    ).stdout
-    return sorted(ROOT / rel for rel in out.split("\0") if rel)
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.md"],
+            cwd=ROOT, capture_output=True, check=False, text=True, encoding="utf-8",
+        )
+    except FileNotFoundError:
+        result = None
+    if result is not None and result.returncode == 0:
+        return sorted(ROOT / rel for rel in result.stdout.split("\0") if rel)
+
+    generated = {".git", ".venv", ".pytest_cache", "__pycache__", "dist", "node_modules"}
+    return sorted(path for path in ROOT.rglob("*.md") if not generated.intersection(path.parts))

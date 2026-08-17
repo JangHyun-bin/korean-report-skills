@@ -1,20 +1,23 @@
 #!/usr/bin/env node
-/*
- * korean-report-skills 설치기
- *
- *   npx github:JangHyun-bin/korean-report-skills            전부에 설치
- *   npx github:JangHyun-bin/korean-report-skills claude     골라서
- *   npx github:JangHyun-bin/korean-report-skills --project  이 저장소에만
- *   npx github:JangHyun-bin/korean-report-skills --remove   제거
- *
- * Claude Code 는 `/plugin marketplace add` 로 설치하는 편이 낫다 — 갱신이 자동이다.
- * 이 설치기는 Codex · Cursor 처럼 플러그인 체계가 없는 도구와,
- * 플러그인을 쓰지 않고 파일로 두고 싶을 때를 위한 것이다.
- */
+/* korean-report-skills의 Claude Code·Codex·Cursor 파일 복사 설치기. */
 'use strict';
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+
+const HELP = `korean-report-skills 파일 복사 설치기
+
+사용법:
+  npx korean-report-skills [claude|codex|cursor]... [--project] [--remove]
+
+예:
+  npx korean-report-skills            Claude Code·Codex·Cursor에 설치
+  npx korean-report-skills cursor     Cursor에만 설치
+  npx korean-report-skills --project  현재 프로젝트에 설치
+  npx korean-report-skills --remove   복사한 스킬 제거
+
+Claude Code와 Codex는 plugin marketplace 설치도 지원한다.
+특정 GitHub revision: npx github:JangHyun-bin/korean-report-skills cursor`;
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'plugins', 'korean-report', 'skills');
@@ -23,7 +26,7 @@ const KNOWN = ['claude', 'codex', 'cursor'];
 
 const argv = process.argv.slice(2);
 if (argv.includes('-h') || argv.includes('--help')) {
-  console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0].split('/*')[1].trim());
+  console.log(HELP);
   process.exit(0);
 }
 

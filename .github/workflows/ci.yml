@@ -32,6 +32,9 @@ jobs:
           cache: npm
       - run: npm ci
 
+      - name: npm 배포본·OpenCode 검사
+        run: npm run test:package
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -131,11 +134,63 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
+
+      # npm trusted publishing은 Node 22.14+ · npm 11.5.1+가 필요하다.
+      # npmjs.com 패키지 설정에서 이 workflow(ci.yml)를 trusted publisher로 등록한다.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      # 재실행 시 tarball integrity 대조가 npm CLI 갱신으로 흔들리지 않게 고정한다.
+      - run: npm install --global npm@11.6.2
+
+      - run: npm ci
+
+      - name: tag와 package version 대조
+        run: node scripts/check-release-tag.js "${GITHUB_REF_NAME}"
+
+      - name: npm 배포본·OpenCode 재검사
+        run: npm run test:package
+
       - name: 스킬 패키징
         run: bash scripts/pack-skills.sh
+
+      # npm 게시 뒤 GitHub Release 생성이 실패해도 재실행할 수 있다. 같은 version이
+      # 이미 있으면 tarball integrity가 같은 경우에만 게시를 건너뛴다.
+      - name: npm 게시 상태 확인
+        id: npm_release
+        shell: bash
+        run: |
+          package_spec=$(node -p "const p=require('./package.json'); p.name + '@' + p.version")
+          if registry_json=$(npm view "${package_spec}" dist.integrity --json 2>/dev/null); then
+            registry_integrity=$(node -e "process.stdout.write(JSON.parse(process.argv[1]))" "${registry_json}")
+            local_integrity=$(npm pack --dry-run --json | \
+              node -e "let s=''; process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(JSON.parse(s)[0].integrity))")
+            if [[ "${registry_integrity}" != "${local_integrity}" ]]; then
+              echo "npm ${package_spec}가 이미 있으나 현재 tag의 tarball과 다르다." >&2
+              exit 1
+            fi
+            echo "publish=false" >> "${GITHUB_OUTPUT}"
+            echo "npm ${package_spec}는 같은 tarball로 이미 게시되어 있다."
+          else
+            echo "publish=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: npm 게시
+        if: steps.npm_release.outputs.publish == 'true'
+        run: npm publish --access public
+
       - name: 릴리스에 .skill 첨부
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" dist/*.skill --generate-notes
+        shell: bash
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" dist/*.skill --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" dist/*.skill --generate-notes
+          fi

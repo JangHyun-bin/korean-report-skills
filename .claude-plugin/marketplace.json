@@ -5,14 +5,14 @@
     "url": "https://github.com/JangHyun-bin"
   },
   "metadata": {
-    "description": "한국어 기술 문서의 조판과 문장을 규약으로 고정하는 스킬",
-    "version": "1.14.0"
+    "description": "한국어 기술·사업 문서의 제작과 편집 품질을 관리하는 두 개의 스킬",
+    "version": "1.14.1"
   },
   "plugins": [
     {
       "name": "korean-report",
       "source": "./plugins/korean-report",
-      "description": "한국어 기술 문서를 자립형 HTML 한 파일로 제작하고, 문장을 보고 문체로 다듬는다. 문서 제작(korean-report-doc)과 문장 규약(korean-report-style) 두 스킬이 함께 들어간다."
+      "description": "자립형 HTML과 선택적 PDF 산출물을 제작하는 korean-report-doc, 문체·프레이밍·정확성·편집 정합성을 검토하는 korean-report-style을 포함한다."
     }
   ]
 }

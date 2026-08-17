@@ -1,7 +1,7 @@
 {
   "name": "korean-report-skills",
-  "version": "1.14.0",
-  "description": "한국어 기술 문서 제작·문체 규약 Agent Skills — 자립형 HTML 보고서와 한국어 서술 규약",
+  "version": "1.14.1",
+  "description": "한국어 기술·사업 문서의 자립형 HTML 제작과 문체·프레이밍·정확성 검토를 제공하는 Agent Skills",
   "license": "Apache-2.0",
   "private": false,
   "type": "commonjs",
@@ -15,12 +15,14 @@
   },
   "scripts": {
     "install:skills": "node bin/install.js",
-    "new": "python scripts/new-document.py",
-    "build:example": "python examples/build_example.py",
+    "new": "node scripts/run-python.js scripts/new-document.py",
+    "build:example": "node scripts/run-python.js examples/build_example.py",
     "pack": "bash scripts/pack-skills.sh",
+    "test:package": "node scripts/package-smoke.js",
     "test:node": "node scripts/run-node-tests.js",
-    "test:py": "python -m pytest tests/ -q",
-    "test": "npm run test:node && npm run test:py"
+    "test:py": "node scripts/run-python.js -m pytest tests/ -q",
+    "test": "npm run test:package && npm run test:node && npm run test:py",
+    "check:release-tag": "node scripts/check-release-tag.js"
   },
   "dependencies": {
     "katex": "^0.16.11"
@@ -34,13 +36,21 @@
     "opencode-plugin",
     "opencode",
     "claude-code",
+    "codex",
+    "cursor",
     "korean",
     "technical-writing",
     "html-report",
+    "pdf",
+    "document-qa",
+    "sarif",
     "katex"
   ],
   "bin": {
     "korean-report-skills": "bin/install.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "bin/",
@@ -48,9 +58,21 @@
     "scripts/",
     ".claude-plugin/",
     ".opencode/",
+    ".github/",
+    "docs/assets/",
+    "docs/design/",
+    "examples/",
+    "tests/",
+    "pyproject.toml",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "LICENSE",
     "NOTICE",
     "README.md",
-    "INSTALL.md"
+    "INSTALL.md",
+    "!**/__pycache__/**",
+    "!**/*.pyc",
+    "!**/*.pyo"
   ]
 }

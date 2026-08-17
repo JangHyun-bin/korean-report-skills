@@ -6,7 +6,7 @@ description: Korean-language conventions for technical reports, progress updates
 # 한국어 보고 문서 문체
 
 기술·사업 문서의 한국어 서술 규약. 시각 디자인 규약(색·타이포·도해)과 제작 절차는
-`korean-report-doc` 스킬이 담당하며(`references/design.md`), 이 스킬의 범위는
+`korean-report-doc` 스킬이 담당하며, 이 스킬의 범위는
 **문장과 프레이밍**에 한정한다.
 
 원칙 하나로 요약하면 이렇다. **문서는 말이 아니라 기록이다.** 말할 때 자연스러운 표현이

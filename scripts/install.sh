@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 한국어 문서 스킬 설치
 #
-#   bash scripts/install.sh                 Claude Code + Codex + Cursor 전부 (권장)
+#   bash scripts/install.sh                 Claude Code + Codex + Cursor 전부에 파일 복사
 #   bash scripts/install.sh claude          Claude Code 만
 #   bash scripts/install.sh codex cursor    골라서
 #   bash scripts/install.sh --project       현재 저장소에만

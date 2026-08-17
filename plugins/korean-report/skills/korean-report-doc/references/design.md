@@ -583,7 +583,7 @@ If a section overflows one page, **split the section** — do not shrink type be
 scale. Two clean pages beat one crowded one.
 
 `overflow:hidden` means an overflowing tile is **silently truncated**, not visibly broken —
-which is why `scripts/qa.py` measures every tile against the page height under
+which is why `assets/qa.py` measures every tile against the page height under
 `print` media and fails the build. This is the single most common deck defect.
 
 ### 7.2 Paper
@@ -683,7 +683,7 @@ run identically during PDF export.
 ## 10. QA checklist
 
 Run before delivering. Screenshot the rendered output; do not trust the source.
-`scripts/qa.py` performs the structural block automatically and exits non-zero on failure.
+`assets/qa.py` performs the structural block automatically and exits non-zero on failure.
 
 **Structural**
 - [ ] No unrendered template or math markers survive in the DOM

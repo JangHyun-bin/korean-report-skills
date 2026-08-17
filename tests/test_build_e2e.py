@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 import pytest
-from conftest import ASSETS, ROOT
+from conftest import ASSETS, DOC, ROOT
 
 pytestmark = pytest.mark.e2e
 
@@ -80,11 +80,23 @@ def test_built_document_carries_its_mode_css(built, mode):
 
 @pytest.mark.skipif(not have_chromium(), reason="chromium 없음 — playwright install chromium")
 @pytest.mark.parametrize("mode", MODES)
-def test_rendered_document_passes_qa(built, mode):
+def test_rendered_document_passes_qa(built, mode, tmp_path):
     r = subprocess.run([sys.executable, str(ROOT / "scripts" / "qa.py"), str(built[mode])],
                        cwd=ROOT, capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
     assert r.returncode == 0, f"QA 실패:\n{r.stdout}\n{r.stderr}"
+
+    # 플러그인·파일 복사 설치에는 스킬 폴더만 남는다. 저장소 루트 없이도 같은 QA가 돌아야 한다.
+    copied = tmp_path / "korean-report-doc"
+    shutil.copytree(DOC, copied)
+    skill = (copied / "SKILL.md").read_text(encoding="utf-8")
+    assert "<스킬경로>/assets/qa.py" in skill
+    bundled_qa = copied / "assets" / "qa.py"
+    assert bundled_qa.exists()
+    standalone = subprocess.run([sys.executable, str(bundled_qa), str(built[mode])],
+                                cwd=tmp_path, capture_output=True, text=True,
+                                encoding="utf-8", errors="replace")
+    assert standalone.returncode == 0, f"복사본 QA 실패:\n{standalone.stdout}\n{standalone.stderr}"
 
 
 @pytest.mark.skipif(not have_chromium(), reason="chromium 없음")

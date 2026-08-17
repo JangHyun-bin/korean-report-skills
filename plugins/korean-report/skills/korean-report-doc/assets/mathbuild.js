@@ -15,7 +15,41 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const katex = require('katex');
+
+// 스킬은 ~/.claude/skills 같은 곳에 복사되므로, 이 파일의 위치를 기준으로만
+// require('katex') 하면 사용자의 작업 프로젝트에 설치한 KaTeX 를 찾지 못한다.
+// 작업 디렉터리를 먼저 보고, npm plugin처럼 스킬 쪽에 의존성이 딸려 온 경우를
+// 위해 스크립트 위치를 다음 후보로 본다.
+function loadKatex() {
+  const roots = [...new Set([process.cwd(), __dirname].map(p => path.resolve(p)))];
+  const errors = [];
+  for (const root of roots) {
+    try {
+      const main = require.resolve('katex', { paths: [root] });
+      const manifest = require.resolve('katex/package.json', { paths: [root] });
+      const dist = path.join(path.dirname(manifest), 'dist');
+      if (!fs.existsSync(path.join(dist, 'katex.min.css'))) {
+        errors.push(`${root} (katex.min.css 없음)`);
+        continue;
+      }
+      return { api: require(main), dist };
+    } catch (e) {
+      errors.push(`${root} (${e.code || e.message})`);
+    }
+  }
+  throw new Error(
+    `katex 를 찾을 수 없다 — 작업 디렉터리에서 npm install katex\n  검색: ${errors.join('\n  검색: ')}`,
+  );
+}
+
+let katexRuntime;
+try {
+  katexRuntime = loadKatex();
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}
+const katex = katexRuntime.api;
 
 // ── 인자 ───────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -72,15 +106,7 @@ for (const ph of ['__BODY__', '__TITLE__']) {
 
 // ── 3. KaTeX CSS — 실제로 쓰이는 계열만 내장 ───────────────
 function katexDist() {
-  const tries = [
-    () => path.join(path.dirname(require.resolve('katex/package.json')), 'dist'),
-    () => path.dirname(require.resolve('katex')),
-    () => path.join(process.cwd(), 'node_modules', 'katex', 'dist'),
-  ];
-  for (const t of tries) {
-    try { const d = t(); if (fs.existsSync(path.join(d, 'katex.min.css'))) return d; } catch { /* 다음 후보 */ }
-  }
-  throw new Error('katex 를 찾을 수 없다 — npm install katex');
+  return katexRuntime.dist;
 }
 const dist = katexDist();
 let css = fs.readFileSync(path.join(dist, 'katex.min.css'), 'utf8');

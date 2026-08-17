@@ -146,10 +146,34 @@ h2 14pt 가 붙었다. CSS 를 base/paper/deck 세 레이어로 분리해
 
 ## 릴리스
 
-`v*` 태그를 밀면 CI 가 `.skill` 두 개를 만들어 릴리스에 첨부한다.
+`v*` 태그를 밀면 CI 가 npm 패키지를 먼저 게시하고 `.skill` 두 개를 GitHub Release에
+첨부한다. tag는 `package.json`의 version과 정확히 같아야 한다.
 
 ```bash
-git tag v1.1.0 && git push origin v1.1.0
+git tag v1.14.1 && git push origin v1.14.1
 ```
 
-`CHANGELOG.md` 를 먼저 갱신한다.
+`package.json` · `package-lock.json` · `pyproject.toml` · plugin manifest 두 곳 · README
+뱃지 · `INSTALL.md`의 version pin · `CHANGELOG.md`를 먼저 갱신한다. 파일 간 version은
+검사에서, tag와 version은 릴리스 job에서 대조한다.
+
+### npm trusted publisher — 최초 1회 설정
+
+npmjs.com의 `korean-report-skills` 패키지 설정에서 GitHub Actions trusted publisher를
+다음과 같이 등록한다.
+
+| 항목 | 값 |
+|---|---|
+| Organization or user | `JangHyun-bin` |
+| Repository | `korean-report-skills` |
+| Workflow filename | ci.yml |
+| Allowed action | `npm publish` |
+
+릴리스 job은 GitHub OIDC의 단기 자격을 사용하므로 `NPM_TOKEN` secret은 두지 않는다.
+이 설정이 없으면 npm 게시 단계에서 중단되고 GitHub Release는 생성되지 않는다.
+Trusted publishing과 tarball integrity 재현을 위해 릴리스 runner는 Node 24와 npm 11.6.2를
+사용한다.
+
+npm 게시 뒤 GitHub Release 생성만 실패한 경우에는 같은 tag workflow를 재실행한다.
+registry의 tarball integrity가 현재 tag와 같으면 npm 게시는 건너뛰고 `.skill` 첨부를
+계속한다. 같은 version의 내용이 다르면 릴리스를 중단한다.

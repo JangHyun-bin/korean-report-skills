@@ -185,6 +185,19 @@ def test_referenced_files_exist():
             missing.append(f"{p.relative_to(ROOT)} → {tok}")
     assert not missing, "문서가 없는 파일을 가리킨다:\n  " + "\n  ".join(missing)
 
+    # 플러그인과 .skill은 각 스킬 폴더만 배포한다. 저장소 전체에서는 우연히 찾을 수
+    # 있어도 설치본에는 없는 scripts/·examples/ 경로나 다른 스킬의 reference를
+    # SKILL.md가 가리키면 안 된다.
+    distribution_missing = []
+    for skill in (DOC, STYLE):
+        body = read(skill / "SKILL.md")
+        for tok in re.findall(r"`((?:assets|references|scripts|examples)/[^`\s]+)`", body):
+            if tok.startswith(("scripts/", "examples/")) or not (skill / tok).exists():
+                distribution_missing.append(f"{skill.name}/SKILL.md → {tok}")
+    assert not distribution_missing, (
+        "배포된 스킬 폴더에 없는 파일을 가리킨다:\n  " + "\n  ".join(distribution_missing)
+    )
+
 
 def test_figures_palette_matches_css_tokens():
     """figures.py 의 상수와 base.css 의 토큰이 어긋나면 도해만 다른 색이 된다."""
@@ -254,9 +267,11 @@ def test_version_is_the_same_in_every_place():
     changelog = re.search(r"^## \[([0-9]+\.[0-9]+\.[0-9]+)\]",
                           read(ROOT / "CHANGELOG.md"), re.M).group(1)
     badge = re.search(r"release-v([0-9]+\.[0-9]+\.[0-9]+)-", read(ROOT / "README.md")).group(1)
-    assert pkg == pyproject == changelog == badge, (
+    install_pin = re.search(r'"korean-report-skills@([0-9]+\.[0-9]+\.[0-9]+)"',
+                            read(ROOT / "INSTALL.md")).group(1)
+    assert pkg == pyproject == changelog == badge == install_pin, (
         f"버전이 어긋난다 — package.json {pkg} · pyproject.toml {pyproject} · "
-        f"CHANGELOG 최신 항목 {changelog} · README 뱃지 {badge}"
+        f"CHANGELOG 최신 항목 {changelog} · README 뱃지 {badge} · INSTALL pin {install_pin}"
     )
 
 

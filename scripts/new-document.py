@@ -159,13 +159,14 @@ def main() -> int:
     if build.returncode:
         return build.returncode
 
-    # 저장소 배치가 바뀌어도 견디도록 위로 올라가며 찾는다
-    qa = next((p / "scripts" / "qa.py" for p in ASSETS.parents
-               if (p / "scripts" / "qa.py").exists()), None)
-    if qa:
-        return subprocess.run([sys.executable, str(qa), str(out)]).returncode
-    print(f"{{out}} — QA 스크립트를 찾지 못해 건너뛴다")
-    return 0
+    # 배포된 스킬은 QA를 assets 안에 싣는다. 이전 저장소 배치도 계속 지원한다.
+    qa_candidates = [ASSETS / "qa.py"]
+    qa_candidates += [p / "scripts" / "qa.py" for p in ASSETS.parents]
+    qa = next((p for p in qa_candidates if p.exists()), None)
+    if qa is None:
+        print(f"{{out}} — QA 스크립트를 찾지 못하였다", file=sys.stderr)
+        return 1
+    return subprocess.run([sys.executable, str(qa), str(out)]).returncode
 
 
 if __name__ == "__main__":
