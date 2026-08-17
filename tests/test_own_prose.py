@@ -15,6 +15,10 @@
 README와 INSTALL도 같은 검사기를 통과해야 한다. 공개 안내 문서를 제외하면 제품이 사용자에게
 요구하는 문체와 저장소가 실제로 사용하는 문체가 다시 분리된다.
 """
+import os
+import subprocess
+from pathlib import Path
+
 import lint
 import pytest
 from conftest import ROOT, read
@@ -28,12 +32,49 @@ TARGETS = sorted(
 
 RULES = lint.load_rules()
 
+SKIPPED_DIRS = {".git", ".pytest_cache", ".ruff_cache", ".venv", "__pycache__", "dist", "node_modules"}
+
+
+def repository_text_files():
+    """Git 대상 파일을 순회하고, 배포본에서는 같은 범위를 파일시스템에서 복원한다."""
+    if (ROOT / ".git").exists():
+        result = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        )
+        paths = (ROOT / os.fsdecode(raw) for raw in result.stdout.split(b"\0") if raw)
+    else:
+        found = []
+        for directory, dirnames, filenames in os.walk(ROOT):
+            dirnames[:] = [name for name in dirnames if name not in SKIPPED_DIRS]
+            found.extend(Path(directory) / filename for filename in filenames)
+        paths = iter(found)
+
+    for path in paths:
+        try:
+            yield path, path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+
 
 def test_the_shipped_linter_reads_the_whole_table():
     """규칙을 못 읽고도 조용히 통과하면 아래 검사가 전부 무의미해진다."""
     assert len(RULES) > 100, f"치환표에서 규칙을 {len(RULES)}개밖에 읽지 못하였다"
     assert any(r["tier"] == "고침" for r in RULES), "§1 어미가 고침 갈래로 읽히지 않았다"
     assert any(r["tier"] == "검토" for r in RULES), "§2~§8 이 검토 갈래로 읽히지 않았다"
+
+
+def test_deprecated_korean_typesetting_word_is_absent():
+    """공개 문서와 소스에서 폐기한 용어가 다시 들어오지 않는지 검사한다."""
+    deprecated = "\uc870\ud310"
+    offenders = [
+        str(path.relative_to(ROOT))
+        for path, content in repository_text_files()
+        if deprecated in content
+    ]
+    assert not offenders, "폐기한 용어가 남아 있다:\n  " + "\n  ".join(offenders)
 
 
 @pytest.mark.parametrize("path", TARGETS, ids=lambda p: p.name)

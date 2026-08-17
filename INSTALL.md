@@ -174,7 +174,7 @@ python3 -m playwright install chromium
 
 기준 HTML에는 CSS와 KaTeX 수식 글꼴이 내장된다. 본문 글꼴까지 내장하려면 사용 권한이
 있는 WOFF2 파일을 `mathbuild.js`의 `--font` 인자로 지정한다. 본문 글꼴을 지정하지 않으면
-빌드는 완료되지만 시스템 폰트에 따라 조판 결과가 달라질 수 있다.
+빌드는 완료되지만 시스템 폰트에 따라 `typesetting` 결과가 달라질 수 있다.
 
 ```bash
 DOC_SKILL=/absolute/path/to/korean-report-doc

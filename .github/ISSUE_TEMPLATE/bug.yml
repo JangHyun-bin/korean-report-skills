@@ -1,5 +1,5 @@
 name: 결함 신고
-description: 빌드 실패, 조판 깨짐, 검사 오탐 등
+description: 빌드 실패, layout 오류, 검사 오탐 등
 labels: [bug]
 body:
   - type: markdown
@@ -12,7 +12,7 @@ body:
       label: 어디서
       options:
         - korean-report-doc — 빌드 (mathbuild.js)
-        - korean-report-doc — 조판 (CSS · 템플릿)
+        - korean-report-doc — layout (CSS · 템플릿)
         - korean-report-doc — 도해 (figures.py)
         - korean-report-style — 규약 내용
         - 검사 · CI

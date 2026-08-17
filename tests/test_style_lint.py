@@ -192,7 +192,7 @@ def test_html_reads_body_text_and_skips_markup():
 
 
 def test_html_does_not_check_headings():
-    """조판된 제목은 도해의 주장일 수 있다 — 마크다운 원고에서만 본다."""
+    """typesetting을 거친 제목은 도해의 주장일 수 있다 — 마크다운 원고에서만 본다."""
     assert not run("<h2>필터는 제 역할을 하였다</h2>\n", "시험.html", html=True)
 
 
