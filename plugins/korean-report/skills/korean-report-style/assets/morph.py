@@ -121,7 +121,7 @@ def scan(line: str, rules: dict, all_stems: bool = False):
                         subj = toks[j - 1].form
                     break
             if subj and subj not in rules["animate_nouns"]:
-                out.append((t.start, "%s + %s-" % (subj, t.form),
+                out.append((t.start, f"{subj} + {t.form}-",
                             rules["animate"][t.form], "4 의인화 후보|ANIMATE"))
 
         # ③ 단위 명사 — 수 뒤에 오는 것만 본다
@@ -132,7 +132,7 @@ def scan(line: str, rules: dict, all_stems: bool = False):
                     obj = toks[j].form + (obj or "")
                     j -= 1
                 alt = rules["unit_alt"].get(t.form, "")
-                found = ("%s %s%s" % (obj, toks[i - 1].form, t.form)) if obj \
+                found = f"{obj} {toks[i - 1].form}{t.form}" if obj \
                     else (toks[i - 1].form + t.form)
                 out.append((t.start, found, alt, "3 단위 명사|UNIT"))
     return out
@@ -158,8 +158,8 @@ def sentence_style(text_lines, rules, filename: str = "") -> tuple[str, list]:
         if not wrong:
             return "", []
         no, col, form = wrong[0]
-        return expect, [(no, col, "%s 외 %d곳" % (form, len(wrong) - 1)
-                         if len(wrong) > 1 else form)]
+        label = f"{form} 외 {len(wrong) - 1}곳" if len(wrong) > 1 else form
+        return expect, [(no, col, label)]
 
     if not plain or not polite:
         return "", []
@@ -170,4 +170,5 @@ def sentence_style(text_lines, rules, filename: str = "") -> tuple[str, list]:
     major = "평서체" if minor is polite else "합니다체"
     # 파일당 한 번만 낸다. 어체 혼용은 줄 단위 결함이 아니라 문서 단위 결함이다
     no, col, form = minor[0]
-    return major, [(no, col, "%s 외 %d곳" % (form, len(minor) - 1) if len(minor) > 1 else form)]
+    label = f"{form} 외 {len(minor) - 1}곳" if len(minor) > 1 else form
+    return major, [(no, col, label)]
