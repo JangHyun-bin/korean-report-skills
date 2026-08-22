@@ -1,6 +1,6 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-257%20tests-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-272%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.15.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)

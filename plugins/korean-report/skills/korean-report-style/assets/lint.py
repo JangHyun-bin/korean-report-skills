@@ -45,7 +45,7 @@ TABLE = STYLE / "references" / "substitutions.md"
 HEURISTICS = STYLE / "references" / "software-handoff.md"
 
 try:
-    import morph                      # 형태소 검사. kiwipiepy 가 없으면 건너뛴다
+    import morph  # 형태소 검사. kiwipiepy 가 없으면 건너뛴다
 except ImportError:
     morph = None
 
