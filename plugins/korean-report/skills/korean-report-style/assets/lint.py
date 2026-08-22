@@ -44,6 +44,11 @@ STYLE = HERE.parent
 TABLE = STYLE / "references" / "substitutions.md"
 HEURISTICS = STYLE / "references" / "software-handoff.md"
 
+try:
+    import morph                      # 형태소 검사. kiwipiepy 가 없으면 건너뛴다
+except ImportError:
+    morph = None
+
 EXEMPT = "style-exempt"
 TEACHING = "style-teaching"
 
@@ -69,6 +74,9 @@ TEACHING_HEADERS = {
     ("광의", "협의"),
     ("용어", "흔한 오역"),
     ("기존 표현", "보고서 표현"),
+    ("어간", "대안"),
+    ("단위", "원래 세는 대상"),
+    ("어체", "종결 어미"),
 }
 
 FIX_SECTION = 1
@@ -76,7 +84,7 @@ MIN_LEN = 2
 MIN_SPLIT_LEN = 3
 SCOPES = frozenset(("all", "prose", "heading", "table", "html"))
 MATCHERS = frozenset(("literal", "regex"))
-TIERS = ("고침", "검토", "제목", "의심")
+TIERS = ("고침", "검토", "제목", "의심", "형태")
 FORMATS = ("text", "json", "github", "sarif")
 
 
@@ -389,7 +397,8 @@ def _matches(rule: dict, line: str):
 
 # ── Lint and fix ──────────────────────────────────────────────
 
-def lint(text: str, name: str = "-", rules=None, html: bool = False) -> list[Finding]:
+def lint(text: str, name: str = "-", rules=None, html: bool = False,
+         all_stems: bool = False) -> list[Finding]:
     rules = load_rules() if rules is None else rules
     out = []
 
@@ -414,8 +423,52 @@ def lint(text: str, name: str = "-", rules=None, html: bool = False) -> list[Fin
                     "명사구로 고친다", title[:80], "KRS-1.1-HEADING", title,
                 ))
 
+    out += _morph_findings(text, name, html, all_stems)
+    out = _dedupe(out)
     out.sort(key=lambda f: (f.line, f.col, f.rule_id))
     return out
+
+
+def _morph_findings(text, name, html, all_stems) -> list[Finding]:
+    """형태소 검사. kiwipiepy 가 없으면 빈 목록을 낸다."""
+    if morph is None or not morph.available():
+        return []
+    rules = morph.load_rules()
+    lines = [(i, line) for i, _ctx, line in visible_segments(text, html)]
+    out = []
+    for i, line in lines:
+        for col, matched, suggest, why in morph.scan(line, rules, all_stems):
+            section, _, kind = why.partition("|")
+            out.append(Finding(name, i, col + 1, "형태", "§" + section, matched,
+                               suggest, line.strip()[:80], "KRS-M-" + kind, matched))
+    major, minor = morph.sentence_style(lines, rules)
+    for no, col, form in minor:
+        out.append(Finding(name, no, col + 1, "형태", "§1.4 문체 혼용", form,
+                           "문서 전체를 " + major + "로 통일한다",
+                           "종결 어미 " + form, "KRS-M-STYLE", form))
+    return out
+
+
+def _dedupe(found: list[Finding]) -> list[Finding]:
+    """형태소가 잡은 자리와 겹치는 문자열 검출을 버린다.
+
+    같은 위반을 두 엔진이 각각 보고하면 소음이 되고, 소음이 되면 검사기가 꺼진다.
+    겹칠 때는 형태소 쪽을 남긴다 — 활용형과 조사에 영향받지 않아 더 정확하다.
+    """
+    spans = {}
+    for f in found:
+        if f.tier == "형태":
+            spans.setdefault(f.line, []).append((f.col, f.col + len(f.found)))
+    if not spans:
+        return found
+    keep = []
+    for f in found:
+        if f.tier != "형태":
+            lo, hi = f.col, f.col + len(f.found)
+            if any(lo < b and a < hi for a, b in spans.get(f.line, ())):
+                continue
+        keep.append(f)
+    return keep
 
 
 def _replace_rule(raw: str, guard: str, rule: dict) -> tuple[str, str, int]:
@@ -558,6 +611,8 @@ def main(argv=None) -> int:
     ap.add_argument("--format", choices=FORMATS, default="text", help="출력 형식")
     ap.add_argument("--heuristic", action="store_true", help="software collocation 의심 규칙 포함")
     ap.add_argument("--tier", choices=TIERS, action="append", help="이 갈래만 검사")
+    ap.add_argument("--all", action="store_true", dest="all_stems",
+                    help="형태소 검사에서 주의 어간까지 본다. 정당한 용법이 많아 기본은 제외한다")
     ap.add_argument("--fix", action="store_true", help="고침 tier를 파일에 직접 적용")
     args = ap.parse_args(argv)
 
@@ -588,7 +643,7 @@ def main(argv=None) -> int:
                 fixed += count
                 fixed_paths.append((str(path), count))
 
-        found += lint(text, str(path), rules, html)
+        found += lint(text, str(path), rules, html, args.all_stems)
 
     if args.tier:
         found = [f for f in found if f.tier in args.tier]
