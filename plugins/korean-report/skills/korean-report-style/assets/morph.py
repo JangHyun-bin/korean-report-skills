@@ -76,6 +76,7 @@ def load_rules(table: pathlib.Path = TABLE) -> dict:
         "allow": set(fence.group(1).split()) if fence else set(),
         "unit": {c[0]: c[1] for c in unit_rows},
         "unit_alt": {c[0]: c[2] for c in unit_rows},
+        "expect": dict(_rows(grab("4.1"))),
     }
 
 
@@ -137,8 +138,12 @@ def scan(line: str, rules: dict, all_stems: bool = False):
     return out
 
 
-def sentence_style(text_lines, rules) -> tuple[str, list]:
-    """종결 어미로 어체를 판정하고 소수 쪽을 낸다."""
+def sentence_style(text_lines, rules, filename: str = "") -> tuple[str, list]:
+    """종결 어미로 어체를 판정한다.
+
+    기대 어체가 정해진 파일(§4.1)은 기대와 다른 어체를 전부 낸다.
+    나머지는 소수 쪽을 낸다 — 다수 쪽이 그 문서의 어체다.
+    """
     k = _analyzer()
     plain, polite = [], []
     for no, line in text_lines:
@@ -146,6 +151,16 @@ def sentence_style(text_lines, rules) -> tuple[str, list]:
             if t.tag != "EF":
                 continue
             (polite if t.form.endswith(POLITE) else plain).append((no, t.start, t.form))
+    import os
+    expect = rules.get("expect", {}).get(os.path.basename(filename), "")
+    if expect:
+        wrong = polite if expect == "평서체" else plain
+        if not wrong:
+            return "", []
+        no, col, form = wrong[0]
+        return expect, [(no, col, "%s 외 %d곳" % (form, len(wrong) - 1)
+                         if len(wrong) > 1 else form)]
+
     if not plain or not polite:
         return "", []
     minor = polite if len(polite) <= len(plain) else plain
