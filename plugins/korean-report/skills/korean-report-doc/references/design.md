@@ -1,6 +1,6 @@
 # 디자인 시스템
 
-자립형 HTML 문서(덱·논문)의 시각 규약. `SKILL.md` 가 제작 절차를 다루고,
+자립형 HTML 문서(덱·논문)의 시각 규약. `SKILL.md` 가 제작 절차를 규정하고,
 이 문서가 색·타이포·컴포넌트·인쇄를 정의한다.
 
 Derived from Apple's editorial design language, adapted for Korean typography and for
