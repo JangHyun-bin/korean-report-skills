@@ -441,7 +441,7 @@ def _morph_findings(text, name, html, all_stems) -> list[Finding]:
             section, _, kind = why.partition("|")
             out.append(Finding(name, i, col + 1, "형태", "§" + section, matched,
                                suggest, line.strip()[:80], "KRS-M-" + kind, matched))
-    major, minor = morph.sentence_style(lines, rules)
+    major, minor = morph.sentence_style(lines, rules, name)
     for no, col, form in minor:
         out.append(Finding(name, no, col + 1, "형태", "§1.4 문체 혼용", form,
                            "문서 전체를 " + major + "로 통일한다",

@@ -111,7 +111,7 @@ OpenCode를 다시 시작하면 플러그인의 `config` hook이 패키지에 �
 
 ```json
 {
-  "plugin": ["korean-report-skills@1.14.2"]
+  "plugin": ["korean-report-skills@1.15.0"]
 }
 ```
 

@@ -4,7 +4,7 @@
 
 **Goal:** `docs/design/2026-08-10-visual-identity.md` 가 규정한 로고·뱃지·배너를 저장소에 반영하고, 배너가 낡지 않도록 CI 가 재생성하게 한다.
 
-**Architecture:** 로고는 정적 SVG 세 벌이며 테마 대응을 파일 안의 `@media (prefers-color-scheme: dark)` 로 처리한다. 배너는 실제 예시 문서에서 조각을 캡처해 HTML 레이아웃으로 합성한 뒤 PNG 두 벌로 찍는다. README 는 `<picture>` 로 두 벌을 전환한다. 검사는 자산 규격과 README 참조를 고정한다.
+**Architecture:** 로고는 정적 SVG 3종이며 테마 대응을 파일 안의 `@media (prefers-color-scheme: dark)` 로 처리한다. 배너는 실제 예시 문서에서 조각을 캡처해 HTML 레이아웃으로 합성한 뒤 PNG 2종으로 찍는다. README 는 `<picture>` 로 2종을 전환한다. 검사는 자산 규격과 README 참조를 고정한다.
 
 **Tech Stack:** SVG · Python 3.11+ · Playwright(Chromium) · pytest · GitHub Actions
 
@@ -41,7 +41,7 @@ SVG 가 `<img src>` 로 불릴 때는 부모의 `color` 를 상속할 대상이 
 | `docs/assets/logo.svg` | V2 — 40px 이상. README 헤더 |
 | `docs/assets/logo-sm.svg` | V4 — 24~32px |
 | `docs/assets/favicon.svg` | V6 — 16px. Pages 탭 아이콘 |
-| `scripts/build-banner.py` | 조각 캡처 · 배너 합성 · PNG 두 벌 출력 |
+| `scripts/build-banner.py` | 조각 캡처 · 배너 합성 · PNG 2종 출력 |
 | `docs/assets/banner-light.png` · `banner-dark.png` | 산출물. CI 가 재생성 |
 | `tests/test_visual_identity.py` | 자산 규격과 README 참조 검사 |
 | `README.md` | 헤더 교체 |
@@ -50,7 +50,7 @@ SVG 가 `<img src>` 로 불릴 때는 부모의 `color` 를 상속할 대상이 
 
 ---
 
-### Task 1: 로고 SVG 세 벌
+### Task 1: 로고 SVG 3종
 
 **Files:**
 - Create: `docs/assets/logo.svg`
@@ -209,9 +209,9 @@ PY
 ```bash
 git add docs/assets/logo.svg docs/assets/logo-sm.svg docs/assets/favicon.svg \
         tests/test_visual_identity.py
-git commit -m "로고 SVG 세 벌
+git commit -m "로고 SVG 3종
 
-design.md §2.2 의 절 표제를 잘라낸 마크다. 크기별로 디테일을 덜어낸 세 벌을
+design.md §2.2 의 절 표제를 잘라낸 마크다. 크기별로 디테일을 덜어낸 3종을
 두어, 하나로 16px 까지 버티려다 큰 크기가 빈약해지는 것을 피한다.
 
 색은 파일 안의 @media (prefers-color-scheme: dark) 로 처리한다. currentColor
@@ -271,7 +271,7 @@ build-banner.py — README 배너를 실제 문서에서 합성한다.
 
     python scripts/build-banner.py
 
-문서 세 조각을 캡처해 겹친 뒤 라이트·다크 두 벌을 PNG 로 찍는다.
+문서 세 조각을 캡처해 겹친 뒤 라이트·다크 2종을 PNG 로 찍는다.
 손으로 갱신하는 스크린샷은 반드시 문서와 어긋나므로 CI 가 매번 재생성한다.
 
 선행 조건 — dist/example_paper.html 과 dist/example_deck.html 이 있어야 한다.
@@ -420,9 +420,9 @@ git commit -m "배너 생성기
 실제 예시 문서에서 세 조각을 캡처해 겹쳐 합성한다. 손으로 갱신하는 스크린샷은
 반드시 문서와 어긋나므로 CI 가 매번 재생성하게 한다.
 
-라이트·다크 두 벌을 찍는다. 흰 종이가 다크에서 뜨는 것은 문제가 아니다 —
+라이트·다크 2종을 찍는다. 흰 종이가 다크에서 뜨는 것은 문제가 아니다 —
 배경만 어둡게 하면 종이가 어둠 위에 떠 있는 것으로 읽히고, 가운데 다크 타일과
-대비가 생겨 두 모드가 있다는 것이 한 장에서 전달된다."
+대비가 형성되어 두 모드가 있다는 것이 한 장에서 전달된다."
 ```
 
 ---
@@ -635,7 +635,7 @@ Pages 배포 뒤 `https://janghyun-bin.github.io/korean-report-skills/` 의 탭 
 
 ## 마무리
 
-- [ ] `CHANGELOG.md` 에 `[1.10.0]` 항목 추가. 로고 세 벌, 배너 생성기, README 헤더, 파비콘.
+- [ ] `CHANGELOG.md` 에 `[1.10.0]` 항목 추가. 로고 3종, 배너 생성기, README 헤더, 파비콘.
 - [ ] `package.json` · `pyproject.toml` · `.claude-plugin/marketplace.json` ·
       `plugins/korean-report/.claude-plugin/plugin.json` 의 version 을 `1.10.0` 으로 정합한다.
       `tests/test_consistency.py::test_version_is_the_same_in_every_place` 와
