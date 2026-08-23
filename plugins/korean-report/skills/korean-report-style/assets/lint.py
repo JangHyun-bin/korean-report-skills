@@ -361,6 +361,9 @@ def markdown_segments(text: str):
         i += 1
 
 
+HTML_HEADING = re.compile(r"<h[1-6]", re.I)
+
+
 def html_segments(text: str):
     masked = HTML_SKIP_BLOCK.sub(_blank, text)
     for i, raw in enumerate(masked.splitlines(), 1):
@@ -371,12 +374,30 @@ def html_segments(text: str):
             yield i, "html", QUOTED.sub(_blank, line)
 
 
+HTML_H = re.compile(r"<(h[1-6])\b[^>]*>(.*?)</\1\s*>", re.I | re.S)
+
+
+def html_headings(text: str):
+    """typesetting 을 거친 제목을 요소 단위로 낸다.
+
+    줄 단위로 훑으면 생성기가 개행 없이 이어 붙인 제목을 놓친다.
+    도해는 SVG text 로 나가므로 h1~h6 은 언제나 문서 제목이다.
+    """
+    masked = HTML_SKIP_BLOCK.sub(_blank, text)
+    for m in HTML_H.finditer(masked):
+        if EXEMPT in m.group(0):
+            continue
+        title = TAG.sub(" ", m.group(2))
+        yield masked.count("\n", 0, m.start()) + 1, title
+
+
 def visible_segments(text: str, html: bool):
     return html_segments(text) if html else markdown_segments(text)
 
 
 def heading_title(raw: str) -> str:
     title = re.sub(r"^#+\s*", "", raw.strip())
+    title = re.sub(r"\s+", " ", title)          # 태그를 지운 자리의 공백을 접는다
     return re.sub(r"^[\d.]+\s*", "", title).strip().rstrip(".")
 
 
@@ -414,19 +435,29 @@ def lint(text: str, name: str = "-", rules=None, html: bool = False,
                 ))
 
         if not html and context == "heading":
-            title = heading_title(line)
-            if not title or not re.search(r"[가-힣]", title):
-                continue
-            if BAD_HEADING.search(title) or QUESTION_OPENER.match(title) or CLAUSAL_HEADING.search(title):
-                out.append(Finding(
-                    name, i, 1, "제목", "§1.1 제목은 명사구", title,
-                    "명사구로 고친다", title[:80], "KRS-1.1-HEADING", title,
-                ))
+            out += _heading_finding(name, i, heading_title(line))
+
+    if html:
+        for i, raw_title in html_headings(text):
+            out += _heading_finding(name, i, heading_title(raw_title))
 
     out += _morph_findings(text, name, html, all_stems)
     out = _dedupe(out)
     out.sort(key=lambda f: (f.line, f.col, f.rule_id))
     return out
+
+
+def _heading_finding(name, line_no, title) -> list[Finding]:
+    """§1.1 — 제목은 명사구다. 서술형 · 의문형 · 절 형태를 잡는다."""
+    if not title or not re.search(r"[가-힣]", title):
+        return []
+    if not (BAD_HEADING.search(title) or QUESTION_OPENER.match(title)
+            or CLAUSAL_HEADING.search(title)):
+        return []
+    return [Finding(
+        name, line_no, 1, "제목", "§1.1 제목은 명사구", title,
+        "명사구로 고친다", title[:80], "KRS-1.1-HEADING", title,
+    )]
 
 
 def _morph_findings(text, name, html, all_stems) -> list[Finding]:

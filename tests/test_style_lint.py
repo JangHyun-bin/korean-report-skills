@@ -191,9 +191,23 @@ def test_html_reads_body_text_and_skips_markup():
     assert [f.line for f in found] == [2], "태그 안이나 pre 안을 걸었다"
 
 
-def test_html_does_not_check_headings():
-    """typesetting을 거친 제목은 도해의 주장일 수 있다 — 마크다운 원고에서만 본다."""
-    assert not run("<h2>필터는 제 역할을 하였다</h2>\n", "시험.html", html=True)
+def test_html_checks_headings():
+    """typesetting을 거친 제목도 §1.1 대상이다. 원고에서 빠져나간 제목이 여기에서 잡힌다."""
+    found = run("<h2>필터는 제 역할을 하였다</h2>\n", "시험.html", html=True)
+    assert [f.rule_id for f in found] == ["KRS-1.1-HEADING"]
+
+
+def test_html_heading_check_survives_a_generator_without_newlines():
+    """생성기가 개행 없이 이어 붙이면 줄 단위 검사로는 제목이 묻힌다."""
+    html = ('<section><h2><span class="sn">2</span>어디까지 왔는가</h2>'
+            "<p>본문이 같은 줄에 이어진다.</p></section>\n")
+    assert [f.rule_id for f in run(html, "시험.html", html=True)] == ["KRS-1.1-HEADING"]
+
+
+def test_svg_figure_titles_are_not_headings():
+    """도해 안의 주장은 문장이어도 된다 — SVG text 는 제목이 아니다."""
+    svg = '<svg class="fig"><text>CD는 웨이퍼 안에서도 흔들린다</text></svg>\n'
+    assert not [f for f in run(svg, "시험.html", html=True) if f.rule_id == "KRS-1.1-HEADING"]
 
 
 # ── 고치기 ───────────────────────────────────────────────────
