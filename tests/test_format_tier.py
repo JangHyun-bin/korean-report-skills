@@ -100,3 +100,71 @@ def test_chatbot_leftovers_are_flagged(phrase):
     hits = [f for f in lint.lint(f"# 표본\n\n{phrase}.\n", "t.md", RULES)
             if f.section.startswith("§10")]
     assert hits, phrase
+
+
+# ── §10.4 굵게 남발 · §10.5 완충어 과잉 (밀도) ──────────────────
+#
+# 둘 다 임계값이 잠정값이라 `--heuristic` 에서만 본다. 기본 검사에 들어가면
+# 근거 없이 숫자를 강제하게 된다. 여기서는 그 gate 자체를 먼저 검사한다.
+
+DENSITY = lint.load_density()
+
+
+def dense(text):
+    return lint.lint(text, "t.md", RULES, heuristic=True)
+
+
+def test_thresholds_come_from_the_reference_table():
+    """임계값을 code 에 적으면 규칙이 두 곳에 생긴다."""
+    assert DENSITY["limits"]["굵게 남발"] == 3
+    assert DENSITY["limits"]["완충어 과잉"] == 2
+    assert len(DENSITY["hedges"]) >= 10
+
+
+BOLD_HEAVY = "# 표본\n\n**OKR**, **KPI**, **BMC** 를 결합한다.\n"
+HEDGE_HEAVY = "# 표본\n\n이 정책이 일정 부분 영향을 미칠 가능성이 있다고 볼 여지도 있다.\n"
+
+
+@pytest.mark.parametrize("text", [BOLD_HEAVY, HEDGE_HEAVY])
+def test_density_rules_are_off_by_default(text):
+    assert not [f for f in lint.lint(text, "t.md", RULES)
+                if f.rule_id.startswith("KRS-D-")]
+
+
+def test_bold_overuse_is_flagged():
+    assert [f for f in dense(BOLD_HEAVY) if f.rule_id == "KRS-D-BOLD"]
+
+
+def test_two_bolds_pass():
+    """저장소 문단 515개 중 2개짜리가 6개다. 임계값 아래는 정상으로 둔다."""
+    assert not [f for f in dense("# 표본\n\n**핵심**은 **하나**다.\n")
+                if f.rule_id == "KRS-D-BOLD"]
+
+
+def test_bold_in_list_items_passes():
+    """목록은 항목마다 강조가 붙는 것이 정상이다."""
+    text = "# 표본\n\n- **성능** 개선\n- **보안** 강화\n- **속도** 향상\n"
+    assert not [f for f in dense(text) if f.rule_id == "KRS-D-BOLD"]
+
+
+def test_stacked_hedges_are_flagged():
+    assert [f for f in dense(HEDGE_HEAVY) if f.rule_id == "KRS-D-HEDGE"]
+
+
+def test_single_hedge_passes():
+    """완충어 하나는 정당하다. 근거가 실제로 약할 때 쓰는 장치다."""
+    text = "# 표본\n\n이 정책은 결과에 영향을 줄 가능성이 있다.\n"
+    assert not [f for f in dense(text) if f.rule_id == "KRS-D-HEDGE"]
+
+
+# ── §11 군더더기 구문 ───────────────────────────────────────────
+
+@pytest.mark.parametrize("before,after", [
+    ("목표를 달성하기 위한 목적으로 배분한다.", "목표를 달성하려면 배분한다."),
+    ("현재 시점에서는 확정하지 않는다.", "지금은 확정하지 않는다."),
+    ("처리할 수 있는 능력을 보유한다.", "처리할 수 있다."),
+])
+def test_filler_is_fixed_in_place(before, after):
+    """검증된 일대일 대응이므로 `--fix` 가 바로 고친다."""
+    out, n = lint.fix(f"# 표본\n\n{before}\n", RULES)
+    assert n and after in out, out

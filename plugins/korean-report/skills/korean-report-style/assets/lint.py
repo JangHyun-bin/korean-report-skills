@@ -43,6 +43,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 STYLE = HERE.parent
 TABLE = STYLE / "references" / "substitutions.md"
 HEURISTICS = STYLE / "references" / "software-handoff.md"
+DENSITY = STYLE / "references" / "density.md"
 
 try:
     import morph  # 형태소 검사. kiwipiepy 가 없으면 건너뛴다
@@ -79,7 +80,8 @@ TEACHING_HEADERS = {
     ("어체", "종결 어미"),
 }
 
-FIX_SECTION = 1
+# 검증된 일대일 대응만 `고침`이다 — §1 어미와 §11 군더더기 구문
+FIX_SECTIONS = frozenset((1, 11))
 MIN_LEN = 2
 MIN_SPLIT_LEN = 3
 SCOPES = frozenset(("all", "prose", "heading", "table", "html"))
@@ -261,7 +263,7 @@ def _load_rule_file(path: pathlib.Path, tier_override: str | None = None) -> lis
             except re.error as exc:
                 raise SystemExit(f"잘못된 regex {pattern!r}: {path}: {exc}") from exc
 
-            tier = tier_override or ("고침" if section == FIX_SECTION else "검토")
+            tier = tier_override or ("고침" if section in FIX_SECTIONS else "검토")
             rule_id = explicit_id or _generated_rule_id(section, pattern)
             rules.append({
                 "rule_id": rule_id,
@@ -419,7 +421,7 @@ def _matches(rule: dict, line: str):
 # ── Lint and fix ──────────────────────────────────────────────
 
 def lint(text: str, name: str = "-", rules=None, html: bool = False,
-         all_stems: bool = False) -> list[Finding]:
+         all_stems: bool = False, heuristic: bool = False) -> list[Finding]:
     rules = load_rules() if rules is None else rules
     out = []
 
@@ -445,9 +447,79 @@ def lint(text: str, name: str = "-", rules=None, html: bool = False,
     out += _emoji_findings(name, segments)
     out += _bold_label_findings(name, text, html)
     out += _heading_echo_findings(name, segments)
+    if heuristic:      # 임계값이 잠정값이므로 기본 검사에 넣지 않는다
+        out += _density_findings(name, text, html, load_density())
     out += _morph_findings(text, name, html, all_stems)
     out = _dedupe(out)
     out.sort(key=lambda f: (f.line, f.col, f.rule_id))
+    return out
+
+
+# ── 밀도 검사 ────────────────────────────────────
+
+BOLD_SPAN = re.compile(r"\*\*[^*]+\*\*")
+LIST_LINE = re.compile(r"^\s*(?:[-*+]|\d+\.)\s")
+SENTENCE_END = re.compile(r"(?<=다)\.\s|\.\s")
+
+
+def load_density(path: pathlib.Path = DENSITY) -> dict:
+    """임계값과 완충어 목록을 참조표에서 읽는다. 규칙을 두 곳에 적지 않는다."""
+    if not path.exists():
+        raise SystemExit(f"밀도 규칙 문서를 찾지 못하였다: {path}")
+    text = path.read_text(encoding="utf-8")
+    limits = {}
+    for ln in text.splitlines():
+        if not _is_table_row(ln) or _is_separator_row(ln):
+            continue
+        cells = [_clean_cell(c) for c in split_table_row(ln)]
+        if len(cells) >= 3 and cells[2].isdigit():
+            limits[cells[0]] = int(cells[2])
+    # 완충어는 띄어쓰기가 있어 한 줄씩 적는다. 단일 열 표는 표로 읽히지 않는다
+    fence = re.search("```text\n(.*?)```", text, re.S)
+    hedges = [w.strip() for w in fence.group(1).splitlines() if w.strip()] if fence else []
+    return {"limits": limits, "hedges": hedges}
+
+
+def _paragraphs(text: str, html: bool):
+    """(시작 줄, 문단 문자열). 목록 항목은 문단을 끊는다 —
+    항목마다 강조가 붙는 것은 정상이므로 같은 기준으로 세면 오탐이 된다."""
+    rows = [(no, ln) for no, ctx, ln in visible_segments(text, html) if ctx == "prose"]
+    buf, start, prev = [], None, None
+    for no, ln in rows:
+        if LIST_LINE.match(ln) or (prev is not None and no != prev + 1):
+            if buf:
+                yield start, " ".join(buf)
+            buf, prev = [], None
+            if LIST_LINE.match(ln):
+                continue
+        if not buf:
+            start = no
+        buf.append(ln)
+        prev = no
+    if buf:
+        yield start, " ".join(buf)
+
+
+def _density_findings(name, text, html, density) -> list[Finding]:
+    """§5.5 굵게 남발 · §5.7 완충어 과잉. 둘 다 밀도로 판정한다."""
+    bold_limit = density["limits"].get("굵게 남발", 3)
+    hedge_limit = density["limits"].get("완충어 과잉", 2)
+    out = []
+    for start, para in _paragraphs(text, html):
+        n = len(BOLD_SPAN.findall(para))
+        if n >= bold_limit:
+            out.append(Finding(
+                name, start, 1, "서식", "§10.4 굵게 남발", f"한 문단에 강조 {n}곳",
+                "문단당 하나로 줄이거나 표로 옮긴다", para.strip()[:80], "KRS-D-BOLD",
+            ))
+        for sent in SENTENCE_END.split(para):
+            hits = [h for h in density["hedges"] if h in sent]
+            if len(hits) >= hedge_limit:
+                out.append(Finding(
+                    name, start, 1, "의심", "§10.5 완충어 과잉",
+                    " · ".join(hits),
+                    "완충어를 하나로 줄인다", sent.strip()[:80], "KRS-D-HEDGE",
+                ))
     return out
 
 
@@ -777,7 +849,7 @@ def main(argv=None) -> int:
                 fixed += count
                 fixed_paths.append((str(path), count))
 
-        found += lint(text, str(path), rules, html, args.all_stems)
+        found += lint(text, str(path), rules, html, args.all_stems, include_heuristics)
 
     if args.tier:
         found = [f for f in found if f.tier in args.tier]

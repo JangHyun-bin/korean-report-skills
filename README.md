@@ -1,6 +1,6 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-317%20tests-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-329%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.17.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
@@ -163,7 +163,7 @@ npx korean-report-skills --remove        # 복사한 스킬 제거
 ### 문체 검사
 
 `korean-report-style`의 lint는 Markdown과 HTML의 가시 텍스트를 검사합니다.
-치환 목록 125건과 제목, 문맥 의존 표현, 어미 규칙, 형태소 규칙, 서식 규칙을
+치환 목록 134건과 제목, 문맥 의존 표현, 어미 규칙, 형태소 규칙, 서식 규칙을
 여섯 갈래로 구분합니다.
 
 | 갈래 | 의미 |
