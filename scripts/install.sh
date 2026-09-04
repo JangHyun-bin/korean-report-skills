@@ -36,5 +36,5 @@ for ag in "${AGENTS[@]}"; do
 done
 
 echo
-echo "완료. 세션을 새로 시작하면 적용된다."
-echo "확인 — /skills 를 입력해 목록에 보이는지 본다."
+echo "완료하였습니다. 세션을 새로 시작하면 적용됩니다."
+echo "/skills 를 입력해 목록에 보이는지 확인해 주세요."
