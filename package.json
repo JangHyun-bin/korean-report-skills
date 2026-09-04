@@ -1,6 +1,6 @@
 {
   "name": "korean-report-skills",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "description": "한국어 기술·사업 문서의 자립형 HTML 제작과 문체·프레이밍·정확성 검토를 제공하는 Agent Skills",
   "license": "Apache-2.0",
   "private": false,
