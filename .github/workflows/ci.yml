@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - run: pip install pytest playwright ruff
+      - run: pip install pytest playwright ruff kiwipiepy
       # --with-deps 는 리눅스 전용이다. 윈도에 주면 실패한다.
       - run: playwright install --with-deps chromium
         if: runner.os == 'Linux'
