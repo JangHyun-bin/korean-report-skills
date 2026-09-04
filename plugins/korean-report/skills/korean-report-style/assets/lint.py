@@ -474,7 +474,7 @@ def _morph_findings(text, name, html, all_stems) -> list[Finding]:
                                suggest, line.strip()[:80], "KRS-M-" + kind, matched))
     major, minor = morph.sentence_style(lines, rules, name)
     for no, col, form in minor:
-        out.append(Finding(name, no, col + 1, "형태", "§1.4 문체 혼용", form,
+        out.append(Finding(name, no, col + 1, "형태", "§4 문체 혼용", form,
                            "문서 전체를 " + major + "로 통일한다",
                            "종결 어미 " + form, "KRS-M-STYLE", form))
     return out
@@ -688,6 +688,10 @@ def main(argv=None) -> int:
     else:
         for path, count in fixed_paths:
             print(f"{path} — 어미 {count}곳을 고쳤다")
+        # 돌리지 못한 검사를 「위반 없음」으로 읽히게 두면 검사기가 없는 것만 못하다
+        if morph is None or not morph.available():
+            print("형태소 검사를 건너뛰었다 — python -m pip install kiwipiepy",
+                  file=sys.stderr)
         report(found)
 
     return 1 if found else 0
