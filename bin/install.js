@@ -16,7 +16,7 @@ const HELP = `korean-report-skills 파일 복사 설치기
   npx korean-report-skills --project  현재 프로젝트에 설치
   npx korean-report-skills --remove   복사한 스킬 제거
 
-Claude Code와 Codex는 plugin marketplace 설치도 지원한다.
+Claude Code와 Codex는 plugin marketplace 설치도 지원합니다.
 특정 GitHub revision: npx github:JangHyun-bin/korean-report-skills cursor`;
 
 const ROOT = path.join(__dirname, '..');
@@ -43,7 +43,7 @@ if (unknown.length) {
 }
 
 if (!fs.existsSync(SRC)) {
-  console.error(`스킬 폴더를 찾지 못하였다: ${SRC}`);
+  console.error(`스킬 폴더를 찾지 못하였습니다: ${SRC}`);
   process.exit(1);
 }
 
@@ -67,7 +67,7 @@ for (const agent of agents) {
     fs.rmSync(dest, { recursive: true, force: true });
     fs.cpSync(path.join(SRC, skill), dest, { recursive: true });
     if (!fs.existsSync(path.join(dest, 'SKILL.md'))) {
-      console.error(`  실패  ${dest} — SKILL.md 가 없다`);
+      console.error(`  실패  ${dest} — SKILL.md 가 없습니다`);
       process.exit(1);
     }
     console.log(`  설치됨  ${dest}`);
@@ -76,8 +76,8 @@ for (const agent of agents) {
 }
 
 if (!done) {
-  console.log(remove ? '제거할 것이 없다.' : '설치된 것이 없다.');
+  console.log(remove ? '제거할 것이 없습니다.' : '설치된 것이 없습니다.');
 } else if (!remove) {
-  console.log('\n완료. 세션을 새로 시작하면 적용된다.');
-  console.log('확인 — /skills 를 입력해 목록에 보이는지 본다.');
+  console.log('\n완료하였습니다. 세션을 새로 시작하면 적용됩니다.');
+  console.log('/skills 를 입력해 목록에 보이는지 확인해 주세요.');
 }
