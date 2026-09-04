@@ -84,7 +84,7 @@ MIN_LEN = 2
 MIN_SPLIT_LEN = 3
 SCOPES = frozenset(("all", "prose", "heading", "table", "html"))
 MATCHERS = frozenset(("literal", "regex"))
-TIERS = ("고침", "검토", "제목", "의심", "형태")
+TIERS = ("고침", "검토", "제목", "의심", "형태", "서식")
 FORMATS = ("text", "json", "github", "sarif")
 
 
@@ -441,9 +441,112 @@ def lint(text: str, name: str = "-", rules=None, html: bool = False,
         for i, raw_title in html_headings(text):
             out += _heading_finding(name, i, heading_title(raw_title))
 
+    segments = list(visible_segments(text, html))
+    out += _emoji_findings(name, segments)
+    out += _bold_label_findings(name, text, html)
+    out += _heading_echo_findings(name, segments)
     out += _morph_findings(text, name, html, all_stems)
     out = _dedupe(out)
     out.sort(key=lambda f: (f.line, f.col, f.rule_id))
+    return out
+
+
+# ── 서식 검사 ────────────────────────────────────
+
+# 그림문자만 잡는다. `→` `←` `✓` `✗` `⚠` 처럼 본문 기호로 쓰는 문자는
+# 기본 표현이 이모지가 아니므로 제외한다. 저장소 문서가 `→` 를 500회 넘게 쓴다.
+EMOJI = re.compile(
+    "[🌀-🫿]"                       # 그림문자
+    "|[☀-➿⬀-⯿]️"          # 기호 + 이모지 표현 선택자
+    "|[✅❌❎✨⭐⚡⛔❗❓]"   # 기본 표현이 이모지인 기호
+)
+# 라벨은 `**성능:**` 과 `**성능**:` 두 형태로 쓴다
+BOLD_LABEL = re.compile(
+    r"^\s*(?:[-*+]|\d+\.)\s+\*\*\s*([^*:：]+)\s*[:：]?\s*\*\*\s*[:：]?\s*(.*)$"
+)
+LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+\.)\s+\S")
+MIN_LABEL_RUN = 3       # 두 항목은 우연이다. 세션부터 틀로 본다
+ECHO_MAX = 40           # 제목을 되풀이는 문장은 짧다
+
+
+def _emoji_findings(name, segments) -> list[Finding]:
+    """§5.1 — 이모지는 장식이다."""
+    out = []
+    for no, _ctx, line in segments:
+        for m in EMOJI.finditer(line):
+            out.append(Finding(
+                name, no, m.start() + 1, "서식", "§10.1 이모지", m.group(0),
+                "이모지를 삭제한다", line.strip()[:80], "KRS-F-EMOJI",
+            ))
+    return out
+
+
+def _bold_label_findings(name, text: str, html: bool) -> list[Finding]:
+    """§5.3 — 목록 항목이 전부 굵은 라벨로 시작하면 라벨이 분류축을 하지 않는다.
+
+    검사 단위는 목록 블록이다. 항목 하나만 보면 정당한 용어 정의와 가리지 못한다.
+    """
+    if html:
+        return []
+    visible = {no for no, _ctx, _line in markdown_segments(text)}
+    out, run = [], []
+    for no, raw in enumerate(text.splitlines(), 1):
+        if no in visible and LIST_ITEM.match(raw):
+            run.append((no, raw))
+            continue
+        if run:
+            out += _flush_label_run(name, run)
+            run = []
+    out += _flush_label_run(name, run)
+    return out
+
+
+def _flush_label_run(name, run) -> list[Finding]:
+    """라벨이 본문을 되풀이는 목록만 낸다.
+
+    형태만으로 판정하면 용어 사전과 점검 목록까지 걸린다. 명세의 판정 질문은
+    「라벨이 항목을 구분하는가, 항목 첫 낟말을 되풀이는가」 이다.
+    """
+    if len(run) < MIN_LABEL_RUN:
+        return []
+    parsed = [BOLD_LABEL.match(raw) for _no, raw in run]
+    if not all(parsed):
+        return []
+    echoed = sum(1 for m in parsed if m.group(1).strip() and m.group(1).strip() in m.group(2))
+    if echoed * 2 < len(run):
+        return []
+    no, raw = run[0]
+    return [Finding(
+        name, no, 1, "서식", "§10.2 굵은 라벨 목록",
+        f"라벨 목록 {len(run)}항 중 {echoed}항이 라벨을 되풀이한다",
+        "문장으로 펴거나 표로 옮긴다", raw.strip()[:80], "KRS-F-LABEL",
+    )]
+
+
+def _heading_echo_findings(name, segments) -> list[Finding]:
+    """§5.4 — 제목 바로 다음 문장이 제목을 되풀이한다.
+
+    검사 단위는 제목과 그 다음 문단의 인접이다.
+    """
+    out = []
+    rows = list(segments)
+    for idx, (no, ctx, line) in enumerate(rows):
+        if ctx != "heading":
+            continue
+        title = heading_title(line)
+        if len(title) < 2 or not re.search(r"[가-힣]", title):
+            continue
+        nxt = next(((n, c, ln) for n, c, ln in rows[idx + 1:] if ln.strip()), None)
+        if not nxt or nxt[1] != "prose":
+            continue
+        n, _c, body = nxt
+        stripped = body.strip()
+        if len(stripped) > ECHO_MAX or not stripped.startswith(title):
+            continue
+        out.append(Finding(
+            name, n, 1, "서식", "§10.3 제목 되풀이", stripped[:40],
+            "제목을 되풀이한 문장을 삭제한다", stripped[:80], "KRS-F-ECHO",
+        ))
     return out
 
 

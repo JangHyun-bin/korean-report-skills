@@ -1,6 +1,6 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-294%20tests-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-317%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.17.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
@@ -163,7 +163,8 @@ npx korean-report-skills --remove        # 복사한 스킬 제거
 ### 문체 검사
 
 `korean-report-style`의 lint는 Markdown과 HTML의 가시 텍스트를 검사합니다.
-치환 목록 118건과 제목, 문맥 의존 표현, 어미 규칙을 네 갈래로 구분합니다.
+치환 목록 125건과 제목, 문맥 의존 표현, 어미 규칙, 형태소 규칙, 서식 규칙을
+여섯 갈래로 구분합니다.
 
 | 갈래 | 의미 |
 |---|---|
@@ -171,6 +172,8 @@ npx korean-report-skills --remove        # 복사한 스킬 제거
 | 검토 | 문맥을 확인한 뒤 선택해야 하는 표현 |
 | 제목 | 명사구가 아닌 제목 |
 | 의심 | `--heuristic`에서만 확인하는 문맥 의존 표현 |
+| 형태 | 형태소로 판정하는 어간·활용·어체 혼용 |
+| 서식 | 문장이 아니라 마크업의 결함 — 이모지, 라벨 목록, 제목 되풀이 |
 
 검사 결과는 일반 텍스트뿐 아니라 JSON, GitHub annotation, SARIF로도 출력할 수 있습니다.
 의미가 달라질 수 있는 용어나 문맥 의존 표현은 자동으로 수정하지 않습니다.
