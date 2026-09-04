@@ -530,7 +530,7 @@ def _heading_echo_findings(name, segments) -> list[Finding]:
     """
     out = []
     rows = list(segments)
-    for idx, (no, ctx, line) in enumerate(rows):
+    for idx, (_no, ctx, line) in enumerate(rows):
         if ctx != "heading":
             continue
         title = heading_title(line)
