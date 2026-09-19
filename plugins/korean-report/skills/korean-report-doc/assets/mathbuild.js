@@ -8,7 +8,7 @@
  *   1. ⟦I⟧ / ⟦D⟧ 마커를 KaTeX 로 렌더한다 (빌드 시점)
  *   2. 렌더 결과가 실제로 참조하는 woff2 만 골라 base64 로 내장한다
  *   3. tokens.css · base.css · 모드 CSS(paper/deck)를 <html data-mode> 를 보고 삽입한다
- *   4. --font 로 준 Pretendard woff2 를 @font-face 로 내장한다
+ *   4. 동봉 Pretendard subset 을(또는 --font 로 준 woff2 를) @font-face 로 내장한다
  *
  * 실패하면 exit 1 이다. 조용히 잘못 렌더된 수식이 수식 없는 것보다 나쁘다.
  */
@@ -141,6 +141,17 @@ console.log(`KaTeX 폰트 — 내장 ${inlined} · 제외 ${dropped} (${(fontByt
 html = put(html, '__KATEXCSS__', css);
 
 // ── 4. 본문 폰트 (Pretendard) 내장 ─────────────────────────
+// --font 가 없으면 스킬이 동봉한 공식 subset 을 내장한다. 공식 파일을 변경 없이 쓴다 —
+// Pretendard 의 OFL 은 Reserved Font Name 을 선언하므로 직접 만든 subset 은 그 이름을 쓸 수 없다.
+const FONT_DIR = path.join(assetsDir, 'fonts');
+const BUNDLED = [['Pretendard-Regular.subset.woff2', 400], ['Pretendard-SemiBold.subset.woff2', 600]];
+const usingBundled = !fonts.length;
+if (usingBundled) {
+  for (const [file, weight] of BUNDLED) {
+    const p = path.join(FONT_DIR, file);
+    if (fs.existsSync(p)) fonts.push(`${p}:${weight}`);
+  }
+}
 const WEIGHTS = { thin:100, extralight:200, light:300, regular:400, medium:500,
                   semibold:600, bold:700, extrabold:800, black:900 };
 let fontCss = '';
@@ -151,7 +162,7 @@ if (fonts.length) {
     if (!fs.existsSync(fp)) { fail.push(`--font 경로가 없다: ${fp}`); continue; }
     const stem = path.basename(fp, path.extname(fp));
     const isVar = /variable/i.test(stem);
-    const suffix = (stem.split('-')[1] || 'Regular').toLowerCase();
+    const suffix = (stem.split('-')[1] || 'Regular').split('.')[0].toLowerCase();
     const weight = wExplicit || (isVar ? '45 920' : (WEIGHTS[suffix] || 400));
     const buf = fs.readFileSync(fp);
     bytes += buf.length; n++;
@@ -159,9 +170,20 @@ if (fonts.length) {
                `font-display:swap;src:url(data:font/woff2;base64,${buf.toString('base64')}) format("woff2")}\n`;
   }
   console.log(`본문 폰트 — 내장 ${n} (${(bytes / 1024).toFixed(0)} KB)`);
+  // subset 밖의 한글 음절은 system font 로 표시된다. 실패로 처리하지 않고 알린다.
+  const glyphFile = path.join(FONT_DIR, 'subset_glyphs.txt');
+  if (usingBundled && fs.existsSync(glyphFile)) {
+    const covered = new Set(fs.readFileSync(glyphFile, 'utf8'));
+    const text = html.replace(/<style[\s\S]*?<\/style>|<[^>]+>/g, '');
+    const missing = [...new Set(text.match(/[가-힣]/g) || [])].filter(c => !covered.has(c));
+    if (missing.length) {
+      warn.push(`Pretendard subset 에 없는 한글 ${missing.length}자 — system font 로 표시된다: ` +
+                missing.slice(0, 10).join(''));
+    }
+  }
 } else {
-  warn.push('Pretendard 미내장 — 시스템 폰트로 폴백한다. 오프라인·타 기기에서 typesetting 결과가 달라진다. ' +
-            '--font 로 woff2 를 지정한다.');
+  warn.push('Pretendard 미내장 — assets/fonts/ 가 없다. 시스템 폰트로 폴백하며 기기마다 ' +
+            'typesetting 결과가 달라진다. --font 로 woff2 를 지정한다.');
 }
 html = put(html, '__FONTCSS__', fontCss);
 

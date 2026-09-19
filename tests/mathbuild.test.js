@@ -145,10 +145,43 @@ test('없는 폰트 경로는 빌드를 세운다', () => {
   assert.match(r.stderr, /--font 경로가 없다/);
 });
 
-test('폰트를 주지 않으면 경고만 하고 통과한다', () => {
+test('--font 가 없으면 동봉 Pretendard 를 내장한다', () => {
   const r = build('<section><p>x</p></section>');
-  assert.strictEqual(r.status, 0);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.out, /@font-face\{font-family:'Pretendard';font-style:normal;font-weight:400/);
+  assert.match(r.out, /font-weight:600/);
+  assert.ok(!(r.stderr + r.stdout).includes('Pretendard 미내장'));
+  assert.match(r.out, /Pretendard 본문 글꼴 — SIL Open Font License 1\.1/);
+  assert.match(r.out, /이 문서에 내장된 제3자 자산/);
+  assert.match(r.out, /KaTeX.*MIT License/);
+});
+
+test('동봉 font 가 없는 assets 이면 경고만 하고 통과한다', () => {
+  const d = tmpdir();
+  const assets = path.join(d, 'assets');
+  fs.cpSync(ASSETS, assets, { recursive: true });
+  fs.rmSync(path.join(assets, 'fonts'), { recursive: true });
+  const inFile = path.join(d, 'raw.html');
+  fs.writeFileSync(inFile, template('paper').replace('__BODY__', '<p>x</p>').replace('__TITLE__', 'T'));
+  const r = spawnSync(process.execPath, [BUILD, inFile, path.join(d, 'out.html'), '--assets', assets],
+                      { encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stderr + r.stdout, /Pretendard 미내장/);
+});
+
+test('subset 밖의 한글은 경고한다', () => {
+  const r = build('<section><p>갃 은 KS X 1001 밖의 음절이다</p></section>');
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stderr + r.stdout, /subset 에 없는 한글 1자.*갃/);
+});
+
+test('파일명의 .subset 을 굵기로 오인하지 않는다', () => {
+  const d = tmpdir();
+  const fake = path.join(d, 'Pretendard-SemiBold.subset.woff2');
+  fs.writeFileSync(fake, Buffer.from('wOF2fake-payload'));
+  const r = build('<section><p>x</p></section>', { args: ['--font', fake] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.out, /font-weight:600/);
 });
 
 test('폰트를 주면 @font-face 로 내장된다', () => {
@@ -167,15 +200,6 @@ test('KaTeX 폰트는 쓰이는 계열만 내장한다', () => {
   const r = build('<section><p>⟦I⟧x⟦/I⟧</p></section>');
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /KaTeX 폰트 — 내장 \d+ · 제외 [1-9]/, '제외된 계열이 없다');
-});
-
-test('내장한 글꼴의 라이선스를 문서가 스스로 고지한다', () => {
-  const r = build('<section><p>x</p></section>');
-  assert.strictEqual(r.status, 0, r.stderr);
-  assert.match(r.out, /이 문서에 내장된 제3자 자산/);
-  assert.match(r.out, /KaTeX.*MIT License/);
-  assert.ok(!r.out.includes('Pretendard 본문 글꼴'),
-            '본문 글꼴을 내장하지 않았는데 고지가 들어갔다');
 });
 
 test('본문 글꼴을 내장하면 OFL 고지가 함께 들어간다', () => {
