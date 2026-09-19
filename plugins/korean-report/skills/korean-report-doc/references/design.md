@@ -92,7 +92,8 @@ a 4px grid, tracking tightening monotonically with size. Print overrides the sam
 | Body | `--t0` |
 | Table · lists · callout text | `--t-1` |
 | Caption · eyebrow · table header | `--t-2` |
-| Badge · EOD | `--t-3` |
+| Badge | `--t-3` |
+| EOD — paper · deck | `--t-3` · `--t-2` |
 
 **Tracking is negative for display sizes and near-zero for small text.** This is the
 single most recognizable trait of the system; omitting it makes headlines look loose and
@@ -104,7 +105,8 @@ because deck text is short and scanned, not read.
 ### 1.3 Spacing & radius
 
 Spacing is `--s-1` … `--s-10` (4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 80 · 96px); radius is
-`--r-sm` · `--r-md` · `--r-lg` · `--r-pill`. Values are in `tokens.css`.
+`--r-sm` · `--r-md` · `--r-lg` · `--r-pill`. Values are in `tokens.css`. The pre-1.x names
+(`--s-xs` … `--s-sec`) remain as aliases until 2.0.
 
 Section padding is `--s-9` in deck mode, `64px` top-only in paper mode.
 
@@ -305,7 +307,7 @@ cells as well as body text.
 For headline numbers. Two per row, never three.
 
 ```css
-.metric{ border:1px solid var(--rule); border-radius:var(--r-lg); padding:var(--s-xl) }
+.metric{ border:1px solid var(--rule); border-radius:var(--r-lg); padding:var(--s-6) }
 .metric .mlabel{ font-size:14px; color:var(--ink-3) }
 .metric .mval  { font-size:clamp(30px,3.6vw,42px); font-weight:600;
                  letter-spacing:-.02em; line-height:1.05 }
