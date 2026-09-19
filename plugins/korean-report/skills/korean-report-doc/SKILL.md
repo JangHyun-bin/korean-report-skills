@@ -136,9 +136,9 @@ node mathbuild.js raw.html out.html \
 python <스킬경로>/assets/qa.py out.html --pdf --shot shots/
 ```
 
-paper PDF 는 쪽 하단에 제목과 쪽번호를 인쇄한다.
+`qa.py --pdf`가 paper PDF 의 쪽 하단에 제목과 쪽번호를 인쇄한다.
 
-직접 부르려면:
+직접 부르려면(아래 예시는 이 footer 를 인쇄하지 않는다):
 
 ```python
 from playwright.sync_api import sync_playwright

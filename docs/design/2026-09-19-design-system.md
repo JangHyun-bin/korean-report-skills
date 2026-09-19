@@ -9,6 +9,13 @@
 - **구현 제외** — 12컬럼 grid 와 sidenote, 새 도해 타입, pixel 단위 visual regression,
   component 명세의 전면 개정
 
+> **이후 변경 (2026-09-19)** — §4.1 이 적은 `--font-head`와 §5.1 의 theme knob token 은
+> ① 단계 구현에서 제외한다. 제목 서체를 theme 마다 다르게 여는 것은 ② theme 단계의 범위이고,
+> ①은 값 하나짜리 `--font-body`만 정의한다. §4.5 가 요구하는 PDF footer 의 날짜도 제외한다 —
+> `<meta name="krdoc-date">`를 읽는 자리가 template · generator 어디에도 아직 없고, 날짜
+> 필드를 여는 일은 장르마다 다른 stamp 관행을 다루는 ③ 단계의 범위다. ①의 footer 는 제목과
+> 쪽번호만 인쇄한다.
+
 ## 1. 목표
 
 현행 `korean-report-doc`은 시각 규약 하나를 산출한다. 품질은 높으나 진행현황 · 기술보고 · 제안서 ·

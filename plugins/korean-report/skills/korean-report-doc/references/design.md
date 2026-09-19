@@ -145,7 +145,8 @@ black (cover) → light → parchment → dark → light → parchment → … �
 - **Dark tiles are reserved for the two or three most consequential sections** — the
   central claim, the gap analysis, the roadmap. Using dark for a routine table wastes it.
 - Two adjacent tiles never share a background.
-- Cover and closing are `--black`, distinct from the `--code-bg` used mid-document.
+- Cover and closing are `--black`, distinct from the `.dark` surface (`--surface` under
+  `.dark`) used mid-document.
 
 ### 2.2 Paper: continuous flow
 
