@@ -9,6 +9,7 @@ SKILL.md §4 체크리스트의 기계 검사 부분을 수행한다.
 검사에 실패하면 exit 1이다.
 """
 import argparse
+import html
 import pathlib
 import sys
 
@@ -73,6 +74,18 @@ CHECK_JS = """() => {
 }"""
 
 
+def footer_template(title: str) -> str:
+    """
+    paper PDF 의 쪽 하단. Chromium 이 pageNumber · totalPages class 에 값을 채운다.
+    header · footer 는 문서와 분리된 문맥에서 렌더되어 문서의 token 과 글꼴을 읽지 못한다.
+    그래서 여기만 색과 글꼴을 직접 지정한다.
+    """
+    return ('<div style="width:100%;margin:0 16mm;display:flex;justify-content:space-between;'
+            'font:7pt sans-serif;color:#7a7a7a">'
+            f'<span>{html.escape(title)}</span>'
+            '<span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>')
+
+
 def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | None) -> int:
     fails, notes = [], []
     with sync_playwright() as p:
@@ -122,7 +135,10 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
                     f"타일 {o['i']}「{o['label']}」이 한 쪽을 넘는다 — "
                     f"{o['need']}px 필요, 쪽 높이 {o['page']}px. 섹션을 쪼갠다"
                 )
-            pg.emulate_media(media="screen")
+            # "screen"이 아니라 "null"로 되돌린다 — screen으로 명시하면 emulation이 걸린
+            # 채로 남아 뒤의 pg.pdf()가 print CSS 대신 화면 CSS 로 렌더한다.
+            # 스크린샷은 emulation 을 걸지 않아도 기본이 screen 이라 영향이 없다.
+            pg.emulate_media(media="null")
 
         if shot:
             shot.mkdir(parents=True, exist_ok=True)
@@ -131,7 +147,14 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
 
         if pdf:
             pdf.parent.mkdir(parents=True, exist_ok=True)
-            pg.pdf(path=str(pdf), format="A4", landscape=landscape, print_background=True)
+            if landscape:
+                pg.pdf(path=str(pdf), format="A4", landscape=True, print_background=True)
+            else:
+                # 여백은 paper.css 의 @page 와 같다. footer 는 아래 여백 안에 인쇄된다.
+                pg.pdf(path=str(pdf), format="A4", print_background=True,
+                       display_header_footer=True, header_template="<span></span>",
+                       footer_template=footer_template(pg.title()),
+                       margin={"top": "18mm", "bottom": "18mm", "left": "16mm", "right": "16mm"})
             notes.append(f"PDF — {pdf}")
 
         b.close()
