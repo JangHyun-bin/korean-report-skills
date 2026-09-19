@@ -130,6 +130,13 @@ test('치환되지 않은 토큰은 빌드를 세운다', () => {
   assert.match(r.stderr, /__BODY__/);
 });
 
+test('__TOKENCSS__ 자리가 없는 stale 템플릿은 빌드를 세운다', () => {
+  const raw = template('paper').replace('<style>__TOKENCSS__</style>', '');
+  const r = build(null, { raw });
+  assert.strictEqual(r.status, 1, 'stale 템플릿 사본이 조용히 통과했다');
+  assert.match(r.stderr, /template 에 __TOKENCSS__ 자리가 없다 — assets\/\*_template\.html 로 갱신한다/);
+});
+
 test('data-mode 가 없으면 빌드를 세운다', () => {
   const raw = template('paper')
     .replace('data-mode="paper"', '')
@@ -173,6 +180,12 @@ test('subset 밖의 한글은 경고한다', () => {
   const r = build('<section><p>갃 은 KS X 1001 밖의 음절이다</p></section>');
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stderr + r.stdout, /subset 에 없는 한글 1자.*갃/);
+});
+
+test('주석 안의 한글은 subset 경고에서 제외한다', () => {
+  const r = build('<section><p>본문이다</p><!-- 갃 --></section>');
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!(r.stderr + r.stdout).includes('subset 에 없는 한글'), '주석 속 문자가 경고를 일으켰다');
 });
 
 test('파일명의 .subset 을 굵기로 오인하지 않는다', () => {

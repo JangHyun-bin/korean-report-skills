@@ -174,7 +174,9 @@ if (fonts.length) {
   const glyphFile = path.join(FONT_DIR, 'subset_glyphs.txt');
   if (usingBundled && fs.existsSync(glyphFile)) {
     const covered = new Set(fs.readFileSync(glyphFile, 'utf8'));
-    const text = html.replace(/<style[\s\S]*?<\/style>|<[^>]+>/g, '');
+    // 주석부터 지운다 — <[^>]+> 는 첫 '>' 에서 멈추므로, 주석 안에 '>' 가 하나라도
+    // 있으면(예: 지워 둔 옛 markup) 그 뒤의 한글이 태그로 안 지워지고 그대로 스캔된다.
+    const text = html.replace(/<!--[\s\S]*?-->|<style[\s\S]*?<\/style>|<[^>]+>/g, '');
     const missing = [...new Set(text.match(/[가-힣]/g) || [])].filter(c => !covered.has(c));
     if (missing.length) {
       warn.push(`Pretendard subset 에 없는 한글 ${missing.length}자 — system font 로 표시된다: ` +
@@ -194,6 +196,12 @@ if (!modeMatch) {
 } else {
   const mode = modeMatch[1];
   const read = f => fs.readFileSync(path.join(assetsDir, 'css', f), 'utf8');
+  // put() 은 marker 가 없으면 조용히 아무 것도 하지 않는다 — SKILL.md 가 안내하는 대로
+  // *_template.html 을 복사해 두고 갱신하지 않은 사본에는 __TOKENCSS__ 자리 자체가 없어
+  // 이 검사가 없으면 token 없이 exit 0 으로 빌드가 끝난다.
+  if (!html.includes('__TOKENCSS__')) {
+    fail.push('template 에 __TOKENCSS__ 자리가 없다 — assets/*_template.html 로 갱신한다');
+  }
   html = put(html, '__TOKENCSS__', read('tokens.css'));
   html = put(html, '__BASECSS__', read('base.css'));
   html = put(html, '__MODECSS__', read(`${mode}.css`));
