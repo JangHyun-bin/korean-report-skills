@@ -17,6 +17,7 @@ STYLE_ASSETS = STYLE / "assets"
 
 sys.path.insert(0, str(ASSETS))
 sys.path.insert(0, str(STYLE_ASSETS))
+sys.path.append(str(ROOT / "scripts"))   # csstokens — assets/qa.py 를 가리지 않도록 뒤에 둔다
 
 
 def read(p: pathlib.Path) -> str:
@@ -24,7 +25,7 @@ def read(p: pathlib.Path) -> str:
 
 
 def css_bundle() -> str:
-    return "\n".join(read(CSS / f) for f in ("base.css", "paper.css", "deck.css"))
+    return "\n".join(read(CSS / f) for f in ("tokens.css", "base.css", "paper.css", "deck.css"))
 
 
 def all_markdown() -> list[pathlib.Path]:

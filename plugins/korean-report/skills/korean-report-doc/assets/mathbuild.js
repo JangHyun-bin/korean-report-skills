@@ -7,7 +7,7 @@
  * 하는 일
  *   1. ⟦I⟧ / ⟦D⟧ 마커를 KaTeX 로 렌더한다 (빌드 시점)
  *   2. 렌더 결과가 실제로 참조하는 woff2 만 골라 base64 로 내장한다
- *   3. base.css 와 모드 CSS(paper/deck)를 <html data-mode> 를 보고 삽입한다
+ *   3. tokens.css · base.css · 모드 CSS(paper/deck)를 <html data-mode> 를 보고 삽입한다
  *   4. --font 로 준 Pretendard woff2 를 @font-face 로 내장한다
  *
  * 실패하면 exit 1 이다. 조용히 잘못 렌더된 수식이 수식 없는 것보다 나쁘다.
@@ -172,11 +172,12 @@ if (!modeMatch) {
 } else {
   const mode = modeMatch[1];
   const read = f => fs.readFileSync(path.join(assetsDir, 'css', f), 'utf8');
+  html = put(html, '__TOKENCSS__', read('tokens.css'));
   html = put(html, '__BASECSS__', read('base.css'));
   html = put(html, '__MODECSS__', read(`${mode}.css`));
   console.log(`모드 — ${mode}`);
 }
-for (const ph of ['__BASECSS__', '__MODECSS__', '__FONTCSS__', '__KATEXCSS__']) {
+for (const ph of ['__TOKENCSS__', '__BASECSS__', '__MODECSS__', '__FONTCSS__', '__KATEXCSS__']) {
   if (html.includes(ph)) fail.push(`CSS 플레이스홀더 ${ph} 가 치환되지 않았다`);
 }
 

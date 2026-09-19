@@ -15,7 +15,8 @@ import pytest
 from conftest import ASSETS, CSS, DOC, ROOT, SKILLS, STYLE, STYLE_ASSETS, all_markdown, css_bundle, read
 
 TEMPLATES = {m: ASSETS / f"{m}_template.html" for m in ("paper", "deck")}
-PLACEHOLDERS = ("__TITLE__", "__BODY__", "__FONTCSS__", "__KATEXCSS__", "__BASECSS__", "__MODECSS__")
+PLACEHOLDERS = ("__TITLE__", "__BODY__", "__FONTCSS__", "__KATEXCSS__", "__TOKENCSS__",
+                "__BASECSS__", "__MODECSS__")
 
 
 def defined_classes() -> set[str]:
@@ -199,23 +200,6 @@ def test_referenced_files_exist():
     )
 
 
-def test_figures_palette_matches_css_tokens():
-    """figures.py 의 상수와 base.css 의 토큰이 어긋나면 도해만 다른 색이 된다."""
-    import figures as F
-
-    base = read(CSS / "base.css")
-    pairs = {
-        "--ink:": F.INK, "--ink48:": F.INK48, "--primary:": F.PRI,
-        "--fig-mid:": F.MID, "--fig-line:": F.LINE,
-        "--fig-soft:": F.SOFT, "--fig-pale:": F.PALE,
-    }
-    for token, want in pairs.items():
-        m = re.search(re.escape(token) + r"\s*(#[0-9a-fA-F]{3,8})", base)
-        assert m, f"base.css 에 {token} 토큰이 없다"
-        assert m.group(1).lower() == want.lower(), \
-            f"{token} 이 base.css 에서 {m.group(1)}, figures.py 에서 {want} 다"
-
-
 def count_substitution_rows() -> int:
     """
     치환쌍만 센다. §9 는 「용어 · 흔한 오역 · 무엇이 틀리는가」라 치환쌍이 아니므로 제외한다.
@@ -342,21 +326,17 @@ def test_mark_pins_its_text_color():
     `<mark>` 가 글자색을 상속하면 다크 타일에서 노랑 위 흰 글자가 된다.
     typesetting 결과에서 확인한 사고다 — 색을 물려받은 안은 다크에서 읽히지 않았고,
     박아 둔 안만 살아남았다. hex 를 박아 도해가 사라지던 것과 같은 계통이다.
+    재정의 금지는 tests/test_tokens.py 가 검사한다.
     """
-    base = read(CSS / "base.css")
+    tokens = read(CSS / "tokens.css")
     for token in ("--mark:", "--mark-ink:"):
-        assert token in base, f"base.css 에 {token} 토큰이 없다"
+        assert token in tokens, f"tokens.css 에 {token} 토큰이 없다"
 
-    rule = re.search(r"(?<![\w-])mark\{([^}]*)\}", base)
+    rule = re.search(r"(?<![\w-])mark\{([^}]*)\}", read(CSS / "base.css"))
     assert rule, "base.css 에 mark 규칙이 없다"
     assert "var(--mark-ink)" in rule.group(1), (
         "mark 가 글자색을 고정하지 않는다 — 다크 타일이 --ink 를 흰색으로 뒤집으면 읽히지 않는다"
     )
-
-    # 다크 타일이 토큰을 뒤집으면 고정한 의미가 없어진다. 인쇄 블록은 되돌리는 자리라 제외한다.
-    deck_screen = read(CSS / "deck.css").split("@media print")[0]
-    assert "--mark-ink:" not in deck_screen, \
-        "deck.css 가 --mark-ink 를 다시 정의한다 — 고정이어야 한다"
 
 
 def test_italic_is_limited_to_declared_latin():

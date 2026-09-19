@@ -87,13 +87,13 @@ test('정상 입력이면 exit 0 이고 수식이 렌더된다', () => {
   assert.match(copied.out, /class="katex/);
 });
 
-test('CSS 네 자리가 모두 채워진다', () => {
+test('CSS 자리가 모두 채워진다', () => {
   const r = build('<section><p>본문</p></section>');
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const ph of ['__FONTCSS__', '__KATEXCSS__', '__BASECSS__', '__MODECSS__']) {
+  for (const ph of ['__FONTCSS__', '__KATEXCSS__', '__TOKENCSS__', '__BASECSS__', '__MODECSS__']) {
     assert.ok(!r.out.includes(ph), `${ph} 가 남았다`);
   }
-  assert.match(r.out, /--primary:#0066cc/, 'base.css 가 들어가지 않았다');
+  assert.match(r.out, /--accent:#0066cc/, 'tokens.css 가 들어가지 않았다');
 });
 
 test('모드에 맞는 CSS 를 고른다', () => {

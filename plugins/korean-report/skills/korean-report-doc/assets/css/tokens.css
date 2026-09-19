@@ -1,0 +1,80 @@
+/* tokens.css — 값의 단일 원천
+ *
+ * 색 리터럴은 이 파일에만 둔다. base.css · paper.css · deck.css 는 var() 로만 참조한다.
+ * tests/test_tokens.py 가 강제한다.
+ *
+ * 파생 token 과 1.x alias 는 `:root,.dark,.black` 에 선언한다. custom property 안의
+ * var() 는 선언된 요소에서 계산되어 자식에게 값으로 상속되므로, :root 에만 두면
+ * 다크 surface 안에서도 밝은 값이 남는다.
+ */
+
+:root{
+ /* accent — 유일한 유채색 */
+ --accent:#0066cc;
+ --on-accent:#fff;
+
+ /* ink */
+ --ink:#1d1d1f; --ink-2:#333; --ink-3:#7a7a7a;
+
+ /* surface */
+ --surface:#fff; --surface-2:#f5f5f7; --surface-3:#fafafc;
+
+ /* rule */
+ --rule:#e0e0e0; --rule-soft:#f0f0f0;
+
+ /* 강조 — accent 가 아니라 독자 층위다. design.md §4.7 */
+ --mark:#fbeaa0;
+ --mark-ink:#1d1d1f;   /* 고정이다. 다크 surface 가 뒤집는 --ink 를 상속하면 안 된다 */
+
+ /* 도해 팔레트 — figures.py 는 fi-* · st-* class 만 방출하고 base.css 가 이 token 에 잇는다 */
+ --fig-line:#c7ccd2; --fig-soft:#dfe4e9; --fig-pale:#eef3f8; --fig-mid:#8695a6;
+
+ /* code block — surface 와 무관하게 어둡다 */
+ --code-bg:#272729; --code-ink:#e6e6e8; --code-dim:#8b8b90;
+
+ --cover-rule:#5a5a60;
+ --scroll-thumb:#d5d9de;
+
+ /* spacing */
+ --s-xs:8px; --s-sm:12px; --s-md:17px; --s-lg:24px;
+ --s-xl:32px; --s-xxl:48px; --s-sec:80px;
+
+ /* radius */
+ --r-sm:8px; --r-md:12px; --r-lg:18px; --r-pill:9999px;
+
+ --font-body:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+ --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+
+/* 다크 surface — 밝은 면의 파랑은 #272729 에서 대비가 모자라 accent 도 교체한다 */
+.dark,.black{
+ --accent:#2997ff;
+ --ink:#fff; --ink-2:#d6d6da; --ink-3:#8b8b90;
+ --rule:#3a3a3e; --rule-soft:#2f2f33;
+ --surface-2:rgba(255,255,255,.10); --surface-3:rgba(255,255,255,.06);
+ /* 도해 token 도 함께 뒤집는다 — 빠뜨리면 #1d1d1f 글자가 #272729 위에서 사라진다 */
+ --fig-line:#4a4a50; --fig-soft:#3d3d43; --fig-pale:rgba(41,151,255,.16); --fig-mid:#8b95a3;
+}
+.dark{--surface:#272729}
+.black{--surface:#000}
+
+/* 파생 token 과 1.x alias — surface 마다 다시 계산되도록 세 곳에 선언한다 */
+:root,.dark,.black{
+ --rule-heavy:var(--ink);
+ /* 1.x alias. 2.0 에서 제거한다 */
+ --primary:var(--accent); --ink80:var(--ink-2); --ink48:var(--ink-3);
+ --canvas:var(--surface); --parchment:var(--surface-2); --pearl:var(--surface-3);
+ --hairline:var(--rule); --divider:var(--rule-soft);
+ --tile1:var(--code-bg); --black:#000; --font:var(--font-body);
+}
+
+/* 큰 다크 면을 인쇄하지 않는다(design.md §7.3). 다크 surface 를 :root 의 값으로 되돌린다 */
+@media print{
+ .dark,.black{
+  --accent:#0066cc;
+  --ink:#1d1d1f; --ink-2:#333; --ink-3:#7a7a7a;
+  --surface:#fff; --surface-2:#f5f5f7; --surface-3:#fafafc;
+  --rule:#e0e0e0; --rule-soft:#f0f0f0;
+  --fig-line:#c7ccd2; --fig-soft:#dfe4e9; --fig-pale:#eef3f8; --fig-mid:#8695a6;
+ }
+}

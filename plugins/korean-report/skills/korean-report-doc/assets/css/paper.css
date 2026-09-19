@@ -8,25 +8,25 @@ body{padding:0 var(--s-lg) 120px}
 .doc{max-width:var(--w);margin:0 auto}
 
 /* masthead */
-.paper-head{max-width:var(--w);margin:0 auto;padding:88px 0 40px;border-bottom:1px solid var(--ink)}
+.paper-head{max-width:var(--w);margin:0 auto;padding:88px 0 40px;border-bottom:1px solid var(--rule-heavy)}
 .paper-head h1{font-size:clamp(30px,4.4vw,42px);font-weight:600;line-height:1.16;letter-spacing:-.022em}
-.subtitle{font-size:19px;color:var(--ink48);margin-top:var(--s-sm);letter-spacing:-.01em}
-.byline{display:flex;gap:20px;margin-top:26px;font-size:14px;color:var(--ink48)}
+.subtitle{font-size:19px;color:var(--ink-3);margin-top:var(--s-sm);letter-spacing:-.01em}
+.byline{display:flex;gap:20px;margin-top:26px;font-size:14px;color:var(--ink-3)}
 .byline span+span::before{content:"·";margin-right:20px}
 
 /* abstract */
-.abstract{max-width:var(--w);margin:0 auto;padding:36px 0 var(--s-xs);border-bottom:1px solid var(--hairline)}
-.abstract h2{font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ink48);
+.abstract{max-width:var(--w);margin:0 auto;padding:36px 0 var(--s-xs);border-bottom:1px solid var(--rule)}
+.abstract h2{font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ink-3);
  text-transform:uppercase;margin-bottom:14px;border:0;padding:0}
-.abstract p{font-size:16px;color:var(--ink80);margin-bottom:14px}
+.abstract p{font-size:16px;color:var(--ink-2);margin-bottom:14px}
 
 /* sections — 괘선과 번호가 위계를 나른다 */
 section{max-width:var(--w);margin:0 auto;padding-top:64px}
-h2{font-size:25px;padding-bottom:var(--s-sm);border-bottom:1px solid var(--ink);
+h2{font-size:25px;padding-bottom:var(--s-sm);border-bottom:1px solid var(--rule-heavy);
  margin-bottom:22px;display:flex;align-items:baseline;gap:14px}
 
 footer.eod{max-width:var(--w);margin:var(--s-sec) auto 0;padding-top:20px;
- border-top:1px solid var(--hairline);font-size:12px;letter-spacing:.08em;color:var(--ink48)}
+ border-top:1px solid var(--rule);font-size:12px;letter-spacing:.08em;color:var(--ink-3)}
 
 @media(max-width:640px){
  body{padding:0 18px 80px}
@@ -48,7 +48,7 @@ footer.eod{max-width:var(--w);margin:var(--s-sec) auto 0;padding-top:20px;
  table{font-size:8.2pt;margin:14px 0 6px} td{padding:6px 5px} th{font-size:7.6pt;padding:0 5px 5px}
  .scroll,.scroll.wide{overflow:visible;margin:14px 0 6px;padding:0}
  .scroll.wide table{font-size:7.4pt} .scroll.wide td{padding:5px 4px} .scroll.wide th{font-size:7pt;padding:0 4px 4px}
- pre{font-size:8pt;background:var(--parchment)!important;color:var(--ink)!important;padding:var(--s-sm) 16px}
+ pre{font-size:8pt;background:var(--surface-2)!important;color:var(--ink)!important;padding:var(--s-sm) 16px}
  .bdg{font-size:6.8pt;padding:0 5px}
  .figcap{font-size:8pt;margin-bottom:16px}
  code{font-size:.85em}

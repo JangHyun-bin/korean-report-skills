@@ -64,7 +64,7 @@ def test_built_document_is_self_contained(built, mode):
         r'(?:\bsrc|\bhref)\s*=\s*["\']https?://[^"\']+|url\(\s*["\']?https?://[^)]+|@import[^;]*https?://',
         html)
     assert not fetching, f"런타임에 외부 자원을 부른다: {fetching[:3]}"
-    for leftover in ("__BODY__", "__TITLE__", "__BASECSS__", "__MODECSS__",
+    for leftover in ("__BODY__", "__TITLE__", "__TOKENCSS__", "__BASECSS__", "__MODECSS__",
                      "__FONTCSS__", "__KATEXCSS__", "⟦"):
         assert leftover not in html, f"{leftover} 가 남아 있다"
 

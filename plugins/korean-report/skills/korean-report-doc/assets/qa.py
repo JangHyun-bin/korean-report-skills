@@ -60,7 +60,7 @@ CHECK_JS = """() => {
     gantt: document.querySelectorAll('.gantt').length,
     metrics: document.querySelectorAll('.metric').length,
     // 스타일이 실제로 걸렸는지 — 토큰이 비어 있으면 CSS 삽입이 실패한 것이다
-    primary: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+    accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
     bodyFont: getComputedStyle(document.body).fontFamily,
     // 도해가 뷰박스 밖으로 나갔는지
     svgClipped: [...document.querySelectorAll('svg.fig')].filter(s => {
@@ -88,7 +88,7 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
         landscape = mode == "deck"
 
         text = pg.inner_text("body")
-        for marker in ("⟦", "__BODY__", "__TITLE__", "__BASECSS__", "__MODECSS__"):
+        for marker in ("⟦", "__BODY__", "__TITLE__", "__TOKENCSS__", "__BASECSS__", "__MODECSS__"):
             if marker in text:
                 fails.append(f"본문에 {marker}가 남아 있다")
         if "%%I%%" in text or "%%D%%" in text:
@@ -99,8 +99,8 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
             fails.append(f"가로 넘침 — scrollWidth {r['scrollWidth']} > innerWidth {r['innerWidth']}")
         if r["wideTables"]:
             fails.append(f"컨테이너를 넘는 표 인덱스 {r['wideTables']}")
-        if r["primary"] != "#0066cc":
-            fails.append(f"--primary 토큰이 걸리지 않았다 (값: {r['primary'] or '없음'}) — CSS 삽입 실패")
+        if r["accent"] != "#0066cc":
+            fails.append(f"--accent token 이 걸리지 않았다 (값: {r['accent'] or '없음'}) — CSS 삽입 실패")
         if "Pretendard" not in r["bodyFont"]:
             fails.append(f"body 폰트 스택에 Pretendard가 없다 — {r['bodyFont']}")
         if r["svgClipped"]:
