@@ -70,6 +70,17 @@ jobs:
           done
           python scripts/qa.py dist/example_paper.html dist/example_deck.html --pdf --shot dist/shots
 
+      - name: styleguide 빌드
+        if: runner.os == 'Linux'
+        run: |
+          python examples/build_styleguide.py
+          for m in paper deck; do
+            node plugins/korean-report/skills/korean-report-doc/assets/mathbuild.js \
+              "dist/styleguide_${m}_raw.html" "dist/styleguide_${m}.html" \
+              --assets plugins/korean-report/skills/korean-report-doc/assets
+          done
+          python scripts/qa.py dist/styleguide_paper.html dist/styleguide_deck.html --pdf --shot dist/shots
+
       - name: README 전후 대비 자산 빌드
         if: runner.os == 'Linux'
         run: |
@@ -118,6 +129,8 @@ jobs:
           path: |
             dist/example_*.html
             dist/example_*.pdf
+            dist/styleguide_*.html
+            dist/styleguide_*.pdf
             dist/shots/*.png
           retention-days: 14
 
