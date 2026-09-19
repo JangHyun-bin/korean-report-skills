@@ -35,9 +35,25 @@
  --cover-rule:#5a5a60;
  --scroll-thumb:#d5d9de;
 
- /* spacing */
- --s-xs:8px; --s-sm:12px; --s-md:17px; --s-lg:24px;
- --s-xl:32px; --s-xxl:48px; --s-sec:80px;
+ /* type scale — 기준 17px / 28px, 비율 1.125, 행간 4px grid.
+    자간은 13.5px 이하 0, 15~17px −0.01em, 19px 이상 −0.012em → −0.028em(49px) 선형 */
+ --t-3:12px;   --lh-3:16px; --tr-3:0em;
+ --t-2:13.5px; --lh-2:20px; --tr-2:0em;
+ --t-1:15px;   --lh-1:24px; --tr-1:-.01em;
+ --t0:17px;    --lh0:28px;  --tr0:-.01em;
+ --t1:19px;    --lh1:28px;  --tr1:-.012em;
+ --t2:21.5px;  --lh2:32px;  --tr2:-.013em;
+ --t3:24px;    --lh3:32px;  --tr3:-.015em;
+ --t4:27px;    --lh4:36px;  --tr4:-.016em;
+ --t5:30.5px;  --lh5:40px;  --tr5:-.018em;
+ --t6:34.5px;  --lh6:44px;  --tr6:-.020em;
+ --t7:38.5px;  --lh7:48px;  --tr7:-.022em;
+ --t8:43.5px;  --lh8:52px;  --tr8:-.025em;
+ --t9:49px;    --lh9:56px;  --tr9:-.028em;
+
+ /* space — 4px grid */
+ --s-1:4px;  --s-2:8px;  --s-3:12px; --s-4:16px; --s-5:24px;
+ --s-6:32px; --s-7:48px; --s-8:64px; --s-9:80px; --s-10:96px;
 
  /* radius */
  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-pill:9999px;
@@ -66,10 +82,20 @@
  --canvas:var(--surface); --parchment:var(--surface-2); --pearl:var(--surface-3);
  --hairline:var(--rule); --divider:var(--rule-soft);
  --tile1:var(--code-bg); --black:#000; --font:var(--font-body);
+ --s-xs:var(--s-2); --s-sm:var(--s-3); --s-md:var(--s-4); --s-lg:var(--s-5);
+ --s-xl:var(--s-6); --s-xxl:var(--s-7); --s-sec:var(--s-9);
 }
 
 /* 큰 다크 면을 인쇄하지 않는다(design.md §7.3). 다크 surface 를 :root 의 값으로 되돌린다 */
 @media print{
+ /* 인쇄 — px × 0.6 을 0.5pt 단위로 반올림 */
+ :root{
+  --t-3:7pt;   --lh-3:12pt; --t-2:8pt;    --lh-2:12pt; --t-1:9pt;    --lh-1:14pt;
+  --t0:10pt;   --lh0:16pt;  --t1:11.5pt;  --lh1:16pt;  --t2:13pt;    --lh2:20pt;
+  --t3:14.5pt; --lh3:20pt;  --t4:16pt;    --lh4:24pt;  --t5:18.5pt;  --lh5:24pt;
+  --t6:20.5pt; --lh6:28pt;  --t7:23pt;    --lh7:28pt;  --t8:26pt;    --lh8:32pt;
+  --t9:29.5pt; --lh9:36pt;
+ }
  .dark,.black{
   --accent:#0066cc;
   --ink:#1d1d1f; --ink-2:#333; --ink-3:#7a7a7a;
@@ -77,4 +103,8 @@
   --rule:#e0e0e0; --rule-soft:#f0f0f0;
   --fig-line:#c7ccd2; --fig-soft:#dfe4e9; --fig-pale:#eef3f8; --fig-mid:#8695a6;
  }
+}
+
+@media(max-width:640px){
+ :root{--t0:15px;--lh0:24px}
 }

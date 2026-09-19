@@ -119,11 +119,11 @@ def test_print_rules_live_in_exactly_one_place_per_mode():
 
 def test_deck_print_keeps_its_own_type_scale():
     """deck 인쇄 규칙이 paper 규칙에 덮이지 않는지. 실제로 났던 사고다."""
-    deck_print = read(CSS / "deck.css").split("@media print")[1]
+    deck_print = read(CSS / "deck.css").split("@media print")[1].replace(" ", "")
     assert "height:210mm" in deck_print, "deck 인쇄에 1섹션=1페이지 규칙이 없다"
-    assert "h1.hero{font-size:34pt}" in deck_print.replace(" ", ""), "deck hero 크기 규칙이 없다"
-    assert "h2{font-size:22pt}" in deck_print.replace(" ", ""), \
-        "deck h2 는 22pt 여야 한다 — paper 의 14pt 가 새어 들어왔는지 확인한다"
+    assert "--t9:34pt" in deck_print, "deck hero 인쇄 크기 token 이 없다"
+    assert "--t6:22pt" in deck_print, \
+        "deck h2 는 22pt 여야 한다 — paper 의 인쇄 scale 이 새어 들어왔는지 확인한다"
 
 
 def test_no_legacy_ascii_math_markers_in_code_examples():

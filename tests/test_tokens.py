@@ -93,3 +93,48 @@ def test_korean_typesetting_rules():
     assert T.declared(base, "table").get("font-variant-numeric") == "tabular-nums"
     assert T.declared(base, ".metric .mval").get("font-variant-numeric") == "tabular-nums"
     assert T.declared(base, "h2").get("text-wrap") == "balance"
+
+
+STEPS = ["-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+
+def _px(value: str) -> float:
+    assert value.endswith("px"), f"px 값이 아니다: {value}"
+    return float(value[:-2])
+
+
+def test_type_scale_has_every_step():
+    missing = [f"--{p}{s}" for s in STEPS for p in ("t", "lh", "tr") if f"--{p}{s}" not in ROOT_T]
+    assert not missing, f"type scale 누락: {missing}"
+
+
+def test_line_heights_and_space_sit_on_the_4px_grid():
+    names = [f"--lh{s}" for s in STEPS] + [f"--s-{n}" for n in range(1, 11)]
+    off = {n: ROOT_T.get(n) for n in names if n not in ROOT_T or _px(ROOT_T[n]) % 4}
+    assert not off, f"4px grid 이탈: {off}"
+
+
+def test_tracking_tightens_as_size_grows():
+    pairs = sorted((_px(ROOT_T[f"--t{s}"]), float(ROOT_T[f"--tr{s}"].removesuffix("em"))) for s in STEPS)
+    for (size_a, tr_a), (size_b, tr_b) in zip(pairs, pairs[1:], strict=False):
+        assert tr_b <= tr_a, f"{size_b}px 의 자간 {tr_b}em 이 {size_a}px 의 {tr_a}em 보다 넓다"
+
+
+def test_print_scale_is_in_points():
+    printed = T.declared(TOKENS, ":root", "@media print")
+    bad = [f"--t{s}" for s in STEPS if not printed.get(f"--t{s}", "").endswith("pt")]
+    assert not bad, f"인쇄 scale 이 pt 가 아니다: {bad}"
+
+
+@pytest.mark.parametrize("name", list(COMPONENT))
+def test_font_sizes_come_from_the_scale(name):
+    """
+    font-size 리터럴이 남으면 theme 이 그 자리의 크기를 교체하지 못한다.
+    em · % 는 부모 크기에 대한 비율이라 허용한다. gantt 처럼 좌표와 결합된 크기는
+    그 component 의 custom property 로 선언한다.
+    """
+    text = T.strip_comments(COMPONENT[name])
+    values = re.findall(r"(?<![\w-])font-size\s*:\s*([^;}]+)", text)
+    bad = [v.strip() for v in values
+           if "var(--" not in v and not re.fullmatch(r"\s*[\d.]+(em|%)\s*(!important)?\s*", v)]
+    assert not bad, f"{name} 의 font-size 리터럴: {bad} — tokens.css 의 --t* 를 참조한다"

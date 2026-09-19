@@ -10,7 +10,7 @@
 body{padding:0}
 
 /* ── tiles ──────────────────────────────────────────────── */
-.tile{padding:var(--s-sec) var(--s-lg)}
+.tile{padding:var(--s-9) var(--s-5)}
 .tile.light{background:var(--surface)}
 .tile.parch{background:var(--surface-2)}
 /* dark · black 의 token 재매핑과 인쇄 복귀는 tokens.css 가 담당한다 */
@@ -18,39 +18,43 @@ body{padding:0}
 .wrap{max-width:var(--w);margin:0 auto}
 
 /* ── cover (design.md §3.1) ─────────────────────────────── */
-.tile.cover .hero,h1.hero{font-size:clamp(34px,4.6vw,50px);font-weight:600;
- line-height:1.08;letter-spacing:-.028em}
-.tile .rule{width:64px;height:1px;background:var(--cover-rule);margin:var(--s-xl) 0}
-.tile .meta{font-size:15px;line-height:1.65;color:var(--ink-3)}
+.tile.cover .hero,h1.hero{font-size:clamp(var(--t6),4.6vw,var(--t9));font-weight:600;
+ line-height:1.14;letter-spacing:var(--tr9)}
+.tile .rule{width:64px;height:1px;background:var(--cover-rule);margin:var(--s-6) 0}
+.tile .meta{font-size:var(--t-1);line-height:var(--lh-1);color:var(--ink-3)}
 
 /* 종결 표식 (design.md §8) — 표제가 아니라 표식이다 */
-.tile .eod{font-size:14px;font-weight:600;letter-spacing:.08em;color:var(--ink-3)}
+.tile .eod{font-size:var(--t-2);line-height:var(--lh-2);font-weight:600;letter-spacing:.08em;
+ color:var(--ink-3)}
 
 /* ── sections — 타일이 위계를 나른다. 괘선을 쓰지 않는다 ── */
 section{margin:0 auto}
-h2{font-size:34px;margin-bottom:26px;display:flex;align-items:baseline;gap:14px}
+h2{font-size:var(--t6);line-height:var(--lh6);letter-spacing:var(--tr6);margin-bottom:var(--s-5);
+ display:flex;align-items:baseline;gap:14px}
 .tile p{max-width:var(--w)}
 
 @media(max-width:640px){
- .tile{padding:var(--s-xxl) 18px}
- h2{font-size:26px}
+ .tile{padding:var(--s-7) 18px}
+ h2{font-size:var(--t4);line-height:var(--lh4)}
 }
 
 @media print{
+ /* deck 은 가로 A4 라 paper 보다 큰 인쇄 scale 을 쓴다. paper 의 인쇄 scale 이
+    새어 들어오면 h2 가 20.5pt 로 줄어든다 — 모드 CSS 가 섞이던 때 실제로 났던 사고다 */
+ :root{--t0:11pt;--lh0:18pt;--t6:22pt;--lh6:28pt;--t9:34pt;--lh9:40pt}
  @page{size:A4 landscape;margin:0}
  .nav{display:none}
- html,body{font-size:11pt;padding:0}
+ html,body{padding:0}
  .tile{height:210mm;padding:14mm 16mm;display:flex;align-items:center;
   page-break-after:always;break-after:page;break-inside:avoid;overflow:hidden}
  .tile:last-child{break-after:auto}
  .wrap{width:100%;max-width:none}
- h1.hero{font-size:34pt} h2{font-size:22pt} h3{font-size:13pt}
  p,li{orphans:3;widows:3}
- table{font-size:9pt} td{padding:7px 6px} th{font-size:8pt}
+ td{padding:7px 6px}
  table,pre,.note,.warn,.finding,.claim,.quote-box,.rsn,blockquote,
  .katex-display,svg,.figcap,.metric,.gantt{break-inside:avoid}
  svg{break-after:avoid}
  .scroll,.scroll.wide{overflow:visible;margin:14px 0 6px;padding:0}
- pre{font-size:8.5pt;background:var(--surface-2)!important;color:var(--ink)!important}
+ pre{background:var(--surface-2)!important;color:var(--ink)!important}
  .tile .rule{background:var(--rule)}
 }
