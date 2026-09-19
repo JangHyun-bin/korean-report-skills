@@ -51,6 +51,26 @@ def test_mark_ink_is_never_redefined():
     for media, head, decls in T.blocks(TOKENS):
         if "--mark-ink" in decls:
             assert head == ":root" and not media, f"{media} {head} 가 --mark-ink 를 다시 정의한다"
+    for name, css in COMPONENT.items():
+        for media, head, decls in T.blocks(css):
+            assert "--mark-ink" not in decls, f"{name} 의 {media} {head} 가 --mark-ink 를 다시 정의한다"
+
+
+LEGACY_TOKENS = [
+    "--primary", "--primary-dark", "--ink80", "--ink48", "--canvas", "--parchment", "--pearl",
+    "--tile1", "--black", "--hairline", "--divider", "--font",
+    "--s-xs", "--s-sm", "--s-md", "--s-lg", "--s-xl", "--s-xxl", "--s-sec",
+]
+
+
+def test_legacy_tokens_stay_defined():
+    """
+    1.x alias 는 옛 이름으로 var() 를 쓰는 사용자 generator 를 보호한다. design.md 구버전은
+    「다크 tile 에서는 accent 가 --primary-dark 로 바뀐다」고 공개 문서화했었다 —
+    alias 하나가 빠지면 그 조합을 쓰는 generator 가 조용히 깨진다.
+    """
+    missing = [name for name in LEGACY_TOKENS if name not in ROOT_T]
+    assert not missing, f"legacy alias 가 tokens.css 에서 사라졌다: {missing}"
 
 
 def _body_pairs():

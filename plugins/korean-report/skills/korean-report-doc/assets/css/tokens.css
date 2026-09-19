@@ -78,7 +78,7 @@
 :root,.dark,.black{
  --rule-heavy:var(--ink);
  /* 1.x alias. 2.0 에서 제거한다 */
- --primary:var(--accent); --ink80:var(--ink-2); --ink48:var(--ink-3);
+ --primary:var(--accent); --primary-dark:#2997ff; --ink80:var(--ink-2); --ink48:var(--ink-3);
  --canvas:var(--surface); --parchment:var(--surface-2); --pearl:var(--surface-3);
  --hairline:var(--rule); --divider:var(--rule-soft);
  --tile1:var(--code-bg); --black:#000; --font:var(--font-body);
