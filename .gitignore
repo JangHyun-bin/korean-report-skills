@@ -25,3 +25,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 저장소 밖 입력 자료 — 실명이 포함될 수 있어 추적하지 않는다
+ref/
