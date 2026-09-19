@@ -12,20 +12,23 @@
 **색은 클래스로 방출한다.** SVG 표현 속성은 CSS 변수를 읽지 못하므로,
 `figures.py` 는 hex 대신 클래스를 붙이고 `assets/css/base.css` 가 그것을 토큰에 잇는다.
 
-| 상수 | 값 | 토큰 | 채움 클래스 | 선 클래스 |
-|---|---|---|---|---|
-| `INK` | `#1d1d1f` | `--ink` | `fi-ink` | `st-ink` |
-| `INK48` | `#7a7a7a` | `--ink48` | `fi-ink48` | `st-ink48` |
-| `PRI` | `#0066cc` | `--primary` | `fi-pri` | `st-pri` |
-| `MID` | `#8695a6` | `--fig-mid` | `fi-mid` | `st-mid` |
-| `LINE` | `#c7ccd2` | `--fig-line` | `fi-line` | `st-line` |
-| `SOFT` | `#dfe4e9` | `--fig-soft` | `fi-soft` | — |
-| `PALE` | `#eef3f8` | `--fig-pale` | `fi-pale` | — |
+| token | 채움 class | 선 class |
+|---|---|---|
+| `--ink` | `fi-ink` | `st-ink` |
+| `--ink-3` | `fi-ink48` | `st-ink48` |
+| `--accent` | `fi-pri` | `st-pri` |
+| `--fig-mid` | `fi-mid` | `st-mid` |
+| `--fig-line` | `fi-line` | `st-line` |
+| `--fig-soft` | `fi-soft` | — |
+| `--fig-pale` | `fi-pale` | — |
+
+class 이름은 1.x 호환을 위해 유지한다. 값은 `assets/css/tokens.css`에 있다.
 
 이 밖에 `fi-canvas`(면 색) · `fi-oncard`(잉크 위 글자) · `fi-none`(채움 없음)이 있다.
 
 **hex 를 박지 않는다.** `fill="#1d1d1f"` 는 흰 바탕에서는 멀쩡하고 `#272729` 다크 타일
-위에서는 글자가 사라진다. 클래스를 쓰면 `deck.css` 가 토큰을 뒤집을 때 도해가 따라온다.
+위에서는 글자가 사라진다. class 를 쓰면 `tokens.css` 가 다크 surface 의 token 을 교체할 때
+도해가 따라온다.
 
 **형태로 구분하고 색으로 구분하지 않는다.** 채움 대 외곽선, 실선 대 파선,
 굵기, 크기. 색 범례에 의존하면 흑백 인쇄에서 무너진다.

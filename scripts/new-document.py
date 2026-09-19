@@ -82,6 +82,8 @@ TEMPLATE = '''# -*- coding: utf-8 -*-
 
     python {stem}.py [--font <woff2>]...
 
+`--font` 는 동봉 Pretendard 를 교체할 때만 쓴다.
+
 생성 → mathbuild → QA 를 한 번에 돈다. 산출물은 {stem}.html 이다.
 """
 import pathlib
@@ -204,7 +206,7 @@ def main() -> int:
     print()
     print("다음:")
     print(f"  python {out}                      # 생성 → 빌드 → QA")
-    print(f"  python {out} --font Pretendard-Regular.woff2   # 글꼴 내장")
+    print(f"  python {out} --font 다른글꼴.woff2   # 동봉 Pretendard 교체")
     print()
     print("`# 여기부터 고쳐 쓴다` 구간의 도해·표·본문을 바꾸면 된다.")
     print("도해 7종은 references/figures.md, 문체 규약은 korean-report-style 참조.")

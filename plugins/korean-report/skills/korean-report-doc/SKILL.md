@@ -1,16 +1,16 @@
 ---
 name: korean-report-doc
-description: Create Korean technical and business document artifacts as self-contained HTML and optional PDF — progress reports, technical reports, research notes, meeting decks, benchmark write-ups, intermediate reports, and proposals. Use only when the user requests a document artifact rather than an explanation or chat answer, including requests for a 보고서 · 진행현황 · 기술보고 · 연구노트 · 협의 자료 · 중간보고 · 제안서 · HTML · PDF. Provides paper and deck templates, SVG figure builders, build-time KaTeX, optional body-font embedding, and browser render QA. Pair with korean-report-style for prose, framing, accuracy, and edit consistency.
+description: Create Korean technical and business document artifacts as self-contained HTML and optional PDF — progress reports, technical reports, research notes, meeting decks, benchmark write-ups, intermediate reports, and proposals. Use only when the user requests a document artifact rather than an explanation or chat answer, including requests for a 보고서 · 진행현황 · 기술보고 · 연구노트 · 협의 자료 · 중간보고 · 제안서 · HTML · PDF. Provides paper and deck templates, SVG figure builders, build-time KaTeX, a bundled Pretendard body font, and browser render QA. Pair with korean-report-style for prose, framing, accuracy, and edit consistency.
 ---
 
 # 한국어 기술 문서 제작
 
 한국어 기술·사업 문서를 자립형 HTML로 제작하고 필요하면 PDF로 출력한다.
 
-- 두 출력 모드는 공통 디자인 token과 모드별 CSS를 사용한다.
+- 값은 `assets/css/tokens.css` 한 곳에 있고, 공통 CSS 와 모드별 CSS 는 그 token 만 참조한다.
 - 수치·표·도해는 제공된 데이터에서 프로그램으로 생성한다.
 - HTML은 실행 시점에 외부 자원을 요청하지 않는다.
-- 본문 글꼴은 `--font`로 지정한 경우에만 내장된다.
+- 본문 글꼴은 동봉한 Pretendard 공식 subset 을 기본으로 내장한다. `--font`는 교체할 때만 쓴다.
 
 문장 규약은 `korean-report-style` 스킬이 담당한다. 이 스킬의 범위는 **제작**에 한정한다.
 
@@ -46,7 +46,7 @@ description: Create Korean technical and business document artifacts as self-con
 - HTML 빌드에는 Node 20 이상과 KaTeX가 필요하다. `mathbuild.js`는 작업 디렉터리와
   스킬 설치 경로에서 KaTeX를 순서대로 찾는다.
 - 렌더 QA, 스크린샷, PDF 출력에는 Python 3.11 이상, Playwright, Chromium이 필요하다.
-- 본문 글꼴을 내장하려면 사용 권한이 있는 WOFF2 파일을 준비한다.
+- 본문 글꼴은 `assets/fonts/`에 동봉되어 있다. 다른 글꼴을 쓰려면 사용 권한이 있는 WOFF2 파일을 준비한다.
 
 ---
 
@@ -58,8 +58,8 @@ description: Create Korean technical and business document artifacts as self-con
                                      ▼
                        후처리(Node + KaTeX) — mathbuild.js
                        · ⟦I⟧ / ⟦D⟧ 렌더
-                       · base.css + 모드 CSS 삽입
-                       · 지정한 본문 글꼴 · KaTeX woff2 base64 내장
+                       · tokens.css + base.css + 모드 CSS 삽입
+                       · 본문 글꼴(동봉 또는 --font) · KaTeX woff2 base64 내장
                                      │
                                      ▼
                           단일 .html ──▶ headless print ──▶ .pdf
@@ -70,11 +70,11 @@ description: Create Korean technical and business document artifacts as self-con
 | 토큰 | 채우는 주체 |
 |---|---|
 | `__TITLE__` · `__BODY__` | 생성기 |
-| `__FONTCSS__` · `__KATEXCSS__` · `__BASECSS__` · `__MODECSS__` | `mathbuild.js` |
+| `__FONTCSS__` · `__KATEXCSS__` · `__TOKENCSS__` · `__BASECSS__` · `__MODECSS__` | `mathbuild.js` |
 
 **CSS 를 템플릿에 직접 쓰지 않는다.** 두 템플릿이 규칙을 각자 복사해 두었다가
-deck 의 인쇄 규칙이 paper 의 것에 덮인 사고가 있었다. 공통은 `css/base.css`,
-모드별은 `css/paper.css` · `css/deck.css` 한 곳에만 둔다.
+deck 의 인쇄 규칙이 paper 의 것에 덮인 사고가 있었다. 값은 `css/tokens.css` 한 곳에만
+둔다. 공통은 `css/base.css`, 모드별은 `css/paper.css` · `css/deck.css` 한 곳에만 둔다.
 
 ### 2.1 생성기 작성
 
@@ -118,8 +118,7 @@ open("raw.html", "w", encoding="utf-8").write(out)
 
 ```bash
 node mathbuild.js raw.html out.html \
-     --assets <스킬경로>/assets \
-     --font Pretendard-Regular.woff2 --font Pretendard-SemiBold.woff2
+     --assets <스킬경로>/assets
 ```
 
 빌드 시점에 KaTeX 로 렌더하고, 렌더 결과가 참조하는 woff2 만 골라 base64 로 삽입한다.
@@ -128,14 +127,16 @@ node mathbuild.js raw.html out.html \
 **실패하면 exit 1 이다.** 수식 오류, 치환되지 않은 토큰, 구버전 마커,
 없는 폰트 경로가 모두 빌드를 세운다. 조용히 잘못 렌더된 수식이 수식 없는 것보다 나쁘다.
 
-`--font` 를 생략하면 경고만 내고 진행한다. 이때 문서는 읽는 사람의 시스템 폰트로
-폴백되므로 `typesetting` 결과가 기기마다 달라진다. 배포본에는 반드시 내장한다.
+`--font` 를 생략하면 동봉한 Pretendard subset 을 내장한다. 본문에 subset 밖의
+한글 음절이 있으면 경고하고, 그 글자는 system font 로 표시된다.
 
 ### 2.3 PDF
 
 ```bash
 python <스킬경로>/assets/qa.py out.html --pdf --shot shots/
 ```
+
+paper PDF 는 쪽 하단에 제목과 쪽번호를 인쇄한다.
 
 직접 부르려면:
 
@@ -244,5 +245,7 @@ viewBox 밖으로 나간 도해, 캡션 없는 도해를 검사하고 실패하�
 - `references/design.md` — 색 · 타이포 · 컴포넌트 · 인쇄 규약 전체
 - `references/figures.md` — 도해 7종의 사용법과 좌표 규약
 - `assets/paper_template.html` · `assets/deck_template.html`
+- `assets/css/tokens.css`
 - `assets/css/base.css` · `assets/css/paper.css` · `assets/css/deck.css`
 - `assets/figures.py` · `assets/mathbuild.js` · `assets/qa.py`
+- `assets/fonts/` — Pretendard 공식 subset 과 license
