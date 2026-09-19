@@ -7,7 +7,11 @@
  */
 
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+/* 한글 typesetting — 어절 단위로 줄을 바꾼다. overflow-wrap 이 URL 같은
+   분절 불가 문자열의 넘침을 방지한다. 둘은 짝이다 */
+html{scroll-behavior:smooth;word-break:keep-all;overflow-wrap:anywhere;line-break:strict}
+table,.metric .mval,.gantt{font-variant-numeric:tabular-nums}
+h1,h2,h3,.hero{text-wrap:balance}
 body{font-family:var(--font-body);color:var(--ink);background:var(--surface);
  font-size:16.5px;line-height:1.72;letter-spacing:-.32px;-webkit-font-smoothing:antialiased}
 

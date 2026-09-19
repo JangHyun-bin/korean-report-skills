@@ -82,3 +82,14 @@ def test_secondary_text_contrast_is_recorded():
         ratio = T.contrast(fg, bg)
         if ratio < 4.5:
             warnings.warn(f"--ink-3 {label} 대비 {ratio:.2f}:1", stacklevel=1)
+
+
+def test_korean_typesetting_rules():
+    base = COMPONENT["base.css"]
+    html = T.declared(base, "html")
+    assert html.get("word-break") == "keep-all", "어절 중간에서 줄이 바뀐다"
+    assert html.get("overflow-wrap") == "anywhere", "keep-all 과 짝이다 — URL 같은 문자열이 넘친다"
+    assert html.get("line-break") == "strict"
+    assert T.declared(base, "table").get("font-variant-numeric") == "tabular-nums"
+    assert T.declared(base, ".metric .mval").get("font-variant-numeric") == "tabular-nums"
+    assert T.declared(base, "h2").get("text-wrap") == "balance"
