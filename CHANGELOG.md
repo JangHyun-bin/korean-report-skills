@@ -5,6 +5,8 @@
 
 ## [Unreleased]
 
+## [1.19.0] — 2026-09-21
+
 ### 더해짐
 
 - **`tokens.css` — 값의 단일 원천.** 색 · type scale · space · surface 재매핑 · 인쇄 복귀가 한 파일에
