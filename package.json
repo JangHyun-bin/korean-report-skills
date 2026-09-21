@@ -17,6 +17,7 @@
     "install:skills": "node bin/install.js",
     "new": "node scripts/run-python.js scripts/new-document.py",
     "build:example": "node scripts/run-python.js examples/build_example.py",
+    "build:styleguide": "node scripts/run-python.js examples/build_styleguide.py",
     "pack": "bash scripts/pack-skills.sh",
     "test:package": "node scripts/package-smoke.js",
     "test:node": "node scripts/run-node-tests.js",

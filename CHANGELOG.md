@@ -5,6 +5,27 @@
 
 ## [Unreleased]
 
+### 더해짐
+
+- **`tokens.css` — 값의 단일 원천.** 색 · type scale · space · surface 재매핑 · 인쇄 복귀가 한 파일에
+  모였다. `base.css` · `paper.css` · `deck.css`는 `var()`로만 참조하고 `tests/test_tokens.py`가 색
+  리터럴의 위치, 미정의 token, 인쇄 복귀, 본문 대비 4.5:1 을 검사한다. 옛 변수명은 2.0 까지 alias 로 남는다.
+- **Pretendard 공식 subset 동봉과 기본 내장.** `--font` 없이도 본문 글꼴이 내장된다. subset 밖의
+  한글 음절은 경고한다. plugin 크기 240 KB → 1.1 MB, 예시 paper 문서 283 KB → 981 KB.
+- **styleguide.** `examples/build_styleguide.py`가 token · component · 도해를 surface 4종에서 한 문서로 산출한다.
+- **paper PDF footer.** 쪽 하단에 제목과 쪽번호를 인쇄한다.
+
+### 바뀜
+
+- **type scale.** 본문 16.5px → 17px, 행간 28px, 13단계 비율 1.125. 가장 큰 변화는 h3(18.5px → 24px)다.
+  모든 문서의 인상이 달라진다.
+- **한글 typesetting.** 어절 단위 줄바꿈(`keep-all`), 표와 수치의 `tabular-nums`, 제목의 `text-wrap:balance`.
+- **인쇄.** 다크 tile 의 글자색이 `#000`에서 `--ink`로, 도해 token 도 밝은 값으로 복귀한다.
+
+### 고쳐짐
+
+- `mathbuild.js`가 `Pretendard-SemiBold.subset.woff2`처럼 이름에 `.subset`이 붙은 파일의 굵기를 400 으로 읽었다.
+
 ## [1.18.1] — 2026-09-05
 
 ### 고쳐짐

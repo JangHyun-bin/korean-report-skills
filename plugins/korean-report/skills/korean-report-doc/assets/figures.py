@@ -7,7 +7,7 @@ figures.py — 도해·표 생성 헬퍼
 
 색 — 리터럴 hex 를 박지 않고 **클래스로 방출한다**(fi-* 채움 · st-* 선).
 base.css 가 그 클래스를 CSS 변수에 연결하므로 도해가 문서 토큰을 실제로 상속한다.
-다크 타일 위에서는 deck.css 가 토큰을 바꾸고, 도해는 자동으로 따라간다.
+다크 surface 에서는 tokens.css 가 token 을 교체하고, 도해는 자동으로 따라간다.
 hex 를 박으면 #1d1d1f 글자가 #272729 타일 위에서 사라진다(실제로 겪은 버그).
 
 좌표계 — SVG 는 y 가 아래로 증가한다. 모든 배치 계산을 그 기준으로 한다.
@@ -18,14 +18,6 @@ matplotlib 식 y-up 으로 계산한 뒤 뒤집지 않으면 행 순서가 역�
 """
 import itertools
 
-# 팔레트 — base.css 의 토큰과 1:1 로 대응한다. 값을 바꾸면 양쪽을 함께 바꾼다.
-INK   = '#1d1d1f'   # 본문·최중요 요소      → --ink        · fi-ink   / st-ink
-INK48 = '#7a7a7a'   # 캡션·축 라벨          → --ink48      · fi-ink48 / st-ink48
-PRI   = '#0066cc'   # 액센트 — 그 하나       → --primary    · fi-pri   / st-pri
-MID   = '#8695a6'   # 화살표·보조 막대       → --fig-mid    · fi-mid   / st-mid
-LINE  = '#c7ccd2'   # 테두리                → --fig-line   · fi-line  / st-line
-SOFT  = '#dfe4e9'   # 채움                  → --fig-soft   · fi-soft
-PALE  = '#eef3f8'   # 강조 배경             → --fig-pale   · fi-pale
 FONT  = 'Pretendard'
 
 _seq = itertools.count(1)   # SVG 내부 id 충돌 방지 (한 문서에 도해가 여럿일 때)

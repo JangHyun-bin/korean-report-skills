@@ -1,6 +1,6 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-334%20tests-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-380%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.18.1-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
@@ -208,9 +208,9 @@ runbook, API reference, 모델 평가, 회의록, 컨소시엄 산출물에도 �
 - 법률·규제 적합성이나 외부 사실의 정확성을 보증하지 않습니다. 기한, 의무, 책임이
   포함된 문장은 사용자가 제공한 근거 문서와 대조해야 합니다.
 
-본문 글꼴은 사용 권한이 있는 WOFF2 파일을 `--font`로 지정한 경우에만 HTML에
-내장됩니다. 글꼴을 지정하지 않아도 빌드는 완료되지만 시스템 글꼴을 사용하므로
-기기마다 줄바꿈과 페이지 배치가 달라질 수 있습니다.
+본문 글꼴은 동봉한 Pretendard 공식 subset(OFL 1.1)을 기본으로 HTML에 내장합니다. 다른 글꼴을
+쓰려면 사용 권한이 있는 WOFF2 파일을 `--font`로 지정합니다. subset에 없는 한글 음절은 시스템
+글꼴로 표시되며 빌드가 해당 글자를 알립니다.
 
 ## 필요한 실행 환경
 
@@ -238,11 +238,11 @@ python3 scripts/new-document.py --title "문서 제목" --mode paper
 python3 문서_제목.py
 ```
 
-생성된 Python 파일에서 본문, 표, 도해를 수정합니다. 본문 글꼴을 HTML에 내장하려면
-실행할 때 WOFF2 경로를 지정합니다.
+생성된 Python 파일에서 본문, 표, 도해를 수정합니다. 다른 본문 글꼴을 쓰려면 실행할 때
+WOFF2 경로를 지정합니다.
 
 ```bash
-python3 문서_제목.py --font Pretendard-Regular.woff2 --font Pretendard-SemiBold.woff2
+python3 문서_제목.py --font 다른글꼴-Regular.woff2 --font 다른글꼴-SemiBold.woff2
 python3 scripts/qa.py 문서_제목.html --pdf --shot shots/
 ```
 

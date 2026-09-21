@@ -64,7 +64,7 @@ def test_built_document_is_self_contained(built, mode):
         r'(?:\bsrc|\bhref)\s*=\s*["\']https?://[^"\']+|url\(\s*["\']?https?://[^)]+|@import[^;]*https?://',
         html)
     assert not fetching, f"런타임에 외부 자원을 부른다: {fetching[:3]}"
-    for leftover in ("__BODY__", "__TITLE__", "__BASECSS__", "__MODECSS__",
+    for leftover in ("__BODY__", "__TITLE__", "__TOKENCSS__", "__BASECSS__", "__MODECSS__",
                      "__FONTCSS__", "__KATEXCSS__", "⟦"):
         assert leftover not in html, f"{leftover} 가 남아 있다"
 
@@ -184,3 +184,55 @@ def test_deck_prints_one_page_per_tile(built, tmp_path):
         b.close()
     pages = len(re.findall(rb"/Type\s*/Page[^s]", pdf.read_bytes()))
     assert pages == tiles, f"타일 {tiles}개인데 {pages}쪽이다 — 인쇄 규칙이 덮였는지 확인한다"
+
+
+@pytest.fixture(scope="module")
+def styleguide(tmp_path_factory):
+    out = tmp_path_factory.mktemp("styleguide")
+    subprocess.run([sys.executable, str(ROOT / "examples" / "build_styleguide.py"), *MODES],
+                   cwd=ROOT, check=True, capture_output=True)
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node 가 없다")
+    results = {}
+    for m in MODES:
+        dst = out / f"styleguide_{m}.html"
+        r = subprocess.run(
+            [node, str(ASSETS / "mathbuild.js"), str(ROOT / "dist" / f"styleguide_{m}_raw.html"), str(dst),
+             "--assets", str(ASSETS)],
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        assert r.returncode == 0, f"{m} styleguide 빌드 실패:\n{r.stdout}\n{r.stderr}"
+        results[m] = dst
+    return results
+
+
+@pytest.mark.skipif(not have_chromium(), reason="chromium 없음")
+@pytest.mark.parametrize("mode", MODES)
+def test_styleguide_passes_qa(styleguide, mode):
+    """styleguide 는 실제 문서와 같은 경로를 통과한다. 통과하지 못하면 규칙 자체가 깨진 것이다."""
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "qa.py"), str(styleguide[mode])],
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert r.returncode == 0, f"styleguide QA 실패:\n{r.stdout}\n{r.stderr}"
+
+
+SPEC_SECTION_IDS = [
+    "tokens-color", "tokens-type", "tokens-space",
+    "comp-light", "comp-parch", "comp-dark", "comp-black",
+    "fig-light", "fig-dark", "math",
+    "check-keepall", "check-tnum", "check-punct", "check-breaks",
+]
+
+
+def test_styleguide_paper_covers_every_spec_section():
+    """
+    design.md §4.7 이 나열한 절 id 가 실제로 방출되는지 본다. 각 절은 `data-sg="<id>"`로
+    구분된다(빠지면 styleguide 가 명세의 일부를 조용히 안 보여주는 것이다). node·chromium
+    없이 돌게 raw HTML(mathbuild.js 이전)만 본다 — id 는 build_styleguide.py 가 붙이고
+    mathbuild.js 는 속성을 지우지 않는다.
+    """
+    sys.path.insert(0, str(ROOT / "examples"))
+    import build_styleguide
+
+    raw = build_styleguide.build("paper").read_text(encoding="utf-8")
+    missing = [sg for sg in SPEC_SECTION_IDS if f'data-sg="{sg}"' not in raw]
+    assert not missing, f"paper styleguide 에서 빠진 section: {missing}"

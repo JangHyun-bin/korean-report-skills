@@ -32,40 +32,28 @@ documents that must survive being exported to PDF, opened offline, and read on p
 
 Monochrome scale plus exactly one accent. Do not introduce a second hue.
 
-```css
-:root{
-  /* accent — the only chromatic value */
-  --primary:      #0066cc;   /* on light surfaces */
-  --primary-dark: #2997ff;   /* on dark surfaces  */
+Values live in `assets/css/tokens.css`; this section names the roles only.
 
-  /* ink */
-  --ink:    #1d1d1f;         /* body text, strongest rules      */
-  --ink80:  #333333;         /* secondary prose                 */
-  --ink48:  #7a7a7a;         /* captions, labels, muted numbers */
+| Role | Token |
+|---|---|
+| Accent — the only chromatic value | `--accent` (dark surfaces redefine it) |
+| Text on accent | `--on-accent` |
+| Ink — body · secondary · captions | `--ink` · `--ink-2` · `--ink-3` |
+| Surfaces — canvas · alternating · callout fill | `--surface` · `--surface-2` · `--surface-3` |
+| Rules — heavy · hairline · divider | `--rule-heavy` · `--rule` · `--rule-soft` |
+| Highlight — a reading layer (§4.7) | `--mark` · `--mark-ink` (fixed) |
+| Figure palette | `--fig-line` · `--fig-soft` · `--fig-pale` · `--fig-mid` |
 
-  /* surfaces */
-  --canvas:    #ffffff;
-  --parchment: #f5f5f7;      /* alternating tile, code chips    */
-  --pearl:     #fafafc;      /* callout fill, blank table cells */
-  --tile1:     #272729;      /* dark tile                       */
-  --black:     #000000;      /* cover / closing only            */
-
-  /* lines */
-  --hairline: #e0e0e0;       /* table rules, card borders       */
-  --divider:  #f0f0f0;       /* internal separators             */
-
-  /* highlight — a reading layer, not a second accent (§4.7) */
-  --mark:     #fbeaa0;
-  --mark-ink: #1d1d1f;       /* fixed; dark tiles must not invert it */
-}
-```
+`.dark` and `.black` redefine these tokens for dark surfaces, and `@media print` restores the
+light values. The pre-1.x names (`--primary`, `--ink48`, `--parchment`, …) remain as aliases
+until 2.0.
 
 **Rules**
 
-- `--primary` marks one of: a section number, an eyebrow, a live link, a highlighted
+- `--accent` marks one of: a section number, an eyebrow, a live link, a highlighted
   row, or a single emphasized figure. Not all of them on the same screen.
-- On dark tiles the accent switches to `--primary-dark`. The light-surface blue fails
-  contrast on `#272729`.
+- On dark tiles the accent switches to the dark-surface value of `--accent`. The
+  light-surface blue fails contrast on `#272729`.
 - Red, amber, and green are **not** severity signals here. Severity is expressed by
   border weight and position (§4.3), not by hue.
 - **The highlight yellow is not a second accent and may not be used as one.** The accent
@@ -85,26 +73,27 @@ which SF Pro cannot do.
 --mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
 ```
 
-Pretendard is **embedded as base64 `@font-face` at build time**, not linked:
+Pretendard is **embedded as base64 `@font-face` at build time**, not linked.
 
-```bash
-node mathbuild.js raw.html out.html --font Pretendard-Regular.woff2                                     --font Pretendard-SemiBold.woff2
-```
+The build embeds the bundled Pretendard subset (`assets/fonts/`) by default; `--font` replaces
+it. Characters outside the subset fall back to the stack above and the build warns about them.
 
-The stack above is the fallback chain for the case where a build omits `--font`. That
-build still succeeds but emits a warning — the document then renders with whatever the
-reader's machine has, and the metrics that make Hangul and Latin align are gone.
+Sizes come from the 13-step scale in `tokens.css` — base 17/28px, ratio 1.125, line heights on
+a 4px grid, tracking tightening monotonically with size. Print overrides the same tokens in points.
 
-| Role | Size | Weight | Line height | Tracking |
-|---|---|---|---|---|
-| Hero (cover) | `clamp(34px,4.6vw,50px)` | 600 | 1.08 | `-0.028em` |
-| Section h2 | 25–34px | 600 | 1.14–1.25 | `-0.012em` |
-| Sub-head h3 | 18.5px | 600 | 1.24 | `-0.008em` |
-| Lead | `clamp(19px,1.8vw,24px)` | 400 | 1.40 | `+0.196px` |
-| Body | 16.5px | 400 | 1.72 | `-0.32px` |
-| Table | 14–15px | 400 | 1.55 | `-0.18px` |
-| Caption | 13px | 400 | 1.5 | `-0.2px` |
-| Eyebrow | 13–14px | 600 | — | `0` |
+| Role | Step |
+|---|---|
+| Hero (deck) | `--t9` |
+| h1 (paper) · metric value | `--t8` |
+| h2 — deck · paper | `--t6` · `--t4` |
+| h3 | `--t3` |
+| Lead | `--t2` |
+| Subtitle · h4 | `--t1` |
+| Body | `--t0` |
+| Table · lists · callout text | `--t-1` |
+| Caption · eyebrow · table header | `--t-2` |
+| Badge | `--t-3` |
+| EOD — paper · deck | `--t-3` · `--t-2` |
 
 **Tracking is negative for display sizes and near-zero for small text.** This is the
 single most recognizable trait of the system; omitting it makes headlines look loose and
@@ -115,17 +104,11 @@ because deck text is short and scanned, not read.
 
 ### 1.3 Spacing & radius
 
-```css
---s-xs:8px; --s-sm:12px; --s-md:17px; --s-lg:24px;
---s-xl:32px; --s-xxl:48px; --s-sec:80px;
+Spacing is `--s-1` … `--s-10` (4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 80 · 96px); radius is
+`--r-sm` · `--r-md` · `--r-lg` · `--r-pill`. Values are in `tokens.css`. The pre-1.x names
+(`--s-xs` … `--s-sec`) remain as aliases until 2.0.
 
---r-sm:8px;    /* chips, small fills   */
---r-md:12px;   /* callouts, cards      */
---r-lg:18px;   /* tiles, large panels  */
---r-pill:9999px;
-```
-
-Section padding is `--s-sec` in deck mode, `64px` top-only in paper mode.
+Section padding is `--s-9` in deck mode, `64px` top-only in paper mode.
 
 ### 1.4 Elevation
 
@@ -162,7 +145,8 @@ black (cover) → light → parchment → dark → light → parchment → … �
 - **Dark tiles are reserved for the two or three most consequential sections** — the
   central claim, the gap analysis, the roadmap. Using dark for a routine table wastes it.
 - Two adjacent tiles never share a background.
-- Cover and closing are `--black`, distinct from the `--tile1` used mid-document.
+- Cover and closing are `--black`, distinct from the `.dark` surface (`--surface` under
+  `.dark`) used mid-document.
 
 ### 2.2 Paper: continuous flow
 
@@ -171,7 +155,7 @@ No tiles. Hierarchy comes from rules and numbering:
 ```css
 h2{ border-bottom:1px solid var(--ink); padding-bottom:12px;
     display:flex; align-items:baseline; gap:14px }
-.sn{ color:var(--primary); font-size:14px; font-weight:600; flex:none }
+.sn{ color:var(--accent); font-size:14px; font-weight:600; flex:none }
 ```
 
 The section number sits in the accent color, outside the heading text, at small size —
@@ -228,10 +212,10 @@ appears **inline, at the claim**, never only in a legend.
 .bdg{ display:inline-block; font-size:11px; font-weight:600; letter-spacing:0;
       padding:1px 7px; border-radius:var(--r-pill); vertical-align:1.5px;
       white-space:nowrap }
-.bdg.meas{ background:var(--primary); color:#fff }              /* measured  */
-.bdg.impl{ color:var(--primary); border:1px solid rgba(0,102,204,.5) } /* exists, unused */
-.bdg.none{ color:var(--ink48); border:1px dashed var(--ink48) } /* not measured */
-.bdg.no  { color:var(--ink48); border:1px solid var(--ink48) }  /* impossible */
+.bdg.meas{ background:var(--accent); color:#fff }              /* measured  */
+.bdg.impl{ color:var(--accent); border:1px solid rgba(0,102,204,.5) } /* exists, unused */
+.bdg.none{ color:var(--ink-3); border:1px dashed var(--ink-3) } /* not measured */
+.bdg.no  { color:var(--ink-3); border:1px solid var(--ink-3) }  /* impossible */
 ```
 
 The encoding is **fill → outline → dashed**, matching confidence. It survives grayscale
@@ -243,9 +227,9 @@ they render inconsistently across platforms and carry no weight in print.
 ### 4.2 Tables
 
 ```css
-th{ text-align:left; font-size:12.5px; font-weight:600; color:var(--ink48);
+th{ text-align:left; font-size:12.5px; font-weight:600; color:var(--ink-3);
     border-bottom:1px solid var(--ink); white-space:nowrap }
-td{ border-bottom:1px solid var(--hairline); vertical-align:top }
+td{ border-bottom:1px solid var(--rule); vertical-align:top }
 td:first-child, th:first-child{ padding-left:0 }
 td:last-child,  th:last-child { padding-right:0 }
 tr.hl td{ background:rgba(0,102,204,.045) }
@@ -257,7 +241,7 @@ table.num td:not(:first-child){ text-align:right; white-space:nowrap }
 - First and last columns are flush to the measure. Tables are not boxes.
 - `table.num` right-aligns every column but the label. Digits must align to compare.
 - `tr.hl` marks at most **one** row per table — the reference case or the correction.
-- Header labels use `--ink48`, not full ink. The data is the content; the header is
+- Header labels use `--ink-3`, not full ink. The data is the content; the header is
   navigation.
 
 **Wide tables** (7+ columns) get a scroll wrapper that bleeds to the margin on screen and
@@ -277,18 +261,18 @@ Four variants, distinguished by **border position and weight** — never by colo
 
 | Variant | Border | Fill | Use |
 |---|---|---|---|
-| `.note` | 1px all round | `--pearl` | scope limits, methodology caveats |
+| `.note` | 1px all round | `--surface-3` | scope limits, methodology caveats |
 | `.warn` | 3px left, `--ink` | `#fff` | corrections, things that will mislead |
-| `.finding` | 3px left, `--primary` | `#fff` | the document's own conclusions |
-| `.claim` | none | `--parchment` | the single defensible statement |
+| `.finding` | 3px left, `--accent` | `#fff` | the document's own conclusions |
+| `.claim` | none | `--surface-2` | the single defensible statement |
 
 ```css
 .note,.warn,.finding,.claim{ border-radius:var(--r-md); padding:18px 22px; margin:24px 0 }
-.warn   { background:#fff; border:1px solid var(--hairline); border-left:3px solid var(--ink) }
-.finding{ background:#fff; border:1px solid rgba(0,102,204,.3); border-left:3px solid var(--primary) }
+.warn   { background:#fff; border:1px solid var(--rule); border-left:3px solid var(--ink) }
+.finding{ background:#fff; border:1px solid rgba(0,102,204,.3); border-left:3px solid var(--accent) }
 ```
 
-A `.finding` may carry a `.cav` trailer — a hairline-separated line in `--ink48` stating
+A `.finding` may carry a `.cav` trailer — a hairline-separated line in `--ink-3` stating
 the limits of the finding. Conclusions and their caveats stay in the same box.
 
 **Heading form.** Callout titles and sub-headings are **noun phrases, not sentences**.
@@ -324,13 +308,13 @@ cells as well as body text.
 For headline numbers. Two per row, never three.
 
 ```css
-.metric{ border:1px solid var(--hairline); border-radius:var(--r-lg); padding:var(--s-xl) }
-.metric .mlabel{ font-size:14px; color:var(--ink48) }
+.metric{ border:1px solid var(--rule); border-radius:var(--r-lg); padding:var(--s-6) }
+.metric .mlabel{ font-size:14px; color:var(--ink-3) }
 .metric .mval  { font-size:clamp(30px,3.6vw,42px); font-weight:600;
                  letter-spacing:-.02em; line-height:1.05 }
-.metric .mnote { font-size:14px; color:var(--ink48) }
-.metric.gap    { background:var(--pearl); border-style:dashed }
-.metric.gap .mval{ color:var(--ink48) }
+.metric .mnote { font-size:14px; color:var(--ink-3) }
+.metric.gap    { background:var(--surface-3); border-style:dashed }
+.metric.gap .mval{ color:var(--ink-3) }
 ```
 
 `.metric.gap` — dashed border, muted value — states an **absent** measurement with the
@@ -343,11 +327,11 @@ later section. A reader who screenshots the cards must capture the caveat too.
 
 ```css
 ul.plain li, ol.concl li{ padding:11px 0 11px 30px; position:relative;
-                          border-top:1px solid var(--hairline) }
+                          border-top:1px solid var(--rule) }
 ul.plain li::before{ content:""; position:absolute; left:8px; top:21px;
-                     width:5px; height:5px; border-radius:50%; background:var(--primary) }
+                     width:5px; height:5px; border-radius:50%; background:var(--accent) }
 ol.concl li::before{ content:counter(c); position:absolute; left:0; top:11px;
-                     font-size:12.5px; font-weight:600; color:var(--primary) }
+                     font-size:12.5px; font-weight:600; color:var(--accent) }
 ```
 
 Rule-separated rows, accent markers, no native list glyphs. Numbered lists are for
@@ -356,17 +340,17 @@ conclusions and priorities — things a reader may cite by index.
 ### 4.6 Code
 
 ```css
-pre{ background:var(--tile1); color:#e6e6e8; border-radius:var(--r-md);
+pre{ background:var(--code-bg); color:#e6e6e8; border-radius:var(--r-md);
      padding:20px 24px; font-family:var(--mono); font-size:12.5px; line-height:1.75 }
 pre .c{ color:#8b8b90 }                     /* comments */
-code{ background:var(--parchment); padding:1px 5px; border-radius:5px;
+code{ background:var(--surface-2); padding:1px 5px; border-radius:5px;
       font-size:.86em; letter-spacing:0 }
 ```
 
 Inline `code` uses parchment on light surfaces, `rgba(255,255,255,.10)` on dark. Reset
 `letter-spacing` to `0` — monospace does not want the negative tracking.
 
-In print, `pre` inverts to `--parchment` on `--ink`. Do not print large black fills.
+In print, `pre` inverts to `--surface-2` on `--ink`. Do not print large black fills.
 
 ### 4.7 Emphasis
 
@@ -392,7 +376,7 @@ A second highlight in the same section destroys the first, exactly as a second a
 would. If several spans in one section all deserve marking, none of them do — the
 section is making more than one point and should be split.
 
-In grayscale print the yellow flattens to the same value as `--parchment`, so a highlight
+In grayscale print the yellow flattens to the same value as `--surface-2`, so a highlight
 and a code chip become indistinguishable. That is acceptable: the highlight guides a
 reader through the screen copy and never carries a claim on its own. Anything the printed
 document must not lose belongs in a badge (§4.1) or a callout (§4.3).
@@ -438,7 +422,7 @@ hundreds of surveyed camera positions, or a point cloud, cannot be hand-authored
 without fabricating the data. Such a figure may ship as a raster, subject to three rules:
 
 1. **Embed it as a base64 data URI.** The document stays self-contained (§0.2).
-2. **Frame it** — `1px var(--hairline)`, `10px` radius, centred, max 820px wide — so it
+2. **Frame it** — `1px var(--rule)`, `10px` radius, centred, max 820px wide — so it
    reads as an inset plate rather than a native diagram.
 3. **Quantify it natively alongside.** The raster shows the shape; a companion SVG or
    table carries the numbers the reader is meant to act on. Never let a raster be the
@@ -449,9 +433,9 @@ a matplotlib default face next to Pretendard is a visible seam.
 
 ### 5.2 Discipline
 
-- **Monochrome plus the accent.** A diagram may use `--ink`, `--ink48`, `--fig-line`
+- **Monochrome plus the accent.** A diagram may use `--ink`, `--ink-3`, `--fig-line`
   (`#c7ccd2`), `--fig-mid` (`#8695a6`), `--fig-soft` (`#dfe4e9`), `--fig-pale`
-  (`#eef3f8`), and `--primary`. That is the whole palette. Every one of them is
+  (`#eef3f8`), and `--accent`. That is the whole palette. Every one of them is
   redefined on dark tiles, so the figure follows the surface.
 - **Distinguish by form, not hue** — fill vs. outline, solid vs. dashed, weight, size.
   A category legend that relies on color fails in grayscale.
@@ -466,11 +450,11 @@ a matplotlib default face next to Pretendard is a visible seam.
 
 | Type | Convention |
 |---|---|
-| **Gantt / timeline** | Bars as percentage-positioned absolute divs over a shared track. Confirmed = solid `#c7ccd2`; proposed = `1.5px dashed var(--primary)`; the critical bar = solid `--ink`. Vertical markers: solid for the present, dashed for deadlines, dotted for targets. |
+| **Gantt / timeline** | Bars as percentage-positioned absolute divs over a shared track. Confirmed = solid `#c7ccd2`; proposed = `1.5px dashed var(--accent)`; the critical bar = solid `--ink`. Vertical markers: solid for the present, dashed for deadlines, dotted for targets. |
 | **Sawtooth / accumulation** | Two panels side by side, same axis scale, differing only in the parameter under discussion. |
-| **Scatter with a model** | Plot the identity line `y = x` as `--ink48` dashed; annotate each point with its ratio to the prediction. Two points are enough if the ratio is the finding. |
+| **Scatter with a model** | Plot the identity line `y = x` as `--ink-3` dashed; annotate each point with its ratio to the prediction. Two points are enough if the ratio is the finding. |
 | **Number line** | Dots on a single rule, labels alternating above and below to avoid collision; a dashed vertical marks the value under scrutiny. |
-| **Flow / pipeline** | Rounded rects, `1px #c7ccd2` stroke. One node filled `--tile1` marks the subject. Arrows `#8695a6`, `1.4px`, triangular marker. |
+| **Flow / pipeline** | Rounded rects, `1px #c7ccd2` stroke. One node filled `--code-bg` marks the subject. Arrows `#8695a6`, `1.4px`, triangular marker. |
 | **Distribution curve** | Single `2.5px --ink` stroke over a `#dfe4e9` fill; shaded bands for regions of interest. Never a gradient. |
 
 ### 5.4 Captions
@@ -481,7 +465,7 @@ a matplotlib default face next to Pretendard is a visible seam.
 ```
 
 ```css
-.figcap{ font-size:13px; color:var(--ink48); text-align:center;
+.figcap{ font-size:13px; color:var(--ink-3); text-align:center;
          margin:6px 0 26px; letter-spacing:-.2px }
 ```
 
@@ -606,14 +590,8 @@ Continuous flow with break control.
 
 Invert them. Never print large dark fills.
 
-```css
-@media print{
-  .tile.dark,.tile.black{ background:#fff!important; color:#000!important }
-  .dark .eyebrow{ color:var(--primary)!important }
-  .dark table th{ color:var(--ink48)!important; border-bottom-color:var(--ink)!important }
-  .dark .bdg.meas{ background:var(--primary)!important; color:#fff!important }
-}
-```
+`tokens.css` restores every dark-surface token to its light value inside `@media print`, so
+dark tiles print as light pages without per-component overrides.
 
 ### 7.4 Always
 
@@ -643,13 +621,13 @@ Every document ends with a terminal marker and nothing else.
 
 ```html
 <footer style="max-width:720px;margin:80px auto 0;padding-top:20px;
-               border-top:1px solid var(--hairline);
+               border-top:1px solid var(--rule);
                font-size:12px;letter-spacing:.08em;color:#7a7a7a">EOD</footer>
 ```
 
 **Rules**
 
-- The mark is `EOD`, uppercase, positively tracked at `0.08em`, in `--ink48` or
+- The mark is `EOD`, uppercase, positively tracked at `0.08em`, in `--ink-3` or
   `#8b8b90`. It is a marker, not a heading.
 - **No valediction, no organization name, no logo, no thanks.** The document ends where
   the content ends; the mark only confirms nothing was truncated.

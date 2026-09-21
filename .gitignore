@@ -13,11 +13,12 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# 폰트 — 저장소에 담지 않는다 (INSTALL.md 절차로 받는다)
+# 폰트 — 저장소에 담지 않는다. 예외는 스킬이 동봉하는 Pretendard 공식 subset 이다
 *.woff2
 *.woff
 *.ttf
 *.otf
+!plugins/korean-report/skills/korean-report-doc/assets/fonts/*.woff2
 
 # 편집기·OS
 .vscode/
@@ -25,3 +26,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 저장소 밖 입력 자료 — 실명이 포함될 수 있어 추적하지 않는다
+ref/

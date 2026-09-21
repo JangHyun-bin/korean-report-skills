@@ -172,17 +172,14 @@ python3 -m pip install playwright
 python3 -m playwright install chromium
 ```
 
-기준 HTML에는 CSS와 KaTeX 수식 글꼴이 내장됩니다. 본문 글꼴까지 내장하려면 사용 권한이
-있는 WOFF2 파일을 `mathbuild.js`의 `--font` 인자로 지정합니다. 본문 글꼴을 지정하지 않으면
-빌드는 완료되지만 시스템 폰트에 따라 `typesetting` 결과가 달라질 수 있습니다.
+기준 HTML에는 CSS, KaTeX 수식 글꼴, 동봉한 Pretendard 본문 글꼴이 내장됩니다. 다른 본문 글꼴을
+쓰려면 사용 권한이 있는 WOFF2 파일을 `mathbuild.js`의 `--font` 인자로 지정합니다.
 
 ```bash
 DOC_SKILL=/absolute/path/to/korean-report-doc
 
 node "$DOC_SKILL/assets/mathbuild.js" raw.html report.html \
-  --assets "$DOC_SKILL/assets" \
-  --font Pretendard-Regular.woff2 \
-  --font Pretendard-SemiBold.woff2
+  --assets "$DOC_SKILL/assets"
 
 python3 "$DOC_SKILL/assets/qa.py" report.html --pdf --shot shots
 ```
