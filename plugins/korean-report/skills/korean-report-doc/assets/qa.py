@@ -6,14 +6,34 @@ qa.py — 배포된 스킬 안에서 HTML을 렌더링해 검사한다.
 
 SKILL.md §4 체크리스트의 기계 검사 부분을 수행한다.
 사람이 봐야 하는 항목(다크 타일 반전, 절반 이상 빈 페이지)은 --shot으로 이미지를 남긴다.
-검사에 실패하면 exit 1이다.
+
+종료 코드
+    0  통과
+    1  검사 실패 — 문서를 고친다
+    2  검사를 실행하지 못함 — Playwright·Chromium 미설치, 대상 파일 없음, 인자 오류.
+       문서가 아니라 환경의 문제다. stderr 한 줄이 다음 명령을 알린다
 """
 import argparse
 import html
 import pathlib
+import re
+import shutil
 import sys
 
-from playwright.sync_api import sync_playwright
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:  # 실행 시점에 NotReady 로 알린다. import traceback 은 다음 할 일을 알리지 않는다
+    sync_playwright = None
+
+EXIT_OK = 0
+EXIT_FAILED = 1
+# argparse 의 인자 오류도 2 다. 둘 다 「검사를 실행하지 못하였다」는 같은 뜻이다.
+EXIT_NOT_READY = 2
+
+
+class NotReady(RuntimeError):
+    """검사를 실행할 환경이 갖춰지지 않았다. 메시지는 다음 할 일을 한 줄로 담는다."""
+
 
 # Windows 기본 콘솔은 cp949다. 한글·중간점·줄표가 UnicodeEncodeError를 낸다.
 for _s in (sys.stdout, sys.stderr):
@@ -63,13 +83,18 @@ CHECK_JS = """() => {
     // 스타일이 실제로 걸렸는지 — 토큰이 비어 있으면 CSS 삽입이 실패한 것이다
     accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
     bodyFont: getComputedStyle(document.body).fontFamily,
-    // 도해가 뷰박스 밖으로 나갔는지
-    svgClipped: [...document.querySelectorAll('svg.fig')].filter(s => {
+    // 도해가 뷰박스 밖으로 나갔는지 — 생성기의 좌표 계산 오류를 잡는다.
+    // embed_svg 로 삽입한 외부 SVG 는 제외한다. 좌표를 외부 도구가 정하였고, getBBox 가
+    // clip-path 를 무시하므로 clip 으로 잘린 내용(TikZ 의 clip 등)을 넘침으로 오인한다.
+    svgClipped: [...document.querySelectorAll('svg.fig:not([data-embed])')].filter(s => {
       const vb = s.viewBox.baseVal, bb = s.getBBox();
       return bb.x < vb.x - 1 || bb.y < vb.y - 1 ||
              bb.x + bb.width > vb.x + vb.width + 1 ||
              bb.y + bb.height > vb.y + vb.height + 1;
     }).map(s => s.getAttribute('aria-label') || '(무제)'),
+    // embed_svg 로 삽입한 외부 SVG 는 색이 token 을 따르지 않는다 — 다크 surface 에서 글자가 사라진다
+    darkEmbeds: [...document.querySelectorAll('.dark svg[data-embed], .black svg[data-embed]')]
+      .map(s => s.getAttribute('aria-label') || '(무제)'),
   };
 }"""
 
@@ -86,10 +111,48 @@ def footer_template(title: str) -> str:
             '<span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>')
 
 
+def _python() -> str:
+    """
+    설치 안내에 적을 interpreter. PATH 의 이름이 지금 interpreter 와 같을 때만 짧게 쓴다.
+    `python` 이 없는 macOS 처럼 짧은 이름이 다른 interpreter 를 가리키면 그 안내는 틀린다.
+    """
+    for name in ("python", "python3"):
+        if shutil.which(name) == sys.executable:
+            return name
+    exe = sys.executable or "python"
+    return f'"{exe}"' if " " in exe else exe
+
+
+def browser_missing(err: BaseException) -> bool:
+    """
+    Chromium 실행 파일이 없어 launch 가 실패하였는가.
+    Playwright 는 이때 설치 안내 상자를 메시지에 붙여 던진다. `install-deps`(시스템 라이브러리
+    부족)는 다른 처치가 필요하므로 여기에 포함하지 않는다.
+    """
+    msg = str(err)
+    return "Executable doesn't exist" in msg or re.search(r"playwright install(?!-deps)", msg) is not None
+
+
+def launch(p):
+    """Chromium 을 띄운다. 설치되어 있지 않으면 Playwright 의 안내 상자 대신 한 줄로 알린다."""
+    try:
+        return p.chromium.launch()
+    except Exception as e:
+        if browser_missing(e):
+            raise NotReady(f"Chromium 이 설치되어 있지 않다 — {_python()} -m playwright install chromium "
+                           "실행 후 다시 검사한다") from None
+        raise
+
+
 def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | None) -> int:
+    """한 문서를 검사한다. 통과 0 · 실패 1. 환경이 갖춰지지 않았으면 NotReady 를 던진다."""
+    if sync_playwright is None:
+        py = _python()
+        raise NotReady(f"Playwright 가 설치되어 있지 않다 — {py} -m pip install playwright 와 "
+                       f"{py} -m playwright install chromium 실행 후 다시 검사한다")
     fails, notes = [], []
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = launch(p)
         pg = b.new_page(viewport={"width": 1280, "height": 900})
         pg.goto(target.resolve().as_uri())
         pg.wait_for_timeout(2500)
@@ -118,6 +181,9 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
             fails.append(f"body 폰트 스택에 Pretendard가 없다 — {r['bodyFont']}")
         if r["svgClipped"]:
             fails.append(f"viewBox 밖으로 나간 도해 — {r['svgClipped']}")
+        if r["darkEmbeds"]:
+            fails.append(f"다크 surface 위의 외부 SVG — {r['darkEmbeds']}. 원본 색이 고정되어 "
+                         "읽히지 않는다 — 밝은 surface 로 옮긴다 (design.md §5.5)")
         # 캡션은 표에도 붙으므로 하한만 본다.
         if r["figcaps"] < r["figs"]:
             fails.append(f"캡션 없는 도해가 있다 — svg {r['figs']} · figcap {r['figcaps']}")
@@ -164,7 +230,7 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
         print("   " + n)
     for f in fails:
         print("   FAIL  " + f)
-    return 1 if fails else 0
+    return EXIT_FAILED if fails else EXIT_OK
 
 
 def main() -> int:
@@ -174,9 +240,19 @@ def main() -> int:
     ap.add_argument("--shot", type=pathlib.Path, default=None)
     args = ap.parse_args()
 
-    rc = 0
-    for target in args.targets:
-        rc |= run(target, target.with_suffix(".pdf") if args.pdf else None, args.shot)
+    missing = [t for t in args.targets if not t.is_file()]
+    for t in missing:
+        print(f"검사 대상 파일이 없다 — {t}", file=sys.stderr)
+    if missing:
+        return EXIT_NOT_READY
+
+    rc = EXIT_OK
+    try:
+        for target in args.targets:
+            rc = max(rc, run(target, target.with_suffix(".pdf") if args.pdf else None, args.shot))
+    except NotReady as e:
+        print(e, file=sys.stderr)
+        return EXIT_NOT_READY
     return rc
 
 

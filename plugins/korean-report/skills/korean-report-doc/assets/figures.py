@@ -15,8 +15,13 @@ matplotlib 식 y-up 으로 계산한 뒤 뒤집지 않으면 행 순서가 역�
 
 경계조건 — 기간이 0 이거나 축 범위가 뒤집힌 입력은 ValueError 로 즉시 실패한다.
 조용히 깨진 도해를 내보내는 것이 도해가 없는 것보다 나쁘다.
+
+외부 SVG — TikZ(pdftocairo) · matplotlib 이 생성한 SVG 는 embed_svg() 로 삽입한다.
+id 와 내부 참조에 접두어를 붙여 한 문서에 여럿을 넣어도 서로 간섭하지 않게 한다.
 """
+import collections
 import itertools
+import re
 
 FONT  = 'Pretendard'
 
@@ -350,6 +355,137 @@ def fig_scatter(points, lo, hi, xlabel="", ylabel="", title=""):
 <text class="fi-ink48" x="18" y="145" text-anchor="middle" font-size="12"
       transform="rotate(-90 18 145)">{esc(ylabel)}</text>
 </g></svg>'''
+
+
+# ══════════════════════════════════════════════════ 외부 SVG 삽입
+# 속성 값 안의 '>' 를 태그 끝으로 오인하지 않도록 따옴표 구간을 통째로 건너뛴다.
+_TAG = re.compile(r"""<([A-Za-z][\w:.-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>""")
+_ATTR = re.compile(r"""(\s+)([^\s=/>]+)\s*=\s*("[^"]*"|'[^']*')""")
+_URL_REF = re.compile(r"""url\(\s*(['"]?)#([^'")\s]+)\1\s*\)""")
+_PROLOG = re.compile(r"""\A(?:\s+|<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE(?:[^>\[]|\[[\s\S]*?\])*>)""",
+                     re.I)
+_STYLE = re.compile(r"(<style\b[^>]*>)([\s\S]*?)(</style>)", re.I)
+_PREFIX = re.compile(r"[A-Za-z][A-Za-z0-9_-]*\Z")
+
+
+def _attrs(s):
+    return [(m.group(2), m.group(3)[1:-1]) for m in _ATTR.finditer(s)]
+
+
+def _scope_css(css, scope, rename):
+    """
+    <style> 의 규칙을 이 SVG 안으로 한정한다. 인라인 SVG 의 <style> 은 문서 전체에 걸린다 —
+    matplotlib 의 `*{stroke-linecap:butt}` 가 본문의 다른 도해까지 바꾼다.
+    """
+    cdata = css.strip().startswith("<![CDATA[")
+    body = re.sub(r"/\*[\s\S]*?\*/", "", css.strip().removeprefix("<![CDATA[").removesuffix("]]>"))
+    if "@" in body:
+        raise ValueError("SVG <style> 의 at-rule(@media · @font-face 등)은 범위를 한정할 수 없다 — "
+                         "생성 도구에서 끄고 다시 내보낸다")
+    rules = []
+    for sel, decl in re.findall(r"([^{}]+)\{([^{}]*)\}", body):
+        scoped = []
+        for one in sel.split(","):
+            one = re.sub(r"#([A-Za-z_][\w-]*)", lambda m: "#" + rename.get(m.group(1), m.group(1)),
+                         one.strip())
+            scoped.append(f"{scope} {one}")
+        rules.append(", ".join(scoped) + "{" + decl.strip() + "}")
+    out = "".join(rules)
+    return f"<![CDATA[{out}]]>" if cdata else out
+
+
+def embed_svg(svg_text, prefix, label, cls="fig"):
+    """
+    외부 도구가 생성한 SVG 를 문서에 인라인으로 삽입할 수 있게 정리한다.
+
+    svg_text : pdftocairo -svg · matplotlib 등이 생성한 SVG 문서 문자열
+    prefix   : 문서 안에서 고유한 접두어 — 모든 id 와 내부 참조 앞에 붙는다
+    label    : aria-label. 비울 수 없다
+    cls      : 루트 class. 기본 "fig" — 본문 폭에 맞춰 늘어나고 qa.py 의 캡션 검사를 받는다
+
+    pdftocairo 는 출력마다 같은 id(glyph-0-0 · clip-0 …)를 쓴다. 그대로 두 개를 넣으면
+    뒤 그림이 앞 그림의 글리프와 clip 을 참조해 글자가 바뀐다. 그래서
+      · XML 선언 · DOCTYPE · 앞쪽 주석을 제거한다
+      · 모든 id 와 href · xlink:href · url(#…)(style 속성 · <style> 포함)에 접두어를 붙인다
+      · <style> 규칙을 이 SVG 안으로 한정한다
+      · 루트의 width · height 를 제거하고 viewBox 를 유지한다 — 크기는 CSS 가 정한다
+      · 루트에 class · role="img" · aria-label · data-embed 를 붙인다
+    viewBox 가 없거나 루트가 <svg 가 아니거나, 참조 대상 id 가 없거나, 외부 파일을
+    참조하면 ValueError 로 즉시 실패한다. 조용히 깨진 그림이 그림이 없는 것보다 나쁘다.
+    색은 원본 그대로다 — design.md §5.5 의 조건을 지킨다.
+    """
+    if not isinstance(svg_text, str):
+        raise ValueError(f"svg_text 는 문자열이어야 한다 — {type(svg_text).__name__}")
+    if not isinstance(prefix, str) or not _PREFIX.match(prefix):
+        raise ValueError(f"prefix 는 영문자로 시작하는 [A-Za-z0-9_-] 이어야 한다 — {prefix!r}")
+    if not str(label).strip():
+        raise ValueError("label 이 비어 있다 — 그림이 무엇인지 aria-label 로 밝힌다")
+
+    text = svg_text.lstrip("\ufeff")
+    while (m := _PROLOG.match(text)) and m.end() > 0:
+        text = text[m.end():]
+    text = re.sub(r"(?:\s|<!--[\s\S]*?-->)+\Z", "", text)
+    root = _TAG.match(text)
+    if not root or root.group(1) != "svg":
+        raise ValueError("<svg 로 시작하지 않는다 — SVG 문서를 넘긴다")
+    head, inner = root.group(2), text[root.end():]
+    if head.rstrip().endswith("/"):
+        raise ValueError("내용이 없는 <svg/> 다")
+    if not text.endswith("</svg>"):
+        raise ValueError("</svg> 로 끝나지 않는다 — 잘린 SVG 다")
+
+    root_attrs = dict(_attrs(head))
+    vb = root_attrs.get("viewBox", "").replace(",", " ").split()
+    try:
+        vbw, vbh = float(vb[2]), float(vb[3])
+        float(vb[0]); float(vb[1])
+    except (IndexError, ValueError):
+        raise ValueError(f"viewBox 가 없거나 숫자 넷이 아니다 — {root_attrs.get('viewBox')!r}. "
+                         "viewBox 가 없으면 CSS 로 크기를 맞출 수 없다") from None
+    if len(vb) != 4 or vbw <= 0 or vbh <= 0:
+        raise ValueError(f"viewBox 의 폭·높이가 양수가 아니다 — {root_attrs['viewBox']!r}")
+
+    # id 수집 — 루트 id 도 참조될 수 있다
+    ids = [v for _, a in _TAG.findall(text) for k, v in _attrs(a) if k == "id"]
+    dup = sorted(i for i, n in collections.Counter(ids).items() if n > 1)
+    if dup:
+        raise ValueError(f"id 가 중복된다 — {dup[:5]}")
+    rename = {i: f"{prefix}-{i}" for i in ids}
+
+    def ref(target, where):
+        if target not in rename:
+            raise ValueError(f"{where} 가 없는 id 를 참조한다 — #{target}")
+        return rename[target]
+
+    def fix_attrs(tag, attrs, drop=()):
+        def fix(a):
+            name, q, value = a.group(2), a.group(3)[0], a.group(3)[1:-1]
+            if name in drop:
+                return ""
+            if name == "id":
+                value = rename[value]
+            elif name in ("href", "xlink:href"):
+                if value.startswith("#"):
+                    value = "#" + ref(value[1:], f"<{tag} {name}>")
+                elif not value.startswith("data:") and tag != "a":
+                    raise ValueError(f"<{tag}> 가 외부 파일을 참조한다 — {value[:60]}. "
+                                     "data URI 로 내장해 다시 내보낸다")
+            return f"{a.group(1)}{name}={q}{value}{q}"
+
+        return _ATTR.sub(fix, attrs)
+
+    def fix_urls(s):
+        return _URL_REF.sub(lambda m: f"url(#{ref(m.group(2), 'url()')})", s)
+
+    inner = fix_urls(_TAG.sub(lambda m: f"<{m.group(1)}{fix_attrs(m.group(1), m.group(2))}>", inner))
+    scope = f'svg[data-embed="{prefix}"]'
+    inner = _STYLE.sub(lambda m: m.group(1) + _scope_css(m.group(2), scope, rename) + m.group(3), inner)
+
+    # 크기는 CSS 가 정하고, 접근성 속성은 아래에서 새로 부여한다
+    drop = {"width", "height", "class", "role", "aria-label", "aria-labelledby", "data-embed"}
+    keep = fix_urls(fix_attrs("svg", head, drop)).rstrip()
+    return (f'<svg{keep} class="{esc(cls)}" role="img" aria-label="{esc(label)}" '
+            f'data-embed="{prefix}">{inner}')
 
 
 # ══════════════════════════════════════════════════ 캡션

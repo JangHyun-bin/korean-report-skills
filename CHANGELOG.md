@@ -15,6 +15,13 @@
   분석기가 어간으로 읽었다. 표면형이 조사 한 글자면 어간 검사에서 제외한다.
 - **불규칙 활용 어간이 검사에서 빠졌다.** 분석기는 `그어` 의 어간을 `VV-I` 로 출력하는데
   품사 비교가 `VV` 만 보았다. 광의 어간과 유정물 동사 검사가 하위 tag 를 본 품사로 돌려 비교한다.
+- **수식이 없는 문서도 KaTeX 를 요구하였다.** `mathbuild.js` 가 시작 시점에 KaTeX 를 불러와,
+  `⟦I⟧` · `⟦D⟧` 가 하나도 없는 문서가 `npm install katex` 전에는 빌드되지 않았다. 짝이 맞는 수식
+  마커가 있을 때만 KaTeX 를 찾고, 없으면 KaTeX CSS · 글꼴 · 고지를 생략한다. 수식이 있는데 KaTeX 가
+  없으면 이전처럼 exit 1 이다.
+- **Chromium 이 없을 때 `qa.py` 가 다음 할 일을 알리지 않았다.** Playwright 의 설치 안내 상자와
+  traceback 이 그대로 출력되었다. 이제 `-m playwright install chromium` 명령을 한 줄로 알리고
+  exit 2 로 종료한다. 검사는 `tests/test_qa_env.py` 에 있다.
 
 ### 더해짐
 
@@ -34,6 +41,15 @@
 - **외래어 표기 정책.** `.krstyle.toml` 의 `[lint] loanwords = "english"` 또는 `--loanwords english` 로
   `references/loanwords.md` 의 음차를 `표기` 갈래로 보고한다. 기본값 `keep` 은 §7.2 를 그대로 따른다.
   설정은 문서 위치에서 위로 올라가며 처음 만나는 파일을 읽는다.
+- **`embed_svg()` — 외부 도구가 생성한 SVG 의 삽입.** TikZ(`pdftocairo -svg`) · matplotlib 출력을
+  한 문서에 여럿 삽입하면 id 가 충돌하였다. pdftocairo 는 출력마다 `glyph-0-0` · `clip-0` 을 쓰므로
+  뒤 그림이 앞 그림의 글리프를 참조해 글자가 바뀐다. 모든 id 와 내부 참조(`href` · `xlink:href` ·
+  `url(#…)`)에 접두어를 부여하고, matplotlib 의 `<style>` 이 문서 전체에 적용되지 않게 그 그림 안으로
+  한정하고, 루트 `width` · `height` 를 제거해 `.fig` 가 크기를 정하게 하였다. viewBox 가 없거나
+  참조 대상이 없거나 외부 파일을 참조하면 `ValueError` 다. 경로는 `references/figures.md` §7 에 있다.
+- **외부 그림의 색 정책.** `references/design.md` §5.5 — 요청자가 명시한 경우에만 원본 색을 유지하고,
+  흑백 인쇄 판독 · 형태 구분 · 밝은 surface · 일반 캡션을 조건으로 한다. 네이티브 도해의 팔레트
+  규칙은 그대로다. 다크 surface 위의 외부 SVG 는 `qa.py` 가 실패로 판정한다.
 
 ### 바뀜
 
@@ -43,6 +59,13 @@
   코드 변경 없이 검사 결과가 바뀐다. 어절 중간의 크기 어간은 보고하지 않는다.
 - **영문 인용 뒤의 번역 괄호를 검사하지 않는다.** 「"greater than the threshold" (임계값보다 크면)」 의
   괄호는 원문을 따른 번역이므로, 고치라고 하면 인용이 어긋난다.
+- **검수 요청은 Markdown 을 유지한다.** 기존 Markdown 의 검수를 요청받은 세션이 HTML 과 PDF 를
+  생성하였다. §1.2 가 산출물 요청만 규정하고 검수를 언급하지 않았기 때문이다. HTML·PDF 를 명시적으로
+  요청받은 경우에만 typesetting 을 수행하고, 검수는 `lint.py` 와 §4.1 번호 항목만 수행한다.
+- **`qa.py` 종료 코드 2.** 검사를 실행하지 못한 경우(Playwright·Chromium 미설치, 대상 파일 없음,
+  인자 오류)를 검사 실패(1)와 구분한다. 환경 문제는 문서를 고쳐도 해결되지 않는다.
+- `qa.py` 의 viewBox 넘침 검사가 외부 SVG 를 제외한다. `getBBox` 가 clip 을 무시하여 TikZ 의
+  clip 으로 잘린 내용을 넘침으로 판정하였다.
 
 ## [1.19.0] — 2026-09-21
 

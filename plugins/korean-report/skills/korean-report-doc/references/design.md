@@ -61,6 +61,9 @@ until 2.0.
   author's pointer, the other is a reading layer laid over finished prose. The moment a
   highlight lands on a section number, an eyebrow, or a link, that distinction has
   collapsed and the document has two accents — which is the thing this section forbids.
+- An imported figure that the requester explicitly asked to keep in its own colours is
+  the one place another hue may appear, under the conditions of §5.5. It never extends
+  the palette of native elements.
 
 ### 1.2 Typography
 
@@ -475,6 +478,23 @@ Tables take `표 n ·` captions **below** the table, matching figures.
 Mark schematic figures explicitly — `(개념도)` / `(conceptual)`. A reader must never
 mistake an illustration for measured data.
 
+### 5.5 Imported figures
+
+A figure drawn by another tool — TikZ converted with `pdftocairo -svg`, a matplotlib
+plot — is still inline SVG, embedded with `embed_svg()` (figures.md §7). By default it is
+regenerated in the §5.2 palette. It may keep its own colours **only when the requester
+explicitly asked for that style** (for example, the pastel blocks of a paper they cite).
+It is then an exhibit, not a native figure, and it must still:
+
+1. **Survive grayscale print** — adjacent fills differ in lightness, not only in hue.
+2. **Distinguish by form as well as hue** — labels, outlines, or patterns carry the
+   categories; colour only repeats them.
+3. **Sit on a light surface.** Its colours do not follow the tokens, so black glyphs vanish
+   on a dark tile; `qa.py` fails a document that places one there.
+4. **Take an ordinary caption** — `그림 n ·`, numbered with the native figures.
+
+Native figures around it keep one accent. The exception covers that figure, not the page.
+
 ---
 
 ## 6. Mathematics
@@ -677,7 +697,7 @@ Run before delivering. Screenshot the rendered output; do not trust the source.
 - [ ] Dark tiles inverted; highlighted rows still visible
 
 **Editorial**
-- [ ] Exactly one accent hue present
+- [ ] Exactly one accent hue present in native elements (imported figures: §5.5)
 - [ ] Every figure caption numbered; schematics marked as such
 - [ ] Any raster figure is base64-embedded, framed, and paired with native quantification
 - [ ] Every status claim carries a badge at the claim, not only in the legend

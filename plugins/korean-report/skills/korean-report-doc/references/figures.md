@@ -1,6 +1,6 @@
 # 도해 규약
 
-`assets/figures.py` 의 7종과 그 사용 원칙.
+`assets/figures.py` 의 7종, 외부 SVG 삽입(§7), 그 사용 원칙.
 
 ---
 
@@ -174,3 +174,62 @@ fig_cards(items=[(1, "검색–매처 제약", "후보 연결 규칙 정정\n지
 | 표 셀 안 수식이 줄바꿈 | display 수식 사용 | 인라인 수식으로 교체 |
 | PDF 에서 도해만 다음 장 | 캡션과 분리됨 | `svg{break-after:avoid}` |
 | 한 문서의 화살촉이 전부 같은 색 | `marker` id 충돌 | 최신 `figures.py` 사용 |
+| 두 번째 외부 SVG 의 글자가 첫 그림의 글자로 바뀜 | pdftocairo 출력의 id 충돌 | `embed_svg()` 로 삽입 (§7) |
+| 외부 SVG 가 본문 폭으로 확대되어 글자가 과대 | 원본 폭이 본문 폭보다 좁음 | 원본 폭을 본문 폭과 일치시킴 · `cls="fig narrow"` |
+
+---
+
+## 7. 외부 SVG 삽입
+
+네이티브 7종으로 표현할 수 없는 그림 — 수식이 많은 TikZ 도식, matplotlib 그래프 — 은
+외부 도구가 생성한 SVG 를 `embed_svg()` 로 삽입한다. 래스터로 변환하지 않는다.
+
+### 경로 — TikZ
+
+```bash
+tectonic fig.tex                  # 또는 pdflatex · lualatex. standalone 문서 클래스를 쓴다
+pdftocairo -svg fig.pdf fig.svg   # poppler. 글자는 글리프 경로로 변환된다
+```
+
+```python
+from figures import embed_svg, figcap
+
+svg = embed_svg(open("fig.svg", encoding="utf-8").read(),
+                prefix="fig-arch", label="인라인 계측 체계 구성")
+BODY += svg + figcap(3, "인라인 계측 체계 구성")
+```
+
+matplotlib 은 `savefig` 의 SVG 출력을 그대로 전달한다. `metadata={"Date": None}` 로
+생성 시각을 제외하면 다시 생성해도 diff 가 발생하지 않는다.
+
+### 정리 항목
+
+- XML 선언 · DOCTYPE · 앞쪽 주석을 제거한다
+- 모든 `id` 와 `href` · `xlink:href` · `url(#…)` 참조에 `prefix-` 접두어를 부여한다 —
+  `style` 속성과 `<style>` 안의 참조도 포함한다
+- `<style>` 규칙을 그 SVG 안으로 한정한다. matplotlib 의 `*{stroke-linecap:butt}` 가
+  본문의 다른 도해에 적용되지 않게 한다
+- 루트의 `width` · `height` 를 제거하고 `viewBox` 를 유지한다 — 크기는 `.fig` 가 정한다
+- 루트에 `class` · `role="img"` · `aria-label` · `data-embed` 를 부여한다
+
+### 실패 조건
+
+`viewBox` 가 없거나, 루트가 `<svg` 가 아니거나, 없는 id 를 참조하거나, 외부 파일을
+참조하거나, id 가 중복되거나, `<style>` 에 at-rule 이 있으면 `ValueError` 로 실패한다.
+
+`prefix` 는 문서 안에서 고유해야 한다. 같은 `prefix` 로 두 번 삽입하면 충돌이 재발한다.
+
+### 크기
+
+`viewBox` 가 본문 폭까지 확대된다. 원본 폭을 본문 폭(paper 720px, 약 540pt)과
+일치시켜 작성해야 글자 크기가 본문 글자와 비슷하다. 폭이 좁은 그림은 `cls="fig narrow"` 를 쓴다.
+
+### 색과 배치
+
+원본 색이 그대로 유지되며 token 을 따르지 않는다.
+
+- 밝은 surface 에만 배치한다. 다크 타일 위의 외부 SVG 는 `qa.py` 가 실패로 판정한다
+- 원본 색을 유지하는 조건은 `references/design.md` §5.5 를 따른다
+- 캡션은 네이티브 도해와 같은 `그림 n ·` 형식이고 번호도 함께 매긴다
+- `qa.py` 의 viewBox 넘침 검사는 외부 SVG 에 적용하지 않는다. 브라우저의 `getBBox` 가
+  clip 을 무시하므로 clip 으로 잘린 내용을 넘침으로 판정하기 때문이다
