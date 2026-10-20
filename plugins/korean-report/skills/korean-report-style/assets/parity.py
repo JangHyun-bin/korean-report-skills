@@ -40,6 +40,7 @@ import pathlib
 import re
 import sys
 import unicodedata
+from collections import Counter
 
 sys.dont_write_bytecode = True       # 스킬 폴더에 __pycache__ 를 남기지 않는다
 import structure as S  # noqa: E402  — 같은 폴더의 가시 영역 · 출력 규칙을 공유한다
@@ -54,6 +55,27 @@ MONTH = re.compile(r"\b(Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b")
 MONTHS = {"Oct": "10", "Nov": "11", "Dec": "12"}
 TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$")
 HTML_TABLE = re.compile(r"<table\b", re.I)
+
+
+# 영문 인용 바로 뒤 괄호는 그 인용의 번역이다. 번역본에만 붙으므로 수치를 두 번 세게 된다 —
+# 「"screen 306" (화면 306)」 의 306 이 한쪽에서만 2회가 된다. 한글이 든 괄호만 번역으로 보고
+# 가린다 — 영문 괄호(「"Floor assignment" (2018)」)는 양쪽에 있는 data 다.
+GLOSS = re.compile(r'(?P<q>"[^"]*[A-Za-z][^"]*"|“[^”]*[A-Za-z][^”]*”)(?P<g>\s*\([^()]*[가-힣][^()]*\))')
+
+
+def _drop_gloss(line: str) -> str:
+    """괄호 안 수치가 전부 바로 앞 인용에 있을 때만 번역으로 보고 가린다.
+
+    「"localization instructions"(US12626419B2 제1항)」 의 괄호는 번역이 아니라 출처다.
+    인용에 없는 수치가 괄호에 있으면 그 괄호는 독립된 정보이므로 센다.
+    """
+    def repl(m):
+        quoted = Counter(tok for _c, tok in numbers(m.group("q")))
+        glossed = Counter(tok for _c, tok in numbers(m.group("g")))
+        if glossed - quoted:
+            return m.group(0)
+        return m.group("q") + " " * len(m.group("g"))
+    return GLOSS.sub(repl, line)
 
 
 def _normalize(part: str) -> str:
@@ -92,7 +114,7 @@ class Side:
         prev_pipe = False
         for no, _raw, line in rows:
             seen = S.HTML_TAG.sub(S.blank, line)       # inline code 는 가리지 않는다
-            for col, token in numbers(seen):
+            for col, token in numbers(_drop_gloss(seen)):
                 self.numbers.setdefault(token, []).append((no, col + 1))
 
             h = S.heading(seen)

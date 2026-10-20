@@ -221,3 +221,23 @@ def test_command_github_format(tmp_path):
     assert out.returncode == 1
     assert out.stdout.count("::warning file=") == 2
     assert "title=KRS-P-NUM" in out.stdout
+
+
+def test_gloss_after_english_quote_is_not_counted_twice(tmp_path):
+    """번역본은 영문 인용을 남기고 괄호 번역을 덧붙인다. 괄호 안 수치는 원문 인용의 반복이다."""
+    ko = tmp_path / "ko.md"
+    en = tmp_path / "en.md"
+    ko.write_text('- 청구항 3: "the wafer map 306 is shown" (웨이퍼 map 306 을 표시)\n', encoding="utf-8")
+    en.write_text('- claim 3: "the wafer map 306 is shown"\n', encoding="utf-8")
+    assert parity.main([str(ko), str(en)]) == 0
+
+
+def test_citation_in_parentheses_after_quote_is_counted(tmp_path):
+    """괄호에 인용에 없는 수치가 있으면 번역이 아니라 출처다 — 양쪽에서 센다."""
+    ko = tmp_path / "ko.md"
+    en = tmp_path / "en.md"
+    ko.write_text('"wafer map"(US 12,345,678 제1항)을 제시한다.\n', encoding="utf-8")
+    en.write_text('presents a "wafer map" (US 12,345,678 cl. 1).\n', encoding="utf-8")
+    assert parity.main([str(ko), str(en)]) == 0
+    en.write_text('presents a "wafer map".\n', encoding="utf-8")
+    assert parity.main([str(ko), str(en)]) == 1
