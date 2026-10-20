@@ -158,7 +158,13 @@ $korean-report-doc 이 데이터로 진행현황 문서를 작성해 줘.
 
 ## 문서 빌드 의존성
 
-`korean-report-style`은 추가 런타임 의존성이 없습니다. `korean-report-doc`의 HTML
+`korean-report-style`의 형태소 검사(활용형까지 판정하는 광의 어간 · 어체 혼용 검사)에는
+`kiwipiepy`가 필요합니다. 설치되어 있지 않으면 검사기가 종료 코드 3(일부 검사 미수행)을 반환합니다.
+
+```bash
+python3 -m pip install kiwipiepy
+```
+ `korean-report-doc`의 HTML
 빌드에는 Node 20 이상과 KaTeX가 필요합니다.
 
 ```bash
@@ -193,7 +199,7 @@ python3 "$DOC_SKILL/assets/qa.py" report.html --pdf --shot shots
 git clone https://github.com/JangHyun-bin/korean-report-skills.git
 cd korean-report-skills
 npm install
-python3 -m pip install playwright pytest
+python3 -m pip install playwright pytest kiwipiepy
 python3 -m playwright install chromium
 python3 scripts/new-document.py --title "분기 기술보고" --mode paper
 ```

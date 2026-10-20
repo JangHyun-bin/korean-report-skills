@@ -39,7 +39,9 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - run: pip install pytest playwright ruff kiwipiepy
+      # 형태소 분석기는 버전마다 분석이 달라진다. 0.23 → 0.24 에서 「다크」 를 `다` + `크-` 로 쪼갰다.
+      # 고정하지 않으면 코드 변경 없이 검사 결과가 바뀐다.
+      - run: pip install pytest playwright ruff kiwipiepy==0.24.0
       # --with-deps 는 리눅스 전용이다. 윈도에 주면 실패한다.
       - run: playwright install --with-deps chromium
         if: runner.os == 'Linux'

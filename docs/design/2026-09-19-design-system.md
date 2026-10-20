@@ -57,7 +57,7 @@ build 경로가 고정되며 그 위의 값과 조합이 변한다.
 |---|---|---|
 | 순서 | ① typesetting 기반 → ② theme → ③ 장르. 단계마다 PR 하나 | 장르 표가 장르별 기본 theme 을 지정하므로 theme 이 선행한다 |
 | token 원천 | `tokens.css`를 손으로 관리하는 단일 원천으로 둔다. generator 는 두지 않는다 | CSS custom property 가 이미 token 체계다. 규칙은 pytest 가 강제한다 |
-| 검증 | styleguide 와 `test_tokens.py`. pixel diff 는 제외 | 초기에는 값이 자주 변하여 baseline 갱신 비용이 크다. CI 의 windows 에서는 font 렌더가 달라 비교할 수 없다 |
+| 검증 | styleguide 와 `test_tokens.py`. pixel diff 는 제외 | 초기에는 값이 자주 변하여 baseline 갱신 비용이 높다. CI 의 windows 에서는 font 렌더가 달라 비교할 수 없다 |
 | surface | `.dark` · `.black` class 를 유지한다 | `data-surface` 속성 전환은 기능 변화 없이 변경량만 증가시킨다 |
 | `figures.py` 글자 크기 | 속성값을 유지한다 | label 좌표가 그 크기를 전제로 계산된다. theme 의 scale 을 따르면 label 이 넘친다 |
 | 본문 font | Pretendard 공식 subset 을 repo 에 동봉한다 | 추가 code 가 없고 offline 에서도 결과가 결정적이다 |

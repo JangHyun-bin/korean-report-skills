@@ -38,3 +38,6 @@ done
 echo
 echo "완료하였습니다. 세션을 새로 시작하면 적용됩니다."
 echo "/skills 를 입력해 목록에 보이는지 확인해 주세요."
+if ! python3 -c "import kiwipiepy" >/dev/null 2>&1; then
+  echo "형태소 검사에는 kiwipiepy 가 필요합니다: python3 -m pip install kiwipiepy"
+fi

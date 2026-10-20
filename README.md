@@ -1,6 +1,6 @@
 <img src="docs/assets/logo.svg" width="30" align="middle" alt=""> <b>korean-report-skills</b>
 
-[![tests](https://img.shields.io/badge/tests-380%20tests-3fb950)](../../actions)
+[![tests](https://img.shields.io/badge/tests-406%20tests-3fb950)](../../actions)
 [![release](https://img.shields.io/badge/release-v1.19.0-0066cc)](../../releases)
 [![plugin](https://img.shields.io/badge/plugin-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode-8957e5)](INSTALL.md)
 [![license](https://img.shields.io/badge/license-Apache--2.0-d29922)](LICENSE)
@@ -214,13 +214,13 @@ runbook, API reference, 모델 평가, 회의록, 컨소시엄 산출물에도 �
 
 ## 필요한 실행 환경
 
-`korean-report-style`의 문체 규칙에는 추가 런타임 의존성이 없습니다.
+`korean-report-style`의 형태소 검사에는 `kiwipiepy`가 필요합니다. 없으면 검사기가 종료 코드 3(일부 검사 미수행)을 반환합니다.
 `korean-report-doc`으로 HTML을 빌드하려면 Node 20 이상과 KaTeX가 필요합니다.
 렌더 QA, 스크린샷, PDF 출력에는 Python 3.11 이상, Playwright, Chromium이 필요합니다.
 
 ```bash
 npm install katex
-python3 -m pip install playwright
+python3 -m pip install kiwipiepy playwright
 python3 -m playwright install chromium
 ```
 

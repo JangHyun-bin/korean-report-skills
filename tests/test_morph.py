@@ -97,3 +97,77 @@ def test_adjective_with_verb_ending_is_flagged(sentence, found, suggest, rules):
 ])
 def test_correct_conjugation_passes(sentence, rules):
     assert not morph.scan(sentence, rules), sentence
+
+
+# ── §1 광의 어간 — 활용형 · 조사 오분석 · 크기 서술 ─────────────────
+#
+# 실제 사용에서 드러난 세 결함을 고정한다.
+# 1. 인용 · inline code 를 가린 뒤 홀로 남은 조사 `는` 을 분석기가 `늘-` 로 읽어 오탐하였다.
+# 2. `막으면` · `끊긴다` · `낸다` 같은 광의 어간이 기본 실행에서 보고되지 않았다.
+# 3. 불규칙 활용(`VV-I`)은 품사 비교에서 빠져 `긋-` 이 조용히 통과하였다.
+
+import lint  # noqa: E402
+
+LINT_RULES = lint.load_rules()
+
+
+def stems(text, all_stems=False):
+    found = lint.lint(text, "시험.md", LINT_RULES, all_stems=all_stems)
+    return {f.found for f in found if f.rule_id in ("KRS-M-STEM", "KRS-M-SIZE")}
+
+
+@pytest.mark.parametrize("text", [
+    "인용은 원문 그대로 옮겼다. \"…\"는 생략을 표시한다.",
+    "표기 없는 `Ex`는 실질적으로 공개되었음을 뜻한다.",
+    "0은 \"이상치를 출력하지 않았다\"는 뜻이며 대조군은 없다.",
+])
+def test_particle_left_by_masking_is_not_a_stem(text):
+    # `늘-` 은 주의 어간이라 `--all` 에서만 보고된다. 오탐도 그 모드에서 드러났다.
+    assert "늘-" not in stems(text, all_stems=True)
+
+
+@pytest.mark.parametrize("text, stem", [
+    ("로트 투입 지시를 막으면 계측이 지연된다.", "막-"),
+    ("장비 연결이 끊긴다.", "끊기-"),
+    ("모델이 결과를 낸다.", "내-"),
+    ("편차가 임계값을 넘으면 경고한다.", "넘-"),
+    ("검사가 끝나면 보고한다.", "끝나-"),
+    ("수율이 나오면 공유한다.", "나오-"),
+    ("경계를 그어 구역을 정한다.", "긋-"),
+])
+def test_core_stem_is_reported_by_default(text, stem):
+    assert stem in stems(text)
+
+
+@pytest.mark.parametrize("text, stem", [
+    ("보고서는 평서체로 쓴다.", "쓰-"),
+    ("장비가 신호를 받는다.", "받-"),
+    ("오버레이 표를 바꾼다.", "바꾸-"),
+])
+def test_caution_stem_needs_all(text, stem):
+    assert stem not in stems(text)
+    assert stem in stems(text, all_stems=True)
+
+
+@pytest.mark.parametrize("text", [
+    "재작업 비용이 크다.",
+    "오차가 계측 거리에 비례하여 커진다.",
+    "검사 영향이 작다.",
+])
+def test_size_without_comparison_is_reported(text):
+    assert stems(text) & {"크-", "커지-", "작-"}
+
+
+@pytest.mark.parametrize("text", [
+    "편차가 임계값보다 크면 재측정한다.",
+    "거리가 반경보다 작으면 보류한다.",
+    "세 공정 중 오버레이 편차가 가장 크다.",
+    "작은 값의 막대가 보이지 않는다.",
+])
+def test_size_with_comparison_or_adnominal_passes(text):
+    assert not stems(text) & {"크-", "커지-", "작-"}
+
+
+def test_size_stem_inside_a_loanword_is_not_reported():
+    # kiwipiepy 0.24 는 「다크」 를 `다` + `크-` 로 쪼갠다. 어절 중간의 어간은 서술이 아니다.
+    assert not stems("색을 박으면 다크 타일에서 바꿀 수 없다.") & {"크-"}

@@ -460,3 +460,57 @@ def test_cli_heuristic_flag_enables_suspicion_tier():
     assert out.returncode == 1
     assert payload["findings"][0]["rule_id"] == "KRS-SW-001"
     assert payload["summary"]["by_tier"] == {"의심": 1}
+
+
+# ── 미수행 검사의 표시 ───────────────────────────────────────
+#
+# 형태소 분석기가 없을 때 검사기는 경고를 stderr 에만 남기고 0 을 반환하였다.
+# 리다이렉트된 실행에서는 「위반 없음」 만 보였고 `막으면` 같은 위반이 통과로 읽혔다.
+
+CLEAN = "검사 레시피를 확정하였다.\n"
+
+
+def _no_morph(monkeypatch):
+    monkeypatch.setattr(lint, "morph", None)
+
+
+def test_skipped_morphology_exits_three(tmp_path, monkeypatch, capsys):
+    _no_morph(monkeypatch)
+    doc = tmp_path / "시험.md"
+    doc.write_text(CLEAN, encoding="utf-8")
+    assert lint.main([str(doc)]) == 3
+    out = capsys.readouterr().out
+    assert "일부 검사 미수행" in out and "kiwipiepy" in out
+
+
+def test_skipped_morphology_is_listed_in_json(tmp_path, monkeypatch, capsys):
+    _no_morph(monkeypatch)
+    doc = tmp_path / "시험.md"
+    doc.write_text(CLEAN, encoding="utf-8")
+    assert lint.main([str(doc), "--format", "json"]) == 3
+    assert json.loads(capsys.readouterr().out)["skipped"] == ["형태소"]
+
+
+def test_explicit_no_morph_is_not_incomplete(tmp_path, monkeypatch, capsys):
+    _no_morph(monkeypatch)
+    doc = tmp_path / "시험.md"
+    doc.write_text(CLEAN, encoding="utf-8")
+    assert lint.main([str(doc), "--no-morph"]) == 0
+    assert "미수행" not in capsys.readouterr().out
+
+
+def test_findings_still_exit_one_when_morphology_is_skipped(tmp_path, monkeypatch, capsys):
+    _no_morph(monkeypatch)
+    doc = tmp_path / "시험.md"
+    doc.write_text("검사 레시피가 확정됐다.\n", encoding="utf-8")
+    assert lint.main([str(doc)]) == 1
+    assert "kiwipiepy" in capsys.readouterr().out
+
+
+def test_sarif_marks_skipped_run_unsuccessful(tmp_path, monkeypatch, capsys):
+    _no_morph(monkeypatch)
+    doc = tmp_path / "시험.md"
+    doc.write_text(CLEAN, encoding="utf-8")
+    lint.main([str(doc), "--format", "sarif"])
+    run_ = json.loads(capsys.readouterr().out)["runs"][0]
+    assert run_["invocations"][0]["executionSuccessful"] is False
