@@ -21,7 +21,7 @@
 
 ```bash
 npm install
-pip install pytest playwright ruff
+pip install pytest playwright ruff kiwipiepy
 playwright install chromium
 ```
 

@@ -79,6 +79,7 @@ def load_rules(table: pathlib.Path = TABLE) -> dict:
         "unit": {c[0]: c[1] for c in unit_rows},
         "unit_alt": {c[0]: c[2] for c in unit_rows},
         "expect": dict(_rows(grab("4.1"))),
+        "size": dict(_rows(grab("1.3"))),
         "final": _final_stems(),
     }
 
@@ -151,6 +152,17 @@ STEM_TAGS = ("XSA", "VA", "VV", "XSV")
 VERB_ONLY_EF = {"ᆫ다": "다", "는다": "다"}
 AUX_AFTER_ADJ = {"않", "못"}   # 보조 용언은 앞 어간의 품사를 따른다
 
+# 인용·inline code 를 공백으로 가린 뒤에는 `"…"는` · `` `Ex`는 `` 의 조사가 홀로 남는다.
+# 분석기는 홀로 선 `는` 을 `늘-` + `-는` 으로 읽는다. 표면형이 조사 한 글자면 어간이 아니다.
+PARTICLE_SURFACE = {"는", "은", "을", "를", "이", "가", "도", "만", "의", "와", "과", "로", "에"}
+
+# 크기 형용사는 비교 대상(`보다`)이 있으면 정밀한 비교이고, 없으면 정도를 뭉뚱그린 서술이다.
+# 「임계값보다 크면」 은 통과하고 「비용이 크다」 는 걸린다.
+SIZE_STEMS = {"크", "작", "커지", "작아지"}
+COMPARE_JOSA = {"보다"}
+COMPARE_ADV = {"가장", "더", "덜", "훨씬"}   # 최상급·비교급도 비교 대상을 전제한다
+CLAUSE_BREAK = {"EC", "EF", "SF", "SP"}
+
 
 def _compose(text: str) -> str:
     """분리된 자모를 글자로 묶는다 — 분석기가 내는 `하` + `ᆫ다` 는 `한다` 로 보여야 한다.
@@ -183,15 +195,24 @@ def scan(line: str, rules: dict, all_stems: bool = False):
 
     for i, t in enumerate(toks):
         # ① 광의 고유어 어간
-        if t.tag in ("VV", "VA"):
+        if _base(t.tag) in ("VV", "VA") and line[t.start:t.start + t.len] not in PARTICLE_SURFACE:
             for bucket, tier in (("core", True), ("soft", all_stems)):
                 if tier and t.form in rules[bucket]:
                     out.append((t.start, t.form + "-", rules[bucket][t.form], "7.1 광의 어간|STEM"))
                     seen.add(t.start)
                     break
 
+        # ①-2 비교 없는 크기 형용사
+        # 관형형(`작은 값`)은 대상을 지시하는 수식이므로 서술로 보지 않는다
+        if _base(t.tag) in ("VA", "VV") and t.form in SIZE_STEMS and t.start not in seen \
+                and not (i + 1 < len(toks) and toks[i + 1].tag == "ETM") \
+                and not _compared(toks, i):
+            alt = rules.get("size", {}).get(t.form, "")
+            out.append((t.start, t.form + "-", alt, "7.1 비교 없는 크기 서술|SIZE"))
+            seen.add(t.start)
+
         # ② 유정물 동사 — 주어를 함께 낸다
-        if t.tag == "VV" and t.form in rules["animate"]:
+        if _base(t.tag) == "VV" and t.form in rules["animate"]:
             subj = None
             for j in range(i - 1, max(-1, i - 6), -1):
                 if toks[j].tag in ("JKS", "JX") and toks[j].form in SUBJECT_JOSA:
@@ -231,6 +252,18 @@ def scan(line: str, rules: dict, all_stems: bool = False):
                             _compose(head + VERB_ONLY_EF[t.form]),
                             "5 형용사 활용|ADJEF"))
     return out
+
+
+def _compared(toks, i) -> bool:
+    """같은 절 안에 비교 조사 `보다` 나 비교 부사가 있으면 비교 서술로 본다."""
+    for j in range(i - 1, -1, -1):
+        if toks[j].tag in CLAUSE_BREAK and toks[j].tag != "SP":
+            return False
+        if toks[j].tag.startswith("JK") and toks[j].form in COMPARE_JOSA:
+            return True
+        if toks[j].tag == "MAG" and toks[j].form in COMPARE_ADV:
+            return True
+    return False
 
 
 def _word_at(line: str, at: int) -> str:

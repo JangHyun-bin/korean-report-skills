@@ -421,7 +421,8 @@ def _matches(rule: dict, line: str):
 # ── Lint and fix ──────────────────────────────────────────────
 
 def lint(text: str, name: str = "-", rules=None, html: bool = False,
-         all_stems: bool = False, heuristic: bool = False) -> list[Finding]:
+         all_stems: bool = False, heuristic: bool = False,
+         use_morph: bool = True) -> list[Finding]:
     rules = load_rules() if rules is None else rules
     out = []
 
@@ -449,7 +450,8 @@ def lint(text: str, name: str = "-", rules=None, html: bool = False,
     out += _heading_echo_findings(name, segments)
     if heuristic:      # 임계값이 잠정값이므로 기본 검사에 넣지 않는다
         out += _density_findings(name, text, html, load_density())
-    out += _morph_findings(text, name, html, all_stems)
+    if use_morph:
+        out += _morph_findings(text, name, html, all_stems)
     out = _dedupe(out)
     out.sort(key=lambda f: (f.line, f.col, f.rule_id))
     return out
@@ -727,9 +729,19 @@ def summarize(found: list[Finding]) -> dict:
     }
 
 
-def report(found: list[Finding]) -> None:
+MORPH_SKIPPED = "형태소 검사를 수행하지 않았다 — python -m pip install kiwipiepy"
+
+
+def morph_ready() -> bool:
+    return morph is not None and morph.available()
+
+
+def report(found: list[Finding], skipped: tuple = ()) -> None:
+    # 돌리지 못한 검사를 「위반 없음」으로 읽히게 두면 검사기가 없는 것만 못하다.
+    # 그래서 결과 본문(stdout)에 남긴다. stderr 는 리다이렉트와 tail 에 쉽게 묻힌다.
+    note = f"\n{MORPH_SKIPPED} (결과는 불완전하다)" if "형태소" in skipped else ""
     if not found:
-        print("문체 규약 위반 없음")
+        print("문체 규약 위반 없음" + (" — 일부 검사 미수행" if skipped else "") + note)
         return
     width = max(len(f.tier) for f in found)
     for f in found:
@@ -741,12 +753,15 @@ def report(found: list[Finding]) -> None:
     tally = summarize(found)["by_tier"]
     print("\n" + " · ".join(f"{tier} {tally[tier]}" for tier in TIERS if tier in tally))
     print("인용이 꼭 필요하면 백틱·「」로 감싸거나 줄 끝에 <!-- style-exempt --> 를 단다.")
+    if note:
+        print(note.lstrip("\n"))
 
 
-def json_payload(found: list[Finding], fixed: int) -> dict:
+def json_payload(found: list[Finding], fixed: int, skipped: tuple = ()) -> dict:
     return {
         "findings": [f.as_dict() for f in found],
         "fixed": fixed,
+        "skipped": list(skipped),
         "summary": summarize(found),
     }
 
@@ -770,7 +785,7 @@ def report_github(found: list[Finding]) -> None:
         )
 
 
-def sarif_payload(found: list[Finding]) -> dict:
+def sarif_payload(found: list[Finding], skipped: tuple = ()) -> dict:
     unique = {}
     for f in found:
         unique.setdefault(f.rule_id, f)
@@ -804,6 +819,12 @@ def sarif_payload(found: list[Finding]) -> dict:
         "runs": [{
             "tool": {"driver": {"name": "korean-report-style", "rules": rules}},
             "results": results,
+            "invocations": [{
+                "executionSuccessful": not skipped,
+                "toolExecutionNotifications": [
+                    {"level": "warning", "message": {"text": MORPH_SKIPPED}}
+                ] if "형태소" in skipped else [],
+            }],
         }],
     }
 
@@ -820,6 +841,8 @@ def main(argv=None) -> int:
     ap.add_argument("--all", action="store_true", dest="all_stems",
                     help="형태소 검사에서 주의 어간까지 본다. 정당한 용법이 많아 기본은 제외한다")
     ap.add_argument("--fix", action="store_true", help="고침 tier를 파일에 직접 적용")
+    ap.add_argument("--no-morph", action="store_true",
+                    help="형태소 검사를 의도적으로 생략한다. 생략을 결과에 미수행으로 기록하지 않는다")
     args = ap.parse_args(argv)
 
     if args.json and args.format not in ("text", "json"):
@@ -849,27 +872,31 @@ def main(argv=None) -> int:
                 fixed += count
                 fixed_paths.append((str(path), count))
 
-        found += lint(text, str(path), rules, html, args.all_stems, include_heuristics)
+        found += lint(text, str(path), rules, html, args.all_stems, include_heuristics,
+                      use_morph=not args.no_morph)
 
     if args.tier:
         found = [f for f in found if f.tier in args.tier]
 
+    skipped = () if args.no_morph or morph_ready() else ("형태소",)
+
     if output_format == "json":
-        print(json.dumps(json_payload(found, fixed), ensure_ascii=False, indent=2))
+        print(json.dumps(json_payload(found, fixed, skipped), ensure_ascii=False, indent=2))
     elif output_format == "github":
         report_github(found)
+        if skipped:
+            print(f"::warning title=KRS-SKIPPED::{_github_escape(MORPH_SKIPPED)}")
     elif output_format == "sarif":
-        print(json.dumps(sarif_payload(found), ensure_ascii=False, indent=2))
+        print(json.dumps(sarif_payload(found, skipped), ensure_ascii=False, indent=2))
     else:
         for path, count in fixed_paths:
             print(f"{path} — 어미 {count}곳을 고쳤다")
-        # 돌리지 못한 검사를 「위반 없음」으로 읽히게 두면 검사기가 없는 것만 못하다
-        if morph is None or not morph.available():
-            print("형태소 검사를 건너뛰었다 — python -m pip install kiwipiepy",
-                  file=sys.stderr)
-        report(found)
+        report(found, skipped)
 
-    return 1 if found else 0
+    # 0 통과 · 1 위반 · 2 입력 오류 · 3 위반은 없으나 일부 검사 미수행
+    if found:
+        return 1
+    return 3 if skipped else 0
 
 
 if __name__ == "__main__":

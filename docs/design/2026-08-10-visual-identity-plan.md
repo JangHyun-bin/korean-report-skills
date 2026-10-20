@@ -585,7 +585,7 @@ Run:
 python scripts/build-banner.py
 git diff --exit-code --stat docs/assets/banner-light.png docs/assets/banner-dark.png
 ```
-Expected: 종료 코드 0. 차이가 나오면 배너를 커밋하지 않은 것이다.
+Expected: 종료 코드 0. 차이가 검출되면 배너를 커밋하지 않은 것이다.
 
 PNG 는 렌더 환경에 따라 바이트가 달라질 수 있다. CI(우분투)와 로컬(윈도)의 결과가
 매번 어긋나면 이 단계를 `continue-on-error: true` 로 낮추고, 대조 대신
