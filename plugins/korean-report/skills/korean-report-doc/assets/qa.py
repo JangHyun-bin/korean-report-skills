@@ -83,13 +83,18 @@ CHECK_JS = """() => {
     // 스타일이 실제로 걸렸는지 — 토큰이 비어 있으면 CSS 삽입이 실패한 것이다
     accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
     bodyFont: getComputedStyle(document.body).fontFamily,
-    // 도해가 뷰박스 밖으로 나갔는지
-    svgClipped: [...document.querySelectorAll('svg.fig')].filter(s => {
+    // 도해가 뷰박스 밖으로 나갔는지 — 생성기의 좌표 계산 오류를 잡는다.
+    // embed_svg 로 삽입한 외부 SVG 는 제외한다. 좌표를 외부 도구가 정하였고, getBBox 가
+    // clip-path 를 무시하므로 clip 으로 잘린 내용(TikZ 의 clip 등)을 넘침으로 오인한다.
+    svgClipped: [...document.querySelectorAll('svg.fig:not([data-embed])')].filter(s => {
       const vb = s.viewBox.baseVal, bb = s.getBBox();
       return bb.x < vb.x - 1 || bb.y < vb.y - 1 ||
              bb.x + bb.width > vb.x + vb.width + 1 ||
              bb.y + bb.height > vb.y + vb.height + 1;
     }).map(s => s.getAttribute('aria-label') || '(무제)'),
+    // embed_svg 로 삽입한 외부 SVG 는 색이 token 을 따르지 않는다 — 다크 surface 에서 글자가 사라진다
+    darkEmbeds: [...document.querySelectorAll('.dark svg[data-embed], .black svg[data-embed]')]
+      .map(s => s.getAttribute('aria-label') || '(무제)'),
   };
 }"""
 
@@ -176,6 +181,9 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
             fails.append(f"body 폰트 스택에 Pretendard가 없다 — {r['bodyFont']}")
         if r["svgClipped"]:
             fails.append(f"viewBox 밖으로 나간 도해 — {r['svgClipped']}")
+        if r["darkEmbeds"]:
+            fails.append(f"다크 surface 위의 외부 SVG — {r['darkEmbeds']}. 원본 색이 고정되어 "
+                         "읽히지 않는다 — 밝은 surface 로 옮긴다 (design.md §5.5)")
         # 캡션은 표에도 붙으므로 하한만 본다.
         if r["figcaps"] < r["figs"]:
             fails.append(f"캡션 없는 도해가 있다 — svg {r['figs']} · figcap {r['figcaps']}")
