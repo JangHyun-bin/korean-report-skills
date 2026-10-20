@@ -280,7 +280,7 @@ def test_section_nine_is_not_a_rule_source():
 
 def test_every_rule_carries_its_section():
     assert all(r["section"].startswith("§") for r in RULES)
-    assert {r["tier"] for r in RULES} == {"고침", "검토"}
+    assert {r["tier"] for r in RULES} == {"고침", "검토", "메타"}
 
 
 def test_every_rule_has_unique_id_scope_and_matcher():
@@ -365,6 +365,10 @@ SOFTWARE_CASES = {
     "KRS-SW-005": "thumbnail이 깨진다.",
     "KRS-SW-006": "code가 이해한다.",
     "KRS-SW-007": "검증 없이 조용히 통과한다.",
+    "KRS-SW-008": "검색 서비스가 HTTP 503을 반환하였다.",
+    "KRS-SW-009": "나머지 요청은 rate limit에 걸렸다.",
+    "KRS-SW-010": "다른 검색 agent가 같은 주소를 사용하였다.",
+    "KRS-SW-011": "수집 도구가 실패하여 대체 경로를 사용하였다.",
 }
 
 
@@ -514,3 +518,56 @@ def test_sarif_marks_skipped_run_unsuccessful(tmp_path, monkeypatch, capsys):
     lint.main([str(doc), "--format", "sarif"])
     run_ = json.loads(capsys.readouterr().out)["runs"][0]
     assert run_["invocations"][0]["executionSuccessful"] is False
+
+
+# ── 메타 갈래 · 인용 번역 · 외래어 정책 ───────────────────────
+
+@pytest.mark.parametrize("text", [
+    "문서 성격: 내부 검토용 초안이다.\n",
+    "- 기준 code: 계측 저장소 기준이다.\n",
+    "본 문서는 수율 회의를 위한 내부 자료이다.\n",
+    "각 절은 후보와 그 근거를 함께 담는다.\n",
+])
+def test_self_description_is_meta(text):
+    assert any(f.tier == "메타" for f in run(text))
+
+
+@pytest.mark.parametrize("text", [
+    "본 문서는 인라인 계측 범위로 한정한다.\n",
+    "각 절에 근거를 명시하였다.\n",
+])
+def test_scope_statement_is_not_meta(text):
+    assert not any(f.tier == "메타" for f in run(text))
+
+
+def test_gloss_after_english_quote_is_skipped():
+    text = '청구항 1: "the change is greater than the threshold" (변화가 임계값을 넘으면 됐다)\n'
+    assert not run(text)
+    assert run("변화가 임계값을 넘으면 됐다\n")
+
+
+def test_loanwords_are_reported_only_under_english_policy():
+    text = "계측 데이터를 서버에 전송한다.\n"
+    keep = lint.lint(text, "시험.md", lint.load_rules(), use_morph=False)
+    english = lint.lint(text, "시험.md", lint.load_rules(loanwords="english"), use_morph=False)
+    assert not [f for f in keep if f.tier == "표기"]
+    assert {f.found for f in english if f.tier == "표기"} == {"데이터", "서버"}
+
+
+def test_policy_is_read_from_nearest_config(tmp_path, capsys):
+    (tmp_path / ".krstyle.toml").write_text('[lint]\nloanwords = "english"\n', encoding="utf-8")
+    sub = tmp_path / "보고"
+    sub.mkdir()
+    doc = sub / "시험.md"
+    doc.write_text("계측 데이터를 정리하였다.\n", encoding="utf-8")
+    assert lint.main([str(doc), "--no-morph"]) == 1
+    assert "데이터" in capsys.readouterr().out
+    assert lint.main([str(doc), "--no-morph", "--loanwords", "keep"]) == 0
+
+
+def test_invalid_policy_fails_loudly(tmp_path):
+    (tmp_path / ".krstyle.toml").write_text('[lint]\nloanwords = "hangul"\n', encoding="utf-8")
+    doc = tmp_path / "시험.md"
+    doc.write_text("계측을 정리하였다.\n", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        lint.main([str(doc), "--no-morph"])
