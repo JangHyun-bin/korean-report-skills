@@ -204,7 +204,9 @@ def scan(line: str, rules: dict, all_stems: bool = False):
 
         # ①-2 비교 없는 크기 형용사
         # 관형형(`작은 값`)은 대상을 지시하는 수식이므로 서술로 보지 않는다
+        # 어절 중간의 `크`(「다크」 를 `다` + `크-` 로 쪼갠 오분석)는 서술이 아니다
         if _base(t.tag) in ("VA", "VV") and t.form in SIZE_STEMS and t.start not in seen \
+                and not (t.start and "가" <= line[t.start - 1] <= "힣") \
                 and not (i + 1 < len(toks) and toks[i + 1].tag == "ETM") \
                 and not _compared(toks, i):
             alt = rules.get("size", {}).get(t.form, "")

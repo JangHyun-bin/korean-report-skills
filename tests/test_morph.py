@@ -166,3 +166,8 @@ def test_size_without_comparison_is_reported(text):
 ])
 def test_size_with_comparison_or_adnominal_passes(text):
     assert not stems(text) & {"크-", "커지-", "작-"}
+
+
+def test_size_stem_inside_a_loanword_is_not_reported():
+    # kiwipiepy 0.24 는 「다크」 를 `다` + `크-` 로 쪼갠다. 어절 중간의 어간은 서술이 아니다.
+    assert not stems("색을 박으면 다크 타일에서 바꿀 수 없다.") & {"크-"}
