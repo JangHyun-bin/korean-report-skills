@@ -46,17 +46,24 @@ function build(body, { mode = 'paper', title = 'T', args = [], raw = null } = {}
   };
 }
 
-/** 저장소 밖으로 복사한 스킬이 작업 디렉터리의 KaTeX로 빌드되는지 본다. */
-function standaloneBuild(body) {
+/**
+ * 저장소 밖으로 복사한 스킬을 저장소 밖의 작업 디렉터리에서 빌드한다.
+ * withKatex 가 참이면 작업 디렉터리에 KaTeX 를 설치해 둔다. 거짓이면 어느 검색 경로에도
+ * KaTeX 가 없다 — 저장소 안에서 돌리면 루트의 node_modules 가 잡히므로 반드시 밖으로 복사한다.
+ */
+function standaloneBuild(body, { withKatex = true } = {}) {
   const d = tmpdir();
   const copiedAssets = path.join(d, 'korean-report-doc', 'assets');
   const project = path.join(d, 'work');
   fs.cpSync(ASSETS, copiedAssets, { recursive: true });
+  fs.mkdirSync(project, { recursive: true });
 
-  const katexSource = path.dirname(require.resolve('katex/package.json'));
-  const katexDest = path.join(project, 'node_modules', 'katex');
-  fs.mkdirSync(path.dirname(katexDest), { recursive: true });
-  fs.cpSync(katexSource, katexDest, { recursive: true });
+  if (withKatex) {
+    const katexSource = path.dirname(require.resolve('katex/package.json'));
+    const katexDest = path.join(project, 'node_modules', 'katex');
+    fs.mkdirSync(path.dirname(katexDest), { recursive: true });
+    fs.cpSync(katexSource, katexDest, { recursive: true });
+  }
 
   const inFile = path.join(project, 'raw.html');
   const outFile = path.join(project, 'out.html');
@@ -160,7 +167,43 @@ test('--font 가 없으면 동봉 Pretendard 를 내장한다', () => {
   assert.ok(!(r.stderr + r.stdout).includes('Pretendard 미내장'));
   assert.match(r.out, /Pretendard 본문 글꼴 — SIL Open Font License 1\.1/);
   assert.match(r.out, /이 문서에 내장된 제3자 자산/);
-  assert.match(r.out, /KaTeX.*MIT License/);
+});
+
+test('KaTeX 고지는 수식이 있을 때만 싣는다', () => {
+  const withMath = build('<section><p>⟦I⟧x⟦/I⟧</p></section>');
+  assert.strictEqual(withMath.status, 0, withMath.stderr);
+  assert.match(withMath.out, /KaTeX.*MIT License/);
+
+  const plain = build('<section><p>x</p></section>');
+  assert.strictEqual(plain.status, 0, plain.stderr);
+  assert.ok(!/KaTeX.*MIT License/.test(plain.out), 'KaTeX 를 내장하지 않았는데 고지가 있다');
+  assert.match(plain.out, /Pretendard 본문 글꼴/);
+});
+
+test('수식 마커가 없으면 KaTeX 없이 빌드한다', () => {
+  const r = standaloneBuild('<section><p>수식 없는 문서</p></section>', { withKatex: false });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!r.out.includes('__KATEXCSS__'), '__KATEXCSS__ 가 남았다');
+  assert.ok(!/font-family:KaTeX_/.test(r.out), 'KaTeX CSS 가 들어갔다');
+  assert.match(r.stdout, /KaTeX — 수식 마커 없음/);
+
+  // 대조군 — 같은 환경에서 수식이 있으면 KaTeX 를 찾지 못해야 한다.
+  // 이것이 통과하지 않으면 위 빌드는 어딘가의 KaTeX 를 찾아 통과한 것이라 아무것도 검사하지 않는다.
+  const control = standaloneBuild('<section><p>⟦I⟧x⟦/I⟧</p></section>', { withKatex: false });
+  assert.strictEqual(control.status, 1, 'KaTeX 가 없는 환경이 아니다 — 검사가 성립하지 않는다');
+});
+
+test('수식 마커가 있는데 KaTeX 가 없으면 빌드를 세운다', () => {
+  const r = standaloneBuild('<section><p>⟦D⟧x^2⟦/D⟧</p></section>', { withKatex: false });
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /katex 를 찾을 수 없다 — 작업 디렉터리에서 npm install katex/);
+  assert.strictEqual(r.out, null, '실패했는데 out.html 이 만들어졌다');
+});
+
+test('KaTeX 가 없어도 짝 없는 마커는 그 원인으로 실패한다', () => {
+  const r = standaloneBuild('<section><p>⟦D⟧x^2</p></section>', { withKatex: false });
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /짝이 맞지 않는/);
 });
 
 test('동봉 font 가 없는 assets 이면 경고만 하고 통과한다', () => {

@@ -7,6 +7,7 @@
  * 하는 일
  *   1. ⟦I⟧ / ⟦D⟧ 마커를 KaTeX 로 렌더한다 (빌드 시점)
  *   2. 렌더 결과가 실제로 참조하는 woff2 만 골라 base64 로 내장한다
+ *      — 수식 마커가 없는 문서는 KaTeX 를 요구하지 않고 1·2 를 생략한다
  *   3. tokens.css · base.css · 모드 CSS(paper/deck)를 <html data-mode> 를 보고 삽입한다
  *   4. 동봉 Pretendard subset 을(또는 --font 로 준 woff2 를) @font-face 로 내장한다
  *
@@ -42,15 +43,6 @@ function loadKatex() {
   );
 }
 
-let katexRuntime;
-try {
-  katexRuntime = loadKatex();
-} catch (e) {
-  console.error(e.message);
-  process.exit(1);
-}
-const katex = katexRuntime.api;
-
 // ── 인자 ───────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 const fonts = [];
@@ -74,9 +66,25 @@ let html = fs.readFileSync(IN, 'utf8');
 // 문자열 치환에서 $& · $' 같은 패턴이 해석되지 않게 항상 함수 replacer 를 쓴다
 const put = (h, marker, value) => h.replace(marker, () => value);
 
+// ── 0. KaTeX 는 수식이 있을 때만 요구한다 ──────────────────
+// 수식 없는 문서가 KaTeX 설치 하나 때문에 빌드되지 않던 문제가 있었다.
+// 짝이 맞는 마커만 센다 — 짝 없는 마커는 KaTeX 유무와 관계없이 §2 가 실패시키므로,
+// KaTeX 가 없을 때에도 그 원인을 그대로 알린다.
+const hasMath = /⟦D⟧[\s\S]*?⟦\/D⟧|⟦I⟧[\s\S]*?⟦\/I⟧/.test(html);
+let katexRuntime = null;
+if (hasMath) {
+  try {
+    katexRuntime = loadKatex();
+  } catch (e) {
+    console.error(e.message);
+    process.exit(1);
+  }
+}
+
 // ── 1. 수식 렌더링 ─────────────────────────────────────────
 let nInline = 0, nBlock = 0;
 const bad = [];
+const katex = katexRuntime && katexRuntime.api;
 html = html.replace(/⟦D⟧([\s\S]*?)⟦\/D⟧/g, (_, tex) => {
   nBlock++;
   try { return katex.renderToString(tex, { displayMode: true, throwOnError: true, strict: false }); }
@@ -105,40 +113,44 @@ for (const ph of ['__BODY__', '__TITLE__']) {
 }
 
 // ── 3. KaTeX CSS — 실제로 쓰이는 계열만 내장 ───────────────
-function katexDist() {
-  return katexRuntime.dist;
+function katexCss(dist) {
+  let css = fs.readFileSync(path.join(dist, 'katex.min.css'), 'utf8');
+
+  // 항상 필요한 계열. Size1~4 와 AMS 는 클래스로만 참조되어 HTML 스캔으로 잡히지 않는다.
+  const used = new Set(['KaTeX_Main', 'KaTeX_Math', 'KaTeX_Size1', 'KaTeX_Size2',
+                        'KaTeX_Size3', 'KaTeX_Size4', 'KaTeX_AMS']);
+  // 선택적 계열은 그 계열을 부르는 클래스가 출력에 있을 때만 넣는다
+  const optional = {
+    KaTeX_Caligraphic: /\bmathcal\b/,
+    KaTeX_Fraktur:     /\bmathfrak\b/,
+    KaTeX_SansSerif:   /\b(mathsf|textsf)\b/,
+    KaTeX_Script:      /\bmathscr\b/,
+    KaTeX_Typewriter:  /\b(mathtt|texttt)\b/,
+  };
+  for (const [fam, re] of Object.entries(optional)) if (re.test(html)) used.add(fam);
+
+  let inlined = 0, dropped = 0, fontBytes = 0;
+  css = css.replace(/src:([^;]+);/g, (whole, src) => {
+    const fileMatch = src.match(/fonts\/(KaTeX_[A-Za-z0-9\-]+)\.woff2/);
+    if (!fileMatch) return whole;
+    const base = fileMatch[1];
+    const fam = 'KaTeX_' + base.split('_')[1].split('-')[0];
+    const p = path.join(dist, 'fonts', base + '.woff2');
+    if (!used.has(fam) || !fs.existsSync(p)) { dropped++; return 'src:local("' + base + '");'; }
+    const buf = fs.readFileSync(p);
+    fontBytes += buf.length;
+    inlined++;
+    return `src:url(data:font/woff2;base64,${buf.toString('base64')}) format("woff2");`;
+  });
+  console.log(`KaTeX 폰트 — 내장 ${inlined} · 제외 ${dropped} (${(fontBytes / 1024).toFixed(0)} KB)`);
+  return css;
 }
-const dist = katexDist();
-let css = fs.readFileSync(path.join(dist, 'katex.min.css'), 'utf8');
-
-// 항상 필요한 계열. Size1~4 와 AMS 는 클래스로만 참조되어 HTML 스캔으로 잡히지 않는다.
-const used = new Set(['KaTeX_Main', 'KaTeX_Math', 'KaTeX_Size1', 'KaTeX_Size2',
-                      'KaTeX_Size3', 'KaTeX_Size4', 'KaTeX_AMS']);
-// 선택적 계열은 그 계열을 부르는 클래스가 출력에 있을 때만 넣는다
-const optional = {
-  KaTeX_Caligraphic: /\bmathcal\b/,
-  KaTeX_Fraktur:     /\bmathfrak\b/,
-  KaTeX_SansSerif:   /\b(mathsf|textsf)\b/,
-  KaTeX_Script:      /\bmathscr\b/,
-  KaTeX_Typewriter:  /\b(mathtt|texttt)\b/,
-};
-for (const [fam, re] of Object.entries(optional)) if (re.test(html)) used.add(fam);
-
-let inlined = 0, dropped = 0, fontBytes = 0;
-css = css.replace(/src:([^;]+);/g, (whole, src) => {
-  const fileMatch = src.match(/fonts\/(KaTeX_[A-Za-z0-9\-]+)\.woff2/);
-  if (!fileMatch) return whole;
-  const base = fileMatch[1];
-  const fam = 'KaTeX_' + base.split('_')[1].split('-')[0];
-  const p = path.join(dist, 'fonts', base + '.woff2');
-  if (!used.has(fam) || !fs.existsSync(p)) { dropped++; return 'src:local("' + base + '");'; }
-  const buf = fs.readFileSync(p);
-  fontBytes += buf.length;
-  inlined++;
-  return `src:url(data:font/woff2;base64,${buf.toString('base64')}) format("woff2");`;
-});
-console.log(`KaTeX 폰트 — 내장 ${inlined} · 제외 ${dropped} (${(fontBytes / 1024).toFixed(0)} KB)`);
-html = put(html, '__KATEXCSS__', css);
+if (hasMath) {
+  html = put(html, '__KATEXCSS__', katexCss(katexRuntime.dist));
+} else {
+  console.log('KaTeX — 수식 마커 없음, CSS · 글꼴 생략');
+  html = put(html, '__KATEXCSS__', '');
+}
 
 // ── 4. 본문 폰트 (Pretendard) 내장 ─────────────────────────
 // --font 가 없으면 스킬이 동봉한 공식 subset 을 내장한다. 공식 파일을 변경 없이 쓴다 —
@@ -214,16 +226,18 @@ for (const ph of ['__TOKENCSS__', '__BASECSS__', '__MODECSS__', '__FONTCSS__', '
 // ── 6. 제3자 자산 고지 ─────────────────────────────────────
 // 글꼴을 base64 로 내장하는 것은 그 사본을 문서와 함께 배포하는 것이다.
 // OFL·MIT 모두 고지 동반을 요구하므로 산출물 자신이 고지를 싣는다.
+// 수식이 없으면 KaTeX 를 내장하지 않으므로 그 고지도 싣지 않는다.
 {
-  const notices = ['  · KaTeX 수식 글꼴 — MIT License — https://github.com/KaTeX/KaTeX'];
+  const notices = [];
+  if (hasMath) notices.push('  · KaTeX 수식 글꼴 — MIT License — https://github.com/KaTeX/KaTeX');
   if (fontCss) {
     notices.push('  · Pretendard 본문 글꼴 — SIL Open Font License 1.1 — ' +
                  'https://github.com/orioncactus/pretendard');
   }
   const notice = `<!--\n  이 문서에 내장된 제3자 자산\n${notices.join('\n')}\n-->\n`;
-  if (html.includes('</head>')) {
+  if (notices.length && html.includes('</head>')) {
     html = put(html, '</head>', notice + '</head>');
-  } else {
+  } else if (notices.length) {
     warn.push('</head> 를 찾지 못해 제3자 자산 고지를 넣지 못하였다');
   }
 }
