@@ -1,6 +1,6 @@
 ---
 name: korean-report-doc
-description: Create Korean technical and business document artifacts as self-contained HTML and optional PDF — progress reports, technical reports, research notes, meeting decks, benchmark write-ups, intermediate reports, and proposals. Use only when the user requests a document artifact rather than an explanation or chat answer, including requests for a 보고서 · 진행현황 · 기술보고 · 연구노트 · 협의 자료 · 중간보고 · 제안서 · HTML · PDF. Provides paper and deck templates, SVG figure builders, build-time KaTeX, a bundled Pretendard body font, and browser render QA. Pair with korean-report-style for prose, framing, accuracy, and edit consistency.
+description: Create Korean technical and business document artifacts as self-contained HTML and optional PDF — progress reports, technical reports, research notes, meeting decks, benchmark write-ups, intermediate reports, and proposals. Use only when the user requests a document artifact rather than an explanation or chat answer, including requests for a 보고서 · 진행현황 · 기술보고 · 연구노트 · 협의 자료 · 중간보고 · 제안서 · HTML · PDF. A review (검수 · 점검) of existing Markdown keeps the Markdown — run the checks and report; typeset only when HTML or PDF is requested. Provides paper and deck templates, SVG figure builders, build-time KaTeX, a bundled Pretendard body font, and browser render QA. Pair with korean-report-style for prose, framing, accuracy, and edit consistency.
 ---
 
 # 한국어 기술 문서 제작
@@ -41,11 +41,21 @@ description: Create Korean technical and business document artifacts as self-con
 문서 산출물을 요청받았을 때만 작성한다. 설명·요약·분석은 대화로 답한다.
 `보고서 만들어줘` · `PDF로 뽑아줘` · `문서로 정리해줘` 가 신호다.
 
+**검수 요청은 Markdown 을 유지한다.** 기존 Markdown 문서의 `검수` · `점검` · `리뷰` 요청은
+HTML·PDF 산출물 요청이 아니다. 원본 `.md` 를 유지하고, HTML·PDF 를 명시적으로 요청받은
+경우에만 typesetting 을 수행한다. 검수에서는 Markdown 에 적용되는 검사만 수행하고 결과를 보고한다.
+
+- `korean-report-style` 의 `lint.py` — 문체 · 서식
+- §4.1 의 **번호** 항목 — 그림 · 표 · 절 번호의 연속성과 본문 참조의 실재
+
+수정을 요청받으면 `.md` 원본에 반영한다. 렌더 QA(§4)는 HTML 산출물이 있을 때만 해당한다.
+
 ### 1.3 실행 환경
 
-- HTML 빌드에는 Node 20 이상과 KaTeX가 필요하다. `mathbuild.js`는 작업 디렉터리와
-  스킬 설치 경로에서 KaTeX를 순서대로 찾는다.
+- HTML 빌드에는 Node 20 이상이 필요하다. KaTeX 는 수식 마커(`⟦I⟧` · `⟦D⟧`)가 있는 문서에만
+  필요하며, `mathbuild.js`는 작업 디렉터리와 스킬 설치 경로에서 KaTeX를 순서대로 찾는다.
 - 렌더 QA, 스크린샷, PDF 출력에는 Python 3.11 이상, Playwright, Chromium이 필요하다.
+  Chromium 이 없으면 `qa.py` 가 설치 명령을 한 줄로 알리고 exit 2 로 종료한다.
 - 본문 글꼴은 `assets/fonts/`에 동봉되어 있다. 다른 글꼴을 쓰려면 사용 권한이 있는 WOFF2 파일을 준비한다.
 
 ---
@@ -122,7 +132,8 @@ node mathbuild.js raw.html out.html \
 ```
 
 빌드 시점에 KaTeX 로 렌더하고, 렌더 결과가 참조하는 woff2 만 골라 base64 로 삽입한다.
-전체 폰트는 1.2 MB, 실제 필요한 것은 160 KB 정도다.
+전체 폰트는 1.2 MB, 실제 필요한 것은 160 KB 정도다. 수식 마커가 없는 문서는 KaTeX 를
+요구하지 않으며 KaTeX CSS · 글꼴과 그 고지도 생략한다.
 
 **실패하면 exit 1 이다.** 수식 오류, 치환되지 않은 토큰, 구버전 마커,
 없는 폰트 경로가 모두 빌드를 세운다. 조용히 잘못 렌더된 수식이 수식 없는 것보다 나쁘다.
@@ -177,6 +188,17 @@ hex 를 박으면 `#1d1d1f` 글자가 `#272729` 타일 위에서 사라진다.
 2. **테두리를 두른다** — `.plate` 클래스를 쓴다 (1px hairline, 10px 반경, 최대 820px)
 3. **수치는 네이티브로 병기** — 래스터가 판단 근거를 단독으로 나르지 않게
 
+### 3.2 외부 SVG
+
+TikZ · matplotlib 처럼 다른 도구가 생성한 벡터 그림은 `embed_svg()` 로 삽입한다.
+pdftocairo 는 출력마다 같은 id(`glyph-0-0` · `clip-0`)를 쓰므로, 그대로 두 개를 삽입하면
+뒤 그림이 앞 그림의 글리프를 참조해 글자가 바뀐다. `embed_svg()` 는 id 와 내부 참조에
+접두어를 부여하고 `<style>` 을 그 그림 안으로 한정한다.
+
+원본 색은 token 을 따르지 않으므로 밝은 surface 에만 배치한다. 다크 타일 위의 외부 SVG 는
+`qa.py` 가 실패로 판정한다. 경로와 실패 조건은 `references/figures.md` §7,
+색 정책은 `references/design.md` §5.5 참조.
+
 ---
 
 ## 4. QA — 렌더 후 검사
@@ -194,6 +216,9 @@ viewBox 밖으로 나간 도해, 캡션 없는 도해를 검사하고 실패하�
 실패하고 어느 타일이 몇 px 넘쳤는지 알린다. `.tile` 은 인쇄 시 `overflow:hidden`
 이라 넘친 내용이 **조용히 잘린다** — deck 에서 가장 흔한 실패다.
 넘치면 타입을 줄이지 말고 **섹션을 쪼갠다**(design.md §7.1).
+
+**종료 코드** — 0 통과 · 1 검사 실패 · 2 검사를 실행하지 못함(Playwright·Chromium 미설치,
+대상 파일 없음, 인자 오류). 2 는 문서가 아니라 환경의 문제이고, stderr 한 줄이 다음 명령을 알린다.
 
 ### 4.1 사람이 봐야 하는 항목
 
