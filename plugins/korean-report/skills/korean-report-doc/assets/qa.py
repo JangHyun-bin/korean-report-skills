@@ -6,14 +6,34 @@ qa.py — 배포된 스킬 안에서 HTML을 렌더링해 검사한다.
 
 SKILL.md §4 체크리스트의 기계 검사 부분을 수행한다.
 사람이 봐야 하는 항목(다크 타일 반전, 절반 이상 빈 페이지)은 --shot으로 이미지를 남긴다.
-검사에 실패하면 exit 1이다.
+
+종료 코드
+    0  통과
+    1  검사 실패 — 문서를 고친다
+    2  검사를 실행하지 못함 — Playwright·Chromium 미설치, 대상 파일 없음, 인자 오류.
+       문서가 아니라 환경의 문제다. stderr 한 줄이 다음 명령을 알린다
 """
 import argparse
 import html
 import pathlib
+import re
+import shutil
 import sys
 
-from playwright.sync_api import sync_playwright
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:  # 실행 시점에 NotReady 로 알린다. import traceback 은 다음 할 일을 알리지 않는다
+    sync_playwright = None
+
+EXIT_OK = 0
+EXIT_FAILED = 1
+# argparse 의 인자 오류도 2 다. 둘 다 「검사를 실행하지 못하였다」는 같은 뜻이다.
+EXIT_NOT_READY = 2
+
+
+class NotReady(RuntimeError):
+    """검사를 실행할 환경이 갖춰지지 않았다. 메시지는 다음 할 일을 한 줄로 담는다."""
+
 
 # Windows 기본 콘솔은 cp949다. 한글·중간점·줄표가 UnicodeEncodeError를 낸다.
 for _s in (sys.stdout, sys.stderr):
@@ -86,10 +106,48 @@ def footer_template(title: str) -> str:
             '<span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>')
 
 
+def _python() -> str:
+    """
+    설치 안내에 적을 interpreter. PATH 의 이름이 지금 interpreter 와 같을 때만 짧게 쓴다.
+    `python` 이 없는 macOS 처럼 짧은 이름이 다른 interpreter 를 가리키면 그 안내는 틀린다.
+    """
+    for name in ("python", "python3"):
+        if shutil.which(name) == sys.executable:
+            return name
+    exe = sys.executable or "python"
+    return f'"{exe}"' if " " in exe else exe
+
+
+def browser_missing(err: BaseException) -> bool:
+    """
+    Chromium 실행 파일이 없어 launch 가 실패하였는가.
+    Playwright 는 이때 설치 안내 상자를 메시지에 붙여 던진다. `install-deps`(시스템 라이브러리
+    부족)는 다른 처치가 필요하므로 여기에 포함하지 않는다.
+    """
+    msg = str(err)
+    return "Executable doesn't exist" in msg or re.search(r"playwright install(?!-deps)", msg) is not None
+
+
+def launch(p):
+    """Chromium 을 띄운다. 설치되어 있지 않으면 Playwright 의 안내 상자 대신 한 줄로 알린다."""
+    try:
+        return p.chromium.launch()
+    except Exception as e:
+        if browser_missing(e):
+            raise NotReady(f"Chromium 이 설치되어 있지 않다 — {_python()} -m playwright install chromium "
+                           "실행 후 다시 검사한다") from None
+        raise
+
+
 def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | None) -> int:
+    """한 문서를 검사한다. 통과 0 · 실패 1. 환경이 갖춰지지 않았으면 NotReady 를 던진다."""
+    if sync_playwright is None:
+        py = _python()
+        raise NotReady(f"Playwright 가 설치되어 있지 않다 — {py} -m pip install playwright 와 "
+                       f"{py} -m playwright install chromium 실행 후 다시 검사한다")
     fails, notes = [], []
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = launch(p)
         pg = b.new_page(viewport={"width": 1280, "height": 900})
         pg.goto(target.resolve().as_uri())
         pg.wait_for_timeout(2500)
@@ -164,7 +222,7 @@ def run(target: pathlib.Path, pdf: pathlib.Path | None, shot: pathlib.Path | Non
         print("   " + n)
     for f in fails:
         print("   FAIL  " + f)
-    return 1 if fails else 0
+    return EXIT_FAILED if fails else EXIT_OK
 
 
 def main() -> int:
@@ -174,9 +232,19 @@ def main() -> int:
     ap.add_argument("--shot", type=pathlib.Path, default=None)
     args = ap.parse_args()
 
-    rc = 0
-    for target in args.targets:
-        rc |= run(target, target.with_suffix(".pdf") if args.pdf else None, args.shot)
+    missing = [t for t in args.targets if not t.is_file()]
+    for t in missing:
+        print(f"검사 대상 파일이 없다 — {t}", file=sys.stderr)
+    if missing:
+        return EXIT_NOT_READY
+
+    rc = EXIT_OK
+    try:
+        for target in args.targets:
+            rc = max(rc, run(target, target.with_suffix(".pdf") if args.pdf else None, args.shot))
+    except NotReady as e:
+        print(e, file=sys.stderr)
+        return EXIT_NOT_READY
     return rc
 
 
