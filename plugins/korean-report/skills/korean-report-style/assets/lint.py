@@ -44,6 +44,9 @@ STYLE = HERE.parent
 TABLE = STYLE / "references" / "substitutions.md"
 HEURISTICS = STYLE / "references" / "software-handoff.md"
 DENSITY = STYLE / "references" / "density.md"
+LOANWORDS = STYLE / "references" / "loanwords.md"
+CONFIG_NAME = ".krstyle.toml"
+LOANWORD_POLICIES = ("keep", "english")
 
 try:
     import morph  # 형태소 검사. kiwipiepy 가 없으면 건너뛴다
@@ -53,7 +56,10 @@ except ImportError:
 EXEMPT = "style-exempt"
 TEACHING = "style-teaching"
 
-QUOTED = re.compile(r"`[^`]*`|「[^」]*」|\"[^\"]*\"|'[^']*'|“[^”]*”")
+# 영문 인용 바로 뒤의 괄호는 그 인용의 번역이다 — 원문에 맞춘 표현이므로 검사하지 않는다.
+# 「"greater than the threshold" (임계값보다 크면)」 의 괄호 안을 고치라고 하면 인용이 어긋난다.
+QUOTE_GLOSS = r"\"[^\"]*[A-Za-z][^\"]*\"\s*\([^()]*\)|“[^”]*[A-Za-z][^”]*”\s*\([^()]*\)"
+QUOTED = re.compile(QUOTE_GLOSS + r"|`[^`]*`|「[^」]*」|\"[^\"]*\"|'[^']*'|“[^”]*”")
 TAG = re.compile(r"<[^>]*>")
 HTML_SKIP_BLOCK = re.compile(
     r"<(pre|code|script|style)\b[^>]*>.*?</\1\s*>", re.I | re.S,
@@ -82,11 +88,13 @@ TEACHING_HEADERS = {
 
 # 검증된 일대일 대응만 `고침`이다 — §1 어미와 §11 군더더기 구문
 FIX_SECTIONS = frozenset((1, 11))
+# 문서가 자기 성격 · 작업 경위를 설명하는 문장 — §1.6
+META_SECTIONS = frozenset((12,))
 MIN_LEN = 2
 MIN_SPLIT_LEN = 3
 SCOPES = frozenset(("all", "prose", "heading", "table", "html"))
 MATCHERS = frozenset(("literal", "regex"))
-TIERS = ("고침", "검토", "제목", "의심", "형태", "서식")
+TIERS = ("고침", "검토", "제목", "의심", "형태", "서식", "메타", "표기")
 FORMATS = ("text", "json", "github", "sarif")
 
 
@@ -263,7 +271,11 @@ def _load_rule_file(path: pathlib.Path, tier_override: str | None = None) -> lis
             except re.error as exc:
                 raise SystemExit(f"잘못된 regex {pattern!r}: {path}: {exc}") from exc
 
-            tier = tier_override or ("고침" if section in FIX_SECTIONS else "검토")
+            tier = tier_override or (
+                "고침" if section in FIX_SECTIONS
+                else "메타" if section in META_SECTIONS
+                else "검토"
+            )
             rule_id = explicit_id or _generated_rule_id(section, pattern)
             rules.append({
                 "rule_id": rule_id,
@@ -284,11 +296,16 @@ def load_rules(
     table: pathlib.Path = TABLE,
     include_heuristics: bool = False,
     heuristic_table: pathlib.Path = HEURISTICS,
+    loanwords: str = "keep",
+    loanword_table: pathlib.Path = LOANWORDS,
 ) -> list[dict]:
     """Human-readable reference table을 단일 원천으로 rule 목록을 구성한다."""
     rules = _load_rule_file(table)
     if include_heuristics:
         rules += _load_rule_file(heuristic_table, tier_override="의심")
+    # 외래어 표기는 조직마다 정책이 다르다. 기본은 §7.2 — 정착 개념어의 한글 음차를 유지한다.
+    if loanwords == "english":
+        rules += _load_rule_file(loanword_table, tier_override="표기")
 
     ids = [r["rule_id"] for r in rules]
     duplicates = sorted(k for k, n in Counter(ids).items() if n > 1)
@@ -831,6 +848,24 @@ def sarif_payload(found: list[Finding], skipped: tuple = ()) -> dict:
 
 # ── CLI ───────────────────────────────────────────────────────
 
+def config_for(path: pathlib.Path) -> dict:
+    """문서 위치에서 위로 올라가며 처음 만나는 `.krstyle.toml` 의 `[lint]` 를 읽는다."""
+    try:
+        import tomllib
+    except ImportError:          # Python 3.10 이하 — 설정 없이 기본값으로 동작한다
+        return {}
+    for d in [path.resolve().parent, *path.resolve().parents]:
+        cfg = d / CONFIG_NAME
+        if cfg.is_file():
+            data = tomllib.loads(cfg.read_text(encoding="utf-8"))
+            lint_cfg = data.get("lint", {})
+            policy = lint_cfg.get("loanwords", "keep")
+            if policy not in LOANWORD_POLICIES:
+                raise SystemExit(f"{cfg}: loanwords 는 {LOANWORD_POLICIES} 중 하나여야 한다 — {policy!r}")
+            return lint_cfg
+    return {}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="한국어 보고 문서 문체 규약 검사")
     ap.add_argument("paths", nargs="+", help="검사할 파일. - 는 표준 입력")
@@ -841,6 +876,8 @@ def main(argv=None) -> int:
     ap.add_argument("--all", action="store_true", dest="all_stems",
                     help="형태소 검사에서 주의 어간까지 본다. 정당한 용법이 많아 기본은 제외한다")
     ap.add_argument("--fix", action="store_true", help="고침 tier를 파일에 직접 적용")
+    ap.add_argument("--loanwords", choices=LOANWORD_POLICIES,
+                    help="외래어 표기 정책. 지정하지 않으면 .krstyle.toml, 그것도 없으면 keep")
     ap.add_argument("--no-morph", action="store_true",
                     help="형태소 검사를 의도적으로 생략한다. 생략을 결과에 미수행으로 기록하지 않는다")
     args = ap.parse_args(argv)
@@ -849,7 +886,14 @@ def main(argv=None) -> int:
         ap.error("--json과 다른 --format을 함께 사용할 수 없다")
     output_format = "json" if args.json else args.format
     include_heuristics = args.heuristic or bool(args.tier and "의심" in args.tier)
-    rules = load_rules(include_heuristics=include_heuristics)
+    rule_cache: dict = {}
+
+    def rules_for(path: pathlib.Path | None):
+        policy = args.loanwords or (config_for(path).get("loanwords", "keep") if path else "keep")
+        if policy not in rule_cache:
+            rule_cache[policy] = load_rules(include_heuristics=include_heuristics, loanwords=policy)
+        return rule_cache[policy]
+
     found: list[Finding] = []
     fixed = 0
     fixed_paths = []
@@ -864,6 +908,7 @@ def main(argv=None) -> int:
                 return 2
             text = path.read_text(encoding="utf-8")
             html = path.suffix.lower() in (".html", ".htm")
+        rules = rules_for(None if name == "-" else path)
 
         if args.fix and name != "-":
             text, count = fix(text, rules, html)
